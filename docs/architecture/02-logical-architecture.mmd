@@ -1,0 +1,15 @@
+flowchart TB
+    C["AI clients and browser"] --> G["MCP and HTTP gateway"]
+    G --> Q["Query planner"]
+    G --> W["Workflow service"]
+    Q --> A["Source adapters"]
+    W --> A
+    A --> O["OB1"]
+    A --> T["TheBrain local API"]
+    A --> K["Karakeep API"]
+    W --> J["Background jobs"]
+    J --> E["Enrichment and relevance engine"]
+    E --> A
+    G --> D["CRO metadata store"]
+    J --> D
+    E --> D

@@ -1,0 +1,11 @@
+stateDiagram-v2
+    [*] --> NeedsReview
+    NeedsReview --> Current: Evidence supports current use
+    Current --> Aging: Approaching lifecycle boundary
+    Aging --> Stale: Unsupported or materially outdated
+    Current --> Superseded: Replacement identified
+    Aging --> Superseded: Replacement identified
+    Stale --> Historical: Retained for historical value
+    Superseded --> Historical: Replacement confirmed
+    Stale --> Current: Reassessment corrects status
+    Historical --> Current: Applicable again or reclassified

@@ -1,0 +1,16 @@
+sequenceDiagram
+    actor U as Keith
+    participant K as Karakeep
+    participant C as CRO
+    participant E as Enrichment
+    participant T as TheBrain
+
+    U->>K: Save URL
+    K-->>C: Capture event
+    C->>K: Read archived content and metadata
+    C->>E: Extract summary, concepts, versions
+    E-->>C: Derived metadata and confidence
+    C->>C: Store orchestration metadata
+    C->>T: Search related thoughts
+    T-->>C: Candidate associations
+    C-->>U: Ready with suggested connections
