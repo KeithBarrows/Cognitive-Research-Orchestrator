@@ -1,6 +1,10 @@
 flowchart TD
-    U["Keith or AI client"] --> M["CRO MCP<br/>Attention and recall"]
-    M <--> O["OB1<br/>Durable conscious context"]
-    M <--> T["TheBrain<br/>Associative structure"]
-    M <--> K["Karakeep<br/>Sources and evidence"]
-    M --> R["Contextual results<br/>Digests and maintenance"]
+    C["ChatGPT, Claude, Codex, and other clients"] --> M["CRO MCP<br/>Orchestration and attention"]
+    M <--> R["Project repositories<br/>Project truth and canon"]
+    M <--> T["TheBrain<br/>Durable knowledge and evidence"]
+    M <--> O["OB1<br/>Semantic thought stream"]
+    M --> I["Derived local index<br/>Disposable candidate finder"]
+    R --> I
+    T --> I
+    I -. "canonical IDs; hydrate live" .-> M
+    M --> X["Context packets, capture results,<br/>reviews, and suggestions"]

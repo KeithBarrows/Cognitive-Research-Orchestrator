@@ -2,228 +2,207 @@
 
 ## Technical Concept and System Architecture
 
-**Status:** Concept architecture  
-**Version:** 0.1  
-**Date:** 2026-07-25  
-**Working name:** Cognitive Research Orchestrator (CRO)  
+**Status:** Approved concept architecture
 
-> The working name is descriptive only. Product naming remains an open decision.
+**Version:** 0.3
+
+**Date:** 2026-10-11
+**Working name:** Cognitive Research Orchestrator (CRO)
+
+> The working name is descriptive. Product naming remains open.
 
 ## 1. Executive Summary
 
-The Cognitive Research Orchestrator is a local-first application that gives AI clients coordinated access to three distinct knowledge systems:
+CRO is a local-first, MCP-facing orchestration layer that helps AI clients capture information, recall relevant context, and maintain graph hygiene across the user's existing systems.
 
-- **OB1** holds durable personal context: established preferences, conclusions, decisions, working principles, and identity-level knowledge.
-- **TheBrain** holds associative structure: concepts, people, projects, technologies, and the relationships among them.
-- **Karakeep** holds external source material: archived articles, documentation, papers, videos, highlights, and source metadata.
+CRO coordinates three canonical owners:
 
-The application does not merge these systems into another generalized knowledge base. It provides an attention, retrieval, enrichment, and maintenance layer over them through a unified Model Context Protocol (MCP) server.
+- **Project repositories** hold approved project work, canon, decisions, skills, and runbooks.
+- **TheBrain** holds durable knowledge, original sources, attachments, Notes, and meaningful relationships.
+- **OB1 / Open Brain** holds the semantic thought stream: ideas, observations, tasks, references, and person notes.
 
-Its primary goals are to:
+CRO is not a fourth knowledge system. It owns behavior and orchestration, not user knowledge. Its durable storage is limited to bounded operational state, bounded audit history, and rebuildable technical caches. A disposable local retrieval index may contain derived text chunks and embeddings, but canonical content remains in TheBrain and project repositories and is fetched live before final use.
 
-1. Make thousands of saved sources reliably retrievable.
-2. Surface useful material without requiring the user to remember that it exists.
-3. distinguish current guidance from stale, superseded, or historical material.
-4. Preserve source provenance and system ownership.
-5. Allow multiple AI applications to use the same personal research environment.
-6. Connect sources, concepts, projects, and durable personal conclusions without copying everything everywhere.
+The guiding model is:
 
-## 2. Problem Statement
+> The repo tells CRO what the user is working on. TheBrain tells it what the user knows. OB1 tells it what the user has thought about. CRO notices the intersections.
 
-Traditional browser bookmarks fail at large scale because they preserve a URL while losing most of the context necessary for future use:
+Primary goals:
 
-- Why the item mattered
-- What it discussed
-- Which project or interest it related to
-- Whether it was ever read
-- Whether its technical guidance is still current
-- What newer source replaced it
-- How it relates to other saved knowledge
+1. Accept simple capture requests without requiring the user to choose a destination.
+2. Preserve original evidence and provenance.
+3. Surface relevant remembered or parked material during project work.
+4. Follow authored project relationships before inferred relationships.
+5. Keep TheBrain useful without requiring manual graph maintenance.
+6. Preserve user involvement in creative and project decisions.
 
-A collection containing thousands of links becomes a write-only archive. Full-text search helps, but it still requires the user to formulate a query and remember enough about the missing item to search for it.
-
-The desired system must support both:
-
-- **Directed recall:** â€œFind the article about OAuth cross-application access in C#.â€
-- **Assisted recognition:** â€œI am designing MCP authentication; show me older material that may now matter.â€
-
-It must also recognize that a source can remain valuable while its implementation details become obsolete. A tutorial targeting .NET Core 3.1 may be stale as current implementation guidance but still useful as an explanation of MVC architecture or as historical evidence.
-
-## 3. Cognitive Model
-
-The architecture uses a cognitive metaphor to establish boundaries. The metaphor describes system responsibilities; it does not claim that the software reproduces human cognition.
-
-| System | Cognitive role | Primary contents | Authority |
-|---|---|---|---|
-| OB1 | Conscious, durable context | Preferences, decisions, conclusions, behavioral rules, personal/project context | What Keith and collaborating AIs have concluded |
-| TheBrain | Associative or preconscious network | Thoughts, concepts, people, projects, technologies, and explicit relationships | How ideas are organized and connected |
-| Karakeep | Reference and recognition memory | Archived external sources, extracted text, highlights, notes, and capture metadata | What an external source actually contains |
-| CRO MCP | Attention and recall | Federated search, context assembly, resurfacing, aging, and cross-system actions | What deserves attention for the present task |
-
-The governing metaphor is:
-
-> OB1 knows who I am and what I have concluded. TheBrain knows how everything might relate. Karakeep remembers what I encountered. The orchestrator decides what deserves attention now.
-
-### 3.1 Conceptual Relationship
+## 2. System Boundaries
 
 ```mermaid
 flowchart TD
-    U["Keith or AI client"] --> M["CRO MCP<br/>Attention and recall"]
-    M <--> O["OB1<br/>Durable conscious context"]
-    M <--> T["TheBrain<br/>Associative structure"]
-    M <--> K["Karakeep<br/>Sources and evidence"]
-    M --> R["Contextual results<br/>Digests and maintenance"]
+    C["ChatGPT, Claude, Codex, and other clients"] --> M["CRO MCP<br/>Orchestration and attention"]
+    M <--> R["Project repositories<br/>Project truth and canon"]
+    M <--> T["TheBrain<br/>Durable knowledge and evidence"]
+    M <--> O["OB1<br/>Semantic thought stream"]
+    M --> X["Context packets, capture results,<br/>reviews, and suggestions"]
 ```
 
-See [diagrams/01-cognitive-model.mmd](diagrams/01-cognitive-model.mmd).
+See [01-cognitive-model.mmd](architecture/01-cognitive-model.mmd).
+
+There are only two persistent personal knowledge or memory stores: TheBrain and OB1. Project repositories remain canonical for project artifacts. CRO may maintain infrastructure data, including a derived retrieval index, but that data must remain disposable and must not become another source of user truth.
+
+The decision is recorded in [ADR 0001](adr/0001-data-ownership-and-storage-boundaries.md).
+
+## 3. Canonical Ownership
+
+| Owner | Owns | Does not own |
+|---|---|---|
+| Project repositories | Approved project artifacts, canon, decisions, manuscripts, cards, skills, runbooks, deliberately local research | General personal knowledge or unapproved brainstorms |
+| TheBrain | Durable sources, documents, URLs, attachments, summaries, provenance, people, organizations, concepts, events, and meaningful relationships | Project canon merely copied for convenience |
+| OB1 | Ideas, observations, tasks, references, person notes, thinking history, and user-behavior feedback worth remembering | Raw PDFs, full transcripts, or source archives |
+| CRO | Jobs, retries, schedules, health, idempotency, bounded audit records, hashes, derived text chunks and embeddings, Git commit IDs, and other rebuildable indexes | Summaries, conclusions, ideas, project decisions, or durable relationship truth |
+
+### 3.1 Repository ownership
+
+Repositories are first-class context sources. CRO should understand:
+
+- The current repo and project
+- The active skill or task
+- The supplied artifact or path
+- Explicit references in cards, outlines, manifests, frontmatter, or other project artifacts
+- Git state and artifact freshness where useful
+
+CRO resolves the current project and artifact from repo context, the active skill, and the supplied artifact or path. It asks only when the remaining ambiguity is material.
+
+### 3.2 TheBrain ownership
+
+TheBrain is both the durable evidence store and the meaningful associative graph. It may contain:
+
+- Sources and documents
+- Original URLs and access information
+- Attachments and transcripts
+- Compact synthesized Notes
+- People, organizations, technologies, places, projects, concepts, and events
+- Thought Types and Tags
+- Parent, child, jump, and typed relationships
+- Calendar Events when an occurrence is genuinely worth calendaring
+
+Notes hold synthesized knowledge. Attachments preserve the lossless source.
+
+Thought titles are compact navigational identities, with an approximately 80-character soft limit unless an established Thought requires otherwise. Most useful textual material belongs in the Note. Because Local API discovery found that Note bodies are not reliably searchable, CRO must fetch and index Notes explicitly rather than rely on native TheBrain search.
+
+### 3.3 OB1 ownership
+
+OB1 is a semantic inbox and thinking history. Its known thought classes are:
+
+- `observation`
+- `task`
+- `idea`
+- `reference`
+- `person_note`
+
+Parked ideas belong here until the user chooses to promote them. Reading or resurfacing feedback also belongs in OB1 when it represents a durable user behavior, reaction, or thought.
+
+Live capability discovery verified capture, fetch-by-ID, semantic search, recent listing, and metadata filters across all five classes. Capture accepts content only and infers classification. Semantic results omit IDs, so stable hydration may require a separate compatibility search. The exposed connector has no explicit update, delete, relationship, bulk, transaction, or cursor-pagination operations.
 
 ## 4. Architectural Principles
 
-### 4.1 Preserve distinct ownership
+### 4.1 Use the cheapest useful representation
 
-Every item has one canonical owner:
+A fact does not become a Thought merely because CRO extracted it. Prefer:
 
-- Article content and archival snapshots belong to Karakeep.
-- Conceptual relationships belong to TheBrain.
-- Durable personal conclusions belong to OB1.
-- Cross-system identifiers, processing history, and orchestration state belong to CRO.
+- Note text for compact facts and synthesis
+- Tags for state and reusable facets
+- Attachments for original evidence
+- Thoughts for durable independently navigable things
+- Plex links only when future traversal has real value
 
-### 4.2 Link rather than duplicate
+### 4.2 Reuse before creating
 
-TheBrain thoughts should link to Karakeep records rather than copy full articles. OB1 should contain a distilled conclusion only when one is genuinely durable, not an article summary merely because an article was saved.
+CRO searches for exact and near-duplicate Thoughts before creation. High-confidence source capture may automatically reuse or create a Thought. CRO asks only when identity, placement, or relationship ambiguity is material.
 
-### 4.3 Evidence before inference
+### 4.3 Preserve intent under partial failure
 
-AI-generated summaries, tags, version detection, and relevance assessments are derived metadata. They must remain distinguishable from:
+Capture succeeds when the user's intent is safely preserved. Enrichment, transcription, or relationship discovery may complete later.
 
-- Original source content
-- User-authored notes
-- User-confirmed classifications
-- Authoritative lifecycle information
+### 4.4 Keep evidence distinct from inference
 
-### 4.4 No automatic destructive loss
+Results and stored annotations must distinguish:
 
-The system may archive, demote, hide by default, mark stale, or mark superseded. It must not automatically delete source material, thoughts, or durable context.
+```text
+source_fact
+authoritative_external_fact
+user_statement
+user_confirmed_classification
+ai_extraction
+ai_inference
+```
 
-### 4.5 Retrieval must include warnings
+### 4.5 Do not silently change canon
 
-Stale or superseded material may still be retrieved, but the client must receive its relevance state, reason, confidence, and replacement references.
+CRO may surface parked or speculative ideas beside project work. It must not write them into project canon without the user's decision.
 
-### 4.6 Human effort should remain small
+### 4.6 Bound serendipity
 
-Capture should require only the URL. One optional human sentenceâ€”â€œwhy this mattersâ€â€”is more valuable than requiring extensive manual taxonomy.
+Context recall may include one or two secondary, non-obvious items. This preserves useful surprise without drowning the current task.
 
-### 4.7 Discovery should precede irreversible structure
+### 4.7 Avoid destructive automation
 
-Initial categories and scoring rules should remain deliberately simple. Usage evidence should drive later taxonomy and automation decisions.
+Graph cleanup, deduplication, retirement, and contradiction handling follow propose, review, and execute. CRO does not delete user knowledge automatically.
 
-## 5. System Context
-
-### 5.1 External systems
-
-#### Karakeep
-
-Karakeep is the canonical source repository. It provides browser capture, content extraction, archival, tags, highlights, full-text search, semantic search, REST APIs, and webhooks.
-
-Expected CRO usage:
-
-- Create and retrieve bookmarks
-- Obtain extracted article text and metadata
-- Update tags and notes where supported
-- Receive capture events through webhooks or polling
-- Search source content
-- Associate CRO relevance metadata with a Karakeep identifier
-
-#### TheBrain
-
-TheBrain is the canonical associative graph. TheBrain 15 provides a local API capable of creating and manipulating thoughts and supporting bulk restructuring.
-
-Expected CRO usage:
-
-- Search for thoughts
-- Read thought metadata and relationships
-- Create a source-related thought when policy permits
-- Link concepts to projects, people, technologies, or other concepts
-- Attach or record Karakeep references
-- Navigate parents, children, jumps, types, and tags
-
-The complete installed local API specification must be captured during technical discovery because the documentation is served from the local application.
-
-#### OB1
-
-OB1 remains the durable memory and context system.
-
-Expected CRO usage:
-
-- Search relevant memories by meaning
-- Retrieve full durable context when needed
-- Capture a new conclusion only through an explicit or policy-authorized action
-- Avoid storing raw research articles or bulk source summaries
-
-#### AI clients
-
-Any MCP-compatible client may use CRO. Examples include ChatGPT, Codex, Claude, and development environments with MCP support.
-
-Clients should not need direct knowledge of each underlying API. CRO provides a stable, task-oriented interface while retaining source attribution.
-
-## 6. Logical Architecture
+## 5. Logical Architecture
 
 ```mermaid
 flowchart TB
-    C["AI clients and browser"] --> G["MCP and HTTP gateway"]
-    G --> Q["Query planner"]
-    G --> W["Workflow service"]
-    Q --> A["Source adapters"]
+    C["MCP-compatible clients"] --> G["MCP gateway"]
+    G --> Q["Context and query planner"]
+    G --> W["Capture and workflow service"]
+    Q --> A["Capability-aware adapters"]
     W --> A
-    A --> O["OB1"]
-    A --> T["TheBrain local API"]
-    A --> K["Karakeep API"]
+    Q --> H["Hybrid retrieval and<br/>candidate ranking"]
+    H --> I["Derived local index<br/>PostgreSQL + pgvector"]
+    I --> A
+    A --> R["Repository adapter"]
+    A --> T["TheBrain Local API"]
+    A --> O["OB1 API"]
     W --> J["Background jobs"]
-    J --> E["Enrichment and relevance engine"]
+    J --> E["Extraction, relevance,<br/>and graph-hygiene engine"]
     E --> A
-    G --> D["CRO metadata store"]
+    G --> D["CRO runtime state<br/>bounded and rebuildable"]
     J --> D
-    E --> D
 ```
 
-See [diagrams/02-logical-architecture.mmd](diagrams/02-logical-architecture.mmd).
+See [02-logical-architecture.mmd](architecture/02-logical-architecture.mmd).
 
-### 6.1 MCP and HTTP gateway
+### 5.1 MCP gateway
 
-Responsibilities:
+- Exposes task-oriented tools
+- Validates requests and client permissions
+- Normalizes errors and partial completion
+- Preserves provenance
+- Enforces confirmation policy for ambiguous or high-impact changes
 
-- Expose task-oriented MCP tools
-- Optionally expose a local administrative HTTP API
-- Validate requests and permissions
-- Normalize errors
-- Attach provenance to every result
-- Enforce write confirmation policies
+### 5.2 Context and query planner
 
-### 6.2 Query planner
+- Resolves project, skill, and current artifact
+- Follows explicit repository references first
+- Selects relevant adapters
+- Runs independent reads concurrently
+- Ranks and deduplicates without erasing native identity
+- Adds at most one or two serendipitous results
+- Explains why each item was included
 
-Responsibilities:
+### 5.3 Capture and workflow service
 
-- Decide which systems are relevant to a request
-- Rewrite a natural-language inquiry into system-specific queries
-- Run independent reads concurrently
-- Merge and rank heterogeneous results
-- Deduplicate references without losing system identity
-- Return an explanation of why each item was included
+- Accepts heterogeneous inputs
+- Preserves source material and user intent
+- Routes durable results to TheBrain or OB1
+- Proposes repo changes only when project integration is requested
+- Coordinates retries and partial completion
 
-### 6.3 Workflow service
+### 5.4 Capability-aware adapters
 
-Responsibilities:
-
-- Coordinate multi-step actions
-- Process new captures
-- Create suggested TheBrain associations
-- Generate reading queues and digests
-- Record user feedback
-- Manage supersession and aging reviews
-
-### 6.4 Source adapters
-
-Each source adapter isolates the application from changes in an underlying API:
+Each adapter exposes only verified behavior:
 
 ```text
 IContextSource
@@ -233,225 +212,337 @@ IContextSource
   capabilities()
 
 IWritableContextSource
-  create(payload)
+  create(payload, idempotency_key)
   update(id, patch)
-  link(sourceId, targetId, relationship)
+  link(source_id, target_id, relationship)
 ```
 
-Adapters must preserve native identifiers and expose declared capabilities. CRO must not assume that all systems support the same kinds of search, update, or relationship.
+The current discovery status is recorded in [capability-matrix.md](capability-matrix.md).
 
-### 6.5 CRO metadata store
+### 5.5 Operational state
 
-CRO needs a small canonical database for orchestration-specific state that belongs nowhere else:
+CRO may persist:
 
-- Cross-system identity mappings
-- Relevance assessments and their history
-- Technology/version observations
-- Supersession links
-- Processing checkpoints
-- Resurfacing history
-- User feedback
-- Job state
-- Audit events
+- Job checkpoints and bounded retry schedules
+- Adapter health and cursors
+- Idempotency records
+- Short-lived context assembly state
+- Bounded operational audit records
+- Rebuildable hashes, embeddings, mappings, and Git identifiers
 
-PostgreSQL is the preferred production datastore. SQLite is acceptable for an initial single-user prototype if the data-access layer avoids database-specific behavior.
+Retention must be explicit and bounded. Operational records must not evolve into summaries, conclusions, reading histories, project decisions, or another user-knowledge model.
 
-### 6.6 Background job service
+### 5.6 Derived local retrieval index
 
-Responsibilities:
+TheBrain Note bodies are not reliably searchable through the Local API, and repository retrieval must cover both exact identifiers and conceptual matches. CRO therefore maintains a disposable local index over canonical sources.
 
-- Enrichment after capture
-- Periodic temporal review
-- Source-health checks
-- Re-indexing after metadata changes
-- Scheduled digests
-- Forgotten-gem resurfacing
-- Retry of transient integration failures
+The index may contain TheBrain titles and Notes, attachment metadata or safely extracted text, repository content, source hashes, chunks, embeddings, facets, relationships, and canonical identifiers. Retrieval combines:
 
-Jobs must be idempotent and checkpointed.
+- Exact and full-text matching
+- Semantic/vector matching
+- Metadata filtering
+- Relationship-aware expansion
 
-### 6.7 Enrichment and relevance engine
+Large Notes and documents are indexed as content-aware chunks that retain their parent canonical identifier. Search returns candidate IDs; CRO then fetches live authoritative content from TheBrain or the repository before producing a final context packet.
 
-Responsibilities:
+The preferred infrastructure is local PostgreSQL/Supabase with `pgvector`. CRO-owned `cro_index` and `cro_runtime` schemas or databases must remain separate from OB1-owned storage, even if they share a PostgreSQL server. Deleting and rebuilding the CRO index must never destroy user knowledge.
 
-- Extract technologies, products, versions, APIs, standards, people, and projects
-- Produce summaries and concept tags
-- Suggest TheBrain relationships
-- Determine temporal relevance
-- Find possible replacements
-- Record evidence and confidence
+## 6. TheBrain Modeling Rules
 
-AI output is advisory unless a policy explicitly permits automatic updates.
+### 6.1 Thoughts
 
-## 7. Canonical Data Model
+Create a Thought for a durable thing worth independent navigation or retrieval, such as a person, organization, project, technology, concept, event, place, source, document, or book.
 
-### 7.1 Research resource
+Keep its title short and navigable, using approximately 80 characters as a soft limit. Put summaries, URLs, extracted facts, provenance, source context, historical detail, and CRO annotations in the Note.
 
-The research resource represents CROâ€™s reference to a canonical Karakeep item. It does not contain the canonical archived article.
+Keep the controlled Thought Type vocabulary small. Candidate types include:
 
-```yaml
-id: cro-resource-uuid
-karakeep_id: native-karakeep-id
-canonical_url: https://example.com/article
-captured_at: 2026-07-25T12:00:00Z
-processing_state: enriched
-reading_state: inbox
-personal_value: unreviewed
-why_saved: null
+```text
+Person, Organization, Project, Software, Technology, Concept,
+Event, Place, Source, Document, Book, Task, Decision, Topic
 ```
 
-### 7.2 Reading state
+### 6.2 Tags
 
-Only four initial human-controlled states are recommended:
+Tags express reusable characteristics or state. Initial examples include:
 
-| State | Meaning |
-|---|---|
-| `inbox` | Captured but not meaningfully reviewed |
-| `read` | Meaningfully reviewed |
-| `reference` | Intentionally retained for future retrieval |
-| `discarded` | Noise, duplicate, or no longer wanted in normal results |
+- `Incomplete`
+- `Needs Review`
+- `Stale`
+- `Superseded`
+- `Personal`
+- `Work`
+- `YouTube`
+- `Historical`
 
-â€œDiscardedâ€ is a logical state, not physical deletion.
+There is no `Complete` tag. Absence of `Incomplete` represents normal completion.
 
-### 7.3 Temporal assessment
+### 6.3 Notes and attachments
 
-```yaml
-resource_id: cro-resource-uuid
-state: stale
-assessed_at: 2026-07-25T12:30:00Z
-assessor: cro-relevance-engine
-confidence: 0.97
-reason: >
-  The tutorial targets ASP.NET Core 3.1, which is out of support.
-technical_currency: stale
-conceptual_value: high
-historical_value: medium
-review_after: 2026-10-25
-evidence:
-  - type: detected_version
-    value: "ASP.NET Core 3.1"
-  - type: authoritative_lifecycle
-    source_url: https://dotnet.microsoft.com/platform/support/policy
+Notes may contain compact summaries, extracted concepts, provenance, source metadata, historical context, and key claims. Full large documents should remain attachments unless a verified API limitation requires a reviewed fallback. Note bodies require explicit reads and derived indexing because native search did not reliably find newly written Note content.
+
+Attachments preserve PDFs, DOCX files, Markdown, transcripts, VTT files, HTML snapshots, images, screenshots, and other original evidence.
+
+### 6.4 Links and graph hygiene
+
+Links are expensive and should remain meaningful. CRO should:
+
+- Reuse canonical anchor Thoughts
+- Avoid connecting every extracted entity
+- Detect duplicate and near-duplicate Thoughts
+- Detect orphan Thoughts and pathological hubs
+- Identify stale software-version Thoughts
+- Identify contradictory relationships
+- Suggest a small number of high-value links
+
+When supported, a relationship includes endpoints, Plex relation, direction, and Link Type.
+
+### 6.5 Time
+
+Keep these time concepts distinct:
+
+1. Thought creation and modification time
+2. Source publication date
+3. Historical or subject date
+4. Calendar Event date
+5. Last externally verified date
+
+Existing Month and Year Thoughts may remain useful navigation anchors. They are not automatically replaced with Tags.
+
+## 7. General Capture Pipeline
+
+The conceptual MCP operation is:
+
+```text
+capture(input, optional_hint)
 ```
 
-### 7.4 Technology applicability
+Supported input classes should include:
 
-```yaml
-resource_id: cro-resource-uuid
-technology: dotnet
-minimum_version: "3.0"
-maximum_version: "3.1"
-version_expression: ".NET Core 3.x"
-detection_method: content_extraction
-confidence: 0.99
-```
-
-Versions must be stored as domain-aware values. Generic lexical comparison is insufficient because ecosystems use different version and lifecycle conventions.
-
-### 7.5 Supersession
-
-```yaml
-older_resource_id: cro-resource-old
-newer_resource_id: cro-resource-new
-relationship: implementation_replacement
-reason: >
-  The newer source explains the same task using supported .NET 10 APIs.
-confidence: 0.91
-confirmed_by_user: false
-```
-
-Supported relationships should include:
-
-- `implementation_replacement`
-- `official_replacement`
-- `updated_edition`
-- `conceptual_extension`
-- `contradicts`
-- `duplicates`
-
-### 7.6 Cross-system link
-
-```yaml
-id: cro-link-uuid
-left_system: thebrain
-left_id: thought-native-id
-right_system: karakeep
-right_id: bookmark-native-id
-relationship: supporting_source
-created_by: user
-created_at: 2026-07-25T13:00:00Z
-```
-
-## 8. Primary Flows
-
-### 8.1 Capture and enrichment
+- URL
+- PDF, DOCX, Markdown, or text file
+- Pasted text
+- Image or screenshot
+- ZIP or archive
+- YouTube URL, transcript, or VTT file
+- A user idea with no external source
+- Multiple heterogeneous files
 
 ```mermaid
 sequenceDiagram
-    actor U as Keith
-    participant K as Karakeep
+    actor U as User or client
     participant C as CRO
-    participant E as Enrichment
+    participant R as Project repo
     participant T as TheBrain
+    participant O as OB1
 
-    U->>K: Save URL
-    K-->>C: Capture event
-    C->>K: Read archived content and metadata
-    C->>E: Extract summary, concepts, versions
-    E-->>C: Derived metadata and confidence
-    C->>C: Store orchestration metadata
-    C->>T: Search related thoughts
-    T-->>C: Candidate associations
-    C-->>U: Ready with suggested connections
+    U->>C: capture(input, optional_hint)
+    C->>C: Inspect, extract, and classify
+    par Existing project context
+        C->>R: Resolve project and possible relevance
+        R-->>C: Explicit and semantic matches
+    and Existing durable knowledge
+        C->>T: Search for source and canonical Thoughts
+        T-->>C: Existing sources and graph context
+    and Existing thought stream
+        C->>O: Search ideas, tasks, and references
+        O-->>C: Related semantic thoughts
+    end
+    C->>T: Reuse or create source Thought and preserve evidence
+    opt Input is a loose idea or task
+        C->>O: Capture thought
+    end
+    C-->>U: Result, provenance, project impact, and any ambiguity
 ```
 
-See [diagrams/03-capture-flow.mmd](diagrams/03-capture-flow.mmd).
+See [03-capture-flow.mmd](architecture/03-capture-flow.mmd).
 
-Default behavior:
+### 7.1 Processing steps
 
-1. The user saves a URL through Karakeep.
-2. Karakeep archives and extracts the source.
-3. CRO receives a webhook or detects the new item.
-4. CRO extracts concepts, technologies, versions, and a short summary.
-5. CRO searches TheBrain for related thoughts.
-6. CRO records suggestions but does not automatically restructure TheBrain during the initial phase.
-7. The item enters the `inbox` reading state.
+1. Preserve the input and user note.
+2. Inspect and extract metadata, text, entities, dates, and source type.
+3. Resolve possible project relevance.
+4. Search TheBrain and OB1 for existing canonical or related material.
+5. Reuse existing Thoughts where possible.
+6. Create the minimum durable structure needed.
+7. Commit high-confidence capture automatically.
+8. Ask only when ambiguity would materially change identity, placement, or meaning.
+9. Report provenance, completeness, and possible project impact.
 
-### 8.2 Federated investigation
+### 7.2 Partial completion
+
+If enrichment fails, preserve the source and user note, add `Incomplete`, record a concise human-visible reason where useful, and schedule bounded retry state in CRO.
+
+A default retry pattern for transient failures is:
+
+```text
+5 minutes -> 30 minutes -> 2 hours -> 12 hours -> next day
+```
+
+Retries must be bounded and adapter-specific. When the missing enrichment succeeds, remove `Incomplete`. Do not add `Complete`.
+
+### 7.3 Source preservation
+
+When material matters, TheBrain should retain the original URL, access date, source attachment, transcript or captions when available, a compact Note, and an optional checksum. External archive links may supplement this copy but must not be the only durable evidence.
+
+## 8. Context Recall and Project Integration
 
 ```mermaid
 sequenceDiagram
-    actor A as AI client
+    actor A as AI client or skill
     participant M as CRO MCP
-    participant O as OB1
+    participant R as Project repo
     participant T as TheBrain
-    participant K as Karakeep
+    participant O as OB1
 
-    A->>M: investigate("OAuth for cross-app MCP access")
-    par Durable context
-        M->>O: Search relevant conclusions
-        O-->>M: Personal and project context
-    and Associations
-        M->>T: Search concepts and relationships
-        T-->>M: Related thought graph
-    and Evidence
-        M->>K: Search archived sources
-        K-->>M: Articles and extracted content
-    end
-    M->>M: Rank, warn, and assemble provenance
-    M-->>A: Coordinated result set
+    A->>M: recall_context(project, artifact, skill, subjects)
+    M->>R: Resolve artifact and explicit references
+    R-->>M: Current content and declared related artifacts
+    M->>M: Query local hybrid index for repository and TheBrain candidates
+    M->>R: Fetch authoritative project candidates
+    M->>T: Fetch authoritative Thoughts, Notes, and graph context
+    M->>O: Search parked ideas and thought history
+    R-->>M: Live project content
+    T-->>M: Live graph and source content
+    O-->>M: Ranked thoughts
+    M->>M: Rank, deduplicate, explain, and add 0-2 secondary items
+    M-->>A: Compact provenance-preserving context packet
 ```
 
-See [diagrams/04-federated-query.mmd](diagrams/04-federated-query.mmd).
+See [04-federated-query.mmd](architecture/04-federated-query.mmd).
 
-The response must keep the layers visible:
+Retrieval order is:
 
-- â€œOB1 indicatesâ€¦â€ for durable context.
-- â€œTheBrain connectsâ€¦â€ for associative structure.
-- â€œThe source statesâ€¦â€ for external evidence.
-- â€œCRO infersâ€¦â€ for orchestration-layer analysis.
+1. Current artifact
+2. Explicit repository references
+3. Hybrid-index candidates from exact, semantic, metadata, and relationship signals
+4. Live repository and TheBrain hydration by canonical ID
+5. Direct OB1 semantic and metadata retrieval
+6. Zero to two bounded serendipity items
 
-### 8.3 Temporal aging
+This supports both directions:
+
+- **Impact forward:** what existing project material could a new capture affect?
+- **Recall backward:** what previously captured material could matter to the current artifact?
+
+## 9. Skill Integration
+
+Skills declare their CRO requirements in a standard block inside the skill file. The initial schema is:
+
+```yaml
+cro_context:
+  version: 1
+  artifact: supplied_or_active
+  explicit_references:
+    - character_cards
+    - worldbuilding_cards
+    - plot_artifacts
+  search:
+    - repository
+    - thebrain
+    - ob1
+  serendipity_limit: 2
+  post_skill:
+    - decisions
+    - canon_candidates
+    - unresolved_questions
+    - parked_ideas
+    - research_needs
+    - tasks
+```
+
+The block is declarative. It describes context needs and possible outputs; it does not authorize writes by itself.
+
+### 9.1 Pre-skill hook
+
+1. Resolve repo, project, skill, and artifact.
+2. Read author-declared references.
+3. Build working semantic context.
+4. Search the repository, TheBrain, and OB1 in the defined order.
+5. Return a compact context packet.
+
+### 9.2 Post-skill hook
+
+Detect decisions, canon candidates, unresolved questions, parked ideas, research needs, contradictions, and tasks. Propose persistence according to canonical ownership. Do not silently promote brainstorms into canon.
+
+## 10. Proposed MCP Surface
+
+### 10.1 Primary tools
+
+```text
+capture(input, optional_hint?)
+
+recall_context(
+    project?,
+    current_artifact?,
+    skill_or_task?,
+    subjects?
+)
+
+find_related(query)
+find_when(query)
+explore(topic)
+review_incomplete()
+review_stale()
+suggest_connections(thought)
+explain_path(source, target)
+```
+
+### 10.2 Supporting tools
+
+```text
+get_system_health()
+get_capabilities(system?)
+get_pending_suggestions(type?, limit?)
+approve_suggestion(suggestion_id)
+reject_suggestion(suggestion_id, reason?)
+```
+
+Reading queues, forgotten gems, replacement review, and maintenance digests remain useful later features. They should build on the primary task-oriented surface rather than expose storage mechanics.
+
+### 10.3 Mutation policy
+
+| Action | Default policy |
+|---|---|
+| Search and context assembly | Automatic |
+| Reuse an unambiguous TheBrain Thought | Automatic |
+| Create a high-confidence source Thought | Automatic |
+| Preserve an original source attachment | Automatic when capability and policy permit |
+| Capture an explicitly stated loose idea or task in OB1 | Automatic |
+| Resolve material identity or placement ambiguity | Ask |
+| Create speculative graph relationships | Suggest first |
+| Promote a brainstorm into project canon | Ask |
+| Destructive graph cleanup | Propose, review, execute |
+| Delete user knowledge | Never automatically |
+
+## 11. Relevance, Volatility, and Trust
+
+Source volatility is computed from source type, subject, age, ecosystem, and current evidence. Persist it in TheBrain only when useful to the user.
+
+Typical relative volatility:
+
+| Domain | Typical volatility |
+|---|---|
+| History and biography | Low |
+| Established science | Low |
+| Recent science | Medium |
+| Software | High |
+| AI tools and models | Very high |
+
+Age alone does not determine relevance. A source can be technically stale while remaining conceptually or historically valuable.
+
+Each surfaced result should be able to explain:
+
+- Canonical owner and native identifier
+- Why it matched
+- Whether the relationship was explicit or inferred
+- Relevant dates and their meanings
+- Currency or incompleteness warning
+- Source evidence versus CRO inference
+
+## 12. Relevance Lifecycle
+
+The source-currency lifecycle remains separate from capture-processing completion:
 
 ```mermaid
 stateDiagram-v2
@@ -467,430 +558,145 @@ stateDiagram-v2
     Historical --> Current: Applicable again or reclassified
 ```
 
-See [diagrams/05-relevance-lifecycle.mmd](diagrams/05-relevance-lifecycle.mmd).
-
-Age alone must not determine relevance. Assessment considers:
-
-- Explicit technology and version references
-- Official support lifecycle
-- Deprecated APIs or practices
-- Security guidance changes
-- Existence of a newer equivalent source
-- Conceptual and historical value
-- User confirmation or correction
-
-Recommended reassessment intervals:
-
-| Domain | Default interval |
-|---|---:|
-| Security and authentication guidance | 30 days |
-| AI tools, APIs, and fast-moving frameworks | 90 days |
-| General software tutorials | 90 days |
-| Hardware and product recommendations | 90 days |
-| Medical, legal, and financial references | 30 days |
-| Homesteading and agricultural techniques | 365 days |
-| Writing craft and philosophy | 365 days or manual |
-| Historical sources | No automatic review |
-
-These defaults must be configurable by topic and source type.
-
-### 8.4 Resurfacing
-
-CRO supports several retrieval modes:
-
-- **Contextual:** Relevant to the current conversation or project.
-- **Reading queue:** Unread items balanced across active interests.
-- **Forgotten gems:** High-value items not viewed recently.
-- **Connection discovery:** Older sources related to a newly captured source.
-- **Writing support:** Evidence relevant to an article under development.
-- **Expiry review:** Old inbox items requiring retain, defer, or discard decisions.
-- **Replacement review:** Stale sources for which a likely successor exists.
-
-An initial candidate score may use:
-
-```text
-score =
-    semantic_relevance
-  + personal_value
-  + project_relevance
-  + novelty
-  + time_since_last_surface
-  + relationship_strength
-  - prior_dismissals
-  - stale_penalty_when_current_guidance_requested
-```
-
-The production formula should remain observable and configurable. A result must be able to answer, â€œWhy was this shown?â€
-
-## 9. Proposed MCP Surface
-
-### 9.1 Read-only tools
-
-```text
-search_sources(query, filters?, limit?)
-get_source(source_id)
-find_related_thoughts(query_or_source_id, depth?, limit?)
-recall_context(query, limit?)
-investigate(query, systems?, freshness?, limit?)
-get_reading_queue(interests?, time_available?, limit?)
-get_forgotten_gems(interests?, limit?)
-explain_relevance(source_id)
-find_replacements(source_id, limit?)
-```
-
-### 9.2 Mutating tools
-
-```text
-save_source(url, interest?, why_saved?)
-set_reading_state(source_id, state)
-add_source_note(source_id, note)
-confirm_relevance(source_id, state, reason?)
-link_source_to_thought(source_id, thought_id, relationship)
-create_thought_from_source(source_id, parent_thought_id?, title?)
-capture_conclusion(content, evidence_source_ids?)
-dismiss_surfaced_item(source_id, reason?)
-```
-
-### 9.3 Administrative tools
-
-```text
-get_system_health()
-get_source_capabilities()
-run_relevance_review(scope?, dry_run?)
-get_pending_suggestions(type?, limit?)
-approve_suggestion(suggestion_id)
-reject_suggestion(suggestion_id, reason?)
-```
-
-### 9.4 Mutation policy
-
-Initial default:
-
-| Action | Policy |
-|---|---|
-| Search and retrieval | Automatic |
-| Derived CRO metadata | Automatic with audit trail |
-| Update Karakeep tags | Suggest first |
-| Create or restructure TheBrain thoughts | Explicit approval |
-| Capture durable OB1 conclusion | Explicit approval |
-| Delete from any underlying system | Never through initial MCP |
+See [05-relevance-lifecycle.mmd](architecture/05-relevance-lifecycle.mmd).
 
-## 10. Relevance and Trust Model
+`Incomplete` means an expected capture or enrichment step remains outstanding. It does not mean the source is stale.
 
-Every derived assertion should contain:
+## 13. Security and Privacy
 
-- Assertion type
-- Value
-- Confidence
-- Derivation method
-- Supporting evidence
-- Assessment time
-- Next review time
-- User-confirmation state
+- Keep TheBrain's Local API on the local or explicitly trusted network boundary.
+- Store API keys outside source control and logs.
+- Separate read and write privileges where supported.
+- Treat source documents as untrusted input, never as system instructions.
+- Validate structured extraction output before writes.
+- Apply client authentication and per-client authorization.
+- Record bounded operational audit events for significant actions.
+- Never claim atomicity across independent systems.
+- Keep sensitive source text, derived chunks, and embeddings inside the trusted home environment.
+- Do not expose CRO, TheBrain, OB1, local databases, or the MCP endpoint directly to the public internet.
 
-The system must distinguish:
+An audit record may include client identity, tool, systems accessed, policy decision, native identifiers, result status, timestamp, and correlation identifier. It must not accumulate source summaries or become a substitute knowledge history.
 
-```text
-source_fact
-authoritative_external_fact
-user_statement
-user_confirmed_classification
-ai_extraction
-ai_inference
-```
+### 13.1 Local-first deployment boundary
 
-For high-consequence topics such as health, law, finance, and security, current guidance should require authoritative external verification before CRO marks old material current.
+CRO, TheBrain, OB1, project repositories, and the PostgreSQL/Supabase retrieval infrastructure belong inside the trusted home environment. Sensitive material and its derived representations must never be synchronized to a cloud CRO knowledge service.
 
-## 11. Search and Ranking
+Remote capture is a future system, not MVP scope. Its allowed cloud footprint is a deliberately dumb authenticated inbound queue containing only temporary capture payloads and minimal routing state. The home system initiates outbound pulls; the cloud service receives no trusted retrieval access and cannot initiate arbitrary connections into the home network.
 
-### 11.1 Hybrid retrieval
+Everything arriving through that queue is untrusted data, never instructions. A future ingestion worker must use capability isolation: quarantine inputs, validate type and size, scan and safely extract content, reject active or executable material where appropriate, preserve external provenance, and operate without shell access, arbitrary MCP tools, private TheBrain reads, or unrestricted LAN access.
 
-The query planner should combine:
+Remote URL fetching must reject loopback, private, link-local, and internal destinations and eventually defend against redirects and DNS rebinding. See [06-local-first-boundary.mmd](architecture/06-local-first-boundary.mmd).
 
-- Keyword/full-text matching
-- Semantic similarity
-- Explicit TheBrain graph distance
-- OB1 personal/project relevance
-- Source freshness and temporal state
-- User-authored tags and notes
-- Reading and resurfacing history
+## 14. Reliability and Operations
 
-### 11.2 Result contract
+- Degrade individual adapter capabilities instead of failing all retrieval.
+- Use idempotency keys for writes.
+- Retry transient failures with bounded backoff.
+- Report partial completion explicitly.
+- Keep jobs restartable and checkpointed.
+- Back up project repos, TheBrain, and OB1 through their supported mechanisms.
+- Rebuild caches from canonical systems wherever possible.
 
-Each coordinated result should include:
+Minimum operational signals include adapter health, capture backlog, enrichment failures, retry backlog, query latency, incomplete captures, authentication failures, and cache rebuild status.
 
-```yaml
-title: Build a Secure C# MCP App with Cross App Access
-canonical_system: karakeep
-canonical_id: native-id
-url: https://developer.okta.com/blog/2026/07/16/csharp-mcp-cross-app-access
-relevance_state: current
-relevance_reason: Targets current cross-app authorization practices.
-matched_because:
-  - Semantic match for OAuth and MCP
-  - Linked to TheBrain thought "Cross-App Access"
-  - Relevant to an active AI architecture inquiry
-provenance:
-  source_content: karakeep
-  relationships: thebrain
-  personal_context: ob1
-```
+## 15. Delivery Plan
 
-### 11.3 Stale-result behavior
+### Phase 0: Technical discovery and contract design
 
-For current implementation queries, stale material should be demoted or excluded by default. If retrieved, it must carry a visible warning:
+- Completed TheBrain, OB1, and repository-adapter discovery and reconciled the [capability matrix](capability-matrix.md).
+- Define the skill `cro_context` schema and validation rules.
+- Define repository reference conventions and artifact resolution precedence.
+- Confirm the boundary between TheBrain user data and CRO operational state.
 
-```text
-Stale implementation: targets .NET Core 3.1.
-Retained because the architectural explanation remains useful.
-Newer related source: Building MVC Applications with .NET 10.
-```
+**Discovery result:** Required MVP source capabilities are verified or have explicit fallbacks. Final schema details are implementation-contract work, not further external capability discovery.
 
-Historical, comparative, or migration queries should be able to request stale material explicitly.
+### Phase 1: Read-only context recall
 
-## 12. Security and Privacy
+- Implement repository, TheBrain, and OB1 adapters.
+- Resolve project and current artifact.
+- Follow explicit references and assemble context packets.
+- Preserve provenance and cap serendipity at two items.
 
-### 12.1 Local-first boundary
+**Exit criterion:** One client can obtain grounded context from all three canonical owners without writes.
 
-TheBrainâ€™s API is local to the desktop application. CRO should run locally or on a trusted host able to reach that local endpoint without exposing it directly to the public internet.
+### Phase 2: General capture
 
-### 12.2 Authentication
+- Accept heterogeneous capture inputs.
+- Reuse or create source Thoughts.
+- Preserve attachments and Notes.
+- Capture loose ideas in OB1.
+- Report project impact without changing canon.
 
-The architecture should support:
+**Exit criterion:** A URL, file, and loose idea can each be preserved in the correct owner.
 
-- MCP-client authentication
-- Per-client authorization policies
-- Secure storage of Karakeep, TheBrain, OB1, and model-provider credentials
-- Credential rotation
-- No credentials in logs
+### Phase 3: Recovery and graph hygiene
 
-### 12.3 Least privilege
+- Add `Incomplete` handling and bounded retries.
+- Add duplicate, orphan, stale-node, and hub detection.
+- Add reviewable relationship suggestions.
 
-Adapters should use separate credentials and the smallest available permissions. Read and write paths should be separable where underlying systems permit.
+**Exit criterion:** A failed enrichment preserves intent and later recovers without duplicate knowledge.
 
-### 12.4 Prompt-injection resistance
+### Phase 4: Relevance and resurfacing
 
-Archived web pages are untrusted input. Source content must never be treated as system instructions. The enrichment service should:
+- Compute source volatility and temporal relevance.
+- Add stale and supersession review.
+- Record durable behavior feedback in OB1.
+- Add bounded forgotten-item and serendipity retrieval.
 
-- Delimit source content from control instructions
-- Restrict available tools during extraction
-- Validate structured outputs
-- Reject instructions embedded in archived sources
-- Require policy checks before cross-system writes
+**Exit criterion:** Useful older material resurfaces without repetitive noise or loss of currency warnings.
 
-### 12.5 Auditability
+### Phase 5: Skill hooks and controlled project writes
 
-Record:
+- Run pre-skill context hooks from declarative blocks.
+- Run post-skill persistence analysis.
+- Add approval paths for canon and destructive changes.
+- Enforce bounded operational audit retention.
 
-- Client identity
-- Tool invoked
-- Systems accessed
-- Records read or mutated
-- Policy decision
-- Before/after values for updates
-- Derived metadata evidence
-- Timestamp and correlation identifier
+**Exit criterion:** A skill receives relevant forgotten context and proposes correctly routed persistence without silently changing canon.
 
-## 13. Deployment Concept
+## 16. Established Decisions
 
-### 13.1 Initial single-user deployment
-
-Recommended services:
-
-```text
-cro-gateway        MCP and optional HTTP API
-cro-worker         Background jobs and enrichment
-cro-database       PostgreSQL
-karakeep           Existing source repository
-karakeep-search    Karakeep-managed search service
-```
-
-TheBrain remains a desktop application with a local API. A local bridge may be required if CRO runs inside Docker or on another trusted machine.
-
-OB1 remains independently deployed and is accessed through its existing interface.
-
-### 13.2 Technology direction
-
-The implementation language remains open. Selection should prioritize:
-
-- Strong MCP SDK support
-- Reliable background processing
-- Typed API clients
-- Structured-output validation
-- Good observability
-- Ease of local deployment
-
-.NET is a natural candidate given the userâ€™s background and interest, but it is not yet an established architecture decision.
-
-## 14. Operational Requirements
-
-### 14.1 Reliability
-
-- Underlying system outages must degrade individual capabilities rather than fail all retrieval.
-- Writes must use idempotency keys.
-- Background jobs must retry transient failures with bounded backoff.
-- Multi-system writes must report partial completion explicitly.
-- CRO must not claim atomicity across independent systems.
-
-### 14.2 Backup and recovery
-
-Back up each canonical system independently:
-
-- Karakeep database and archived assets
-- TheBrain data through its supported backup/synchronization mechanism
-- OB1 through its supported backup mechanism
-- CRO PostgreSQL database and configuration
-
-CRO mappings must be reconstructable where possible from native identifiers and embedded reference URLs.
-
-### 14.3 Observability
-
-Minimum operational signals:
-
-- Adapter health
-- Capture backlog
-- Enrichment failures
-- Relevance-review backlog
-- Query latency by source
-- Resurfacing acceptance/dismissal
-- Orphaned cross-system links
-- Authentication failures
-
-## 15. Phased Delivery
-
-### Phase 0 â€” Technical discovery
-
-- Collect prior Claude design notes.
-- Export or inspect the installed TheBrain local API specification.
-- Inventory OB1 search, fetch, capture, tagging, and metadata behavior.
-- Exercise Karakeep APIs against representative sources.
-- Establish authentication and network boundaries.
-- Confirm which metadata can safely live in Karakeep and what requires CRO storage.
-
-**Exit criterion:** Verified capability matrix and resolved integration blockers.
-
-### Phase 1 â€” Read-only federated retrieval
-
-- Implement adapters.
-- Expose `search_sources`, `find_related_thoughts`, `recall_context`, and `investigate`.
-- Preserve provenance and relevance warnings.
-- Add health reporting.
-
-**Exit criterion:** One MCP client can answer a research question using all three systems without cross-system writes.
-
-### Phase 2 â€” Capture enrichment
-
-- Process new Karakeep records.
-- Extract technologies, versions, concepts, and summaries.
-- Store derived CRO metadata.
-- Suggest TheBrain connections.
-
-**Exit criterion:** Newly saved articles become searchable with useful derived metadata and association suggestions.
-
-### Phase 3 â€” Temporal relevance
-
-- Implement lifecycle-source adapters.
-- Add relevance states, assessments, and history.
-- Detect likely supersession.
-- Warn or demote stale implementation material.
-
-**Exit criterion:** A .NET 3.x tutorial is distinguished from current .NET guidance without being deleted.
-
-### Phase 4 â€” Resurfacing
-
-- Add reading queues, forgotten gems, contextual resurfacing, and expiry review.
-- Record impressions, acceptance, dismissal, and suppression.
-- Tune scoring from observed behavior.
-
-**Exit criterion:** The system reliably presents useful forgotten material without repetitive noise.
-
-### Phase 5 â€” Controlled cross-system writes
-
-- Add approval queues.
-- Create confirmed TheBrain links and thoughts.
-- Capture explicitly approved durable conclusions into OB1.
-- Add reversible metadata updates where supported.
-
-**Exit criterion:** Approved writes preserve canonical ownership, provenance, and audit history.
-
-## 16. Open Design Questions
-
-### Product
-
-- What is the final application name?
-- Is a dedicated visual UI required, or are MCP clients plus an administrative dashboard sufficient?
-- Should the first release support one person only by design?
-
-### Integration
-
-- What exact operations and event mechanisms does the installed TheBrain local API expose?
-- Can Karakeep store all visible temporal metadata, or should it show only a concise status tag linked to CRO details?
-- What OB1 metadata and tagging operations are available without compromising its engram model?
-- How should local TheBrain access work when CRO runs in Docker?
-
-### Information policy
-
-- Which TheBrain links may be created automatically?
-- What threshold changes an association from a suggestion to an accepted relationship?
-- What qualifies a conclusion for OB1 capture?
-- Should user-authored â€œwhy savedâ€ text ever be rewritten?
-
-### Relevance
-
-- Which authoritative lifecycle sources should be supported first?
-- How should evergreen conceptual value be scored separately from implementation currency?
-- When should contradictory sources be surfaced together?
-- How much evidence is required before assigning `superseded`?
-
-### Operations
-
-- Which AI provider should perform enrichment?
-- Is local inference required, preferred, or optional?
-- What are acceptable latency and cost targets?
-- What backup and recovery objectives are required?
-
-## 17. Established Decisions vs Proposals
-
-### Established in the concept
-
-- OB1, TheBrain, and Karakeep remain separate canonical systems.
-- Articles are not stored in OB1.
-- Karakeep owns archived source material.
-- TheBrain provides associative structure.
-- OB1 provides durable personal context and conclusions.
-- CRO provides unified MCP access, attention, retrieval, aging, and resurfacing.
-- Material is aged and flagged rather than automatically deleted.
-- Stale implementation value is distinct from conceptual or historical value.
-- Provenance must remain visible.
-
-### Proposed and subject to validation
-
-- PostgreSQL as the CRO metadata database
-- A gateway/worker service split
-- Exact MCP tool names
-- Default reassessment intervals
-- Initial scoring formula
-- Approval requirements for individual write types
-- .NET as a possible implementation language
+- Karakeep is not part of CRO.
+- CRO is an orchestration layer, not a knowledge store.
+- Repositories own project work and canon.
+- TheBrain owns durable knowledge and source evidence.
+- OB1 owns the semantic thought stream.
+- High-confidence source capture may automatically reuse or create TheBrain Thoughts.
+- Material ambiguity requires user input.
+- Normal completion is the absence of `Incomplete`; no `Complete` tag is used.
+- Durable reading and resurfacing feedback belongs in OB1 when it represents user behavior or thought.
+- Skills declare context requirements in a standard block inside the skill file.
+- Project and artifact resolution uses repo + skill + supplied artifact/path.
+- Serendipity retrieval is capped at one or two secondary items.
+- Volatility is computed and persisted only when useful.
+- CRO may retain bounded operational audit history but never user knowledge.
+- CRO uses a disposable local hybrid index and hydrates canonical records before final use.
+- Local PostgreSQL/Supabase with `pgvector` is the preferred index direction; CRO and OB1 ownership remain separate.
+- TheBrain titles stay compact, while Notes hold synthesized text and require explicit indexing.
+- Sensitive material and derived sensitive indexes never leave the trusted home environment.
+- Any future public capture path terminates in an untrusted inbound queue and grants no cloud retrieval access.
+
+## 17. Open Questions
+
+- Repository-adapter capabilities and edge cases required for incremental indexing
+- Exact MVP schema, chunking policy, and ranking weights for the rebuildable hybrid index
+- PostgreSQL schema/database separation and operational retention settings for `cro_index` and `cro_runtime`
+- The final validation schema for the skill `cro_context` block
+- Retention periods and size bounds for operational audit and retry records
+- Which TheBrain graph changes beyond source creation are safe to automate
+- How source volatility should be explained and overridden by the user
+- How Month and Year Thoughts should coexist with machine-readable temporal metadata
+- Which implementation language and MCP SDK best fit the verified capabilities
 
 ## 18. Success Criteria
 
-The application succeeds when:
+CRO succeeds when:
 
-1. A newly saved source is archived, enriched, and retrievable without manual filing.
-2. An AI client can combine personal context, associative relationships, and external evidence while identifying each source.
-3. The system can surface a forgotten relevant article during unrelated future work.
-4. Obsolete technical guidance is clearly flagged and demoted without being destroyed.
-5. A user can understand why an item appeared and correct the system.
-6. Cross-system writes are deliberate, attributable, and auditable.
-7. Thousands of sources remain navigable without a deep manually maintained folder hierarchy.
-
-## 19. Reference Sources
-
-- [Karakeep product overview](https://karakeep.app/)
-- [Karakeep documentation](https://docs.karakeep.app/)
-- [Karakeep AI provider configuration](https://docs.karakeep.app/configuration/different-ai-providers/)
-- [TheBrain local API announcement](https://thebrain.com/blog/thebrain-api-local)
-- [TheBrain 15 overview](https://thebrain.com/products/thebrain/thebrain15)
-- [Okta: Build a Secure C# MCP App with Cross App Access](https://developer.okta.com/blog/2026/07/16/csharp-mcp-cross-app-access)
-
+1. The user can save a URL, file, or idea without deciding where it belongs.
+2. Original evidence remains durable and traceable.
+3. Project work automatically receives relevant repo, TheBrain, and OB1 context.
+4. Parked ideas surface without silently becoming canon.
+5. Failed enrichment preserves intent and is reviewable through `Incomplete`.
+6. TheBrain remains navigable without manual graph-taxonomy upkeep.
+7. CRO state remains operational, bounded, and reconstructable rather than becoming another knowledge base.

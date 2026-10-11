@@ -1,15 +1,17 @@
 flowchart TB
-    C["AI clients and browser"] --> G["MCP and HTTP gateway"]
-    G --> Q["Query planner"]
-    G --> W["Workflow service"]
-    Q --> A["Source adapters"]
+    C["MCP-compatible clients"] --> G["MCP gateway"]
+    G --> Q["Context and query planner"]
+    G --> W["Capture and workflow service"]
+    Q --> A["Capability-aware adapters"]
     W --> A
-    A --> O["OB1"]
-    A --> T["TheBrain local API"]
-    A --> K["Karakeep API"]
+    Q --> H["Hybrid retrieval and<br/>candidate ranking"]
+    H --> I["cro_index<br/>Local PostgreSQL + pgvector"]
+    I --> A
+    A --> R["Repository adapter"]
+    A --> T["TheBrain Local API"]
+    A --> O["OB1 API"]
     W --> J["Background jobs"]
-    J --> E["Enrichment and relevance engine"]
+    J --> E["Extraction, relevance,<br/>and graph-hygiene engine"]
     E --> A
-    G --> D["CRO metadata store"]
+    G --> D["cro_runtime<br/>Bounded operational state"]
     J --> D
-    E --> D

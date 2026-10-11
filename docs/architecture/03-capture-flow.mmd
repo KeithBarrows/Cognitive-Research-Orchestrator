@@ -1,16 +1,24 @@
 sequenceDiagram
-    actor U as Keith
-    participant K as Karakeep
+    actor U as User or client
     participant C as CRO
-    participant E as Enrichment
+    participant R as Project repo
     participant T as TheBrain
+    participant O as OB1
 
-    U->>K: Save URL
-    K-->>C: Capture event
-    C->>K: Read archived content and metadata
-    C->>E: Extract summary, concepts, versions
-    E-->>C: Derived metadata and confidence
-    C->>C: Store orchestration metadata
-    C->>T: Search related thoughts
-    T-->>C: Candidate associations
-    C-->>U: Ready with suggested connections
+    U->>C: capture(input, optional_hint)
+    C->>C: Inspect, extract, and classify
+    par Existing project context
+        C->>R: Resolve project and possible relevance
+        R-->>C: Explicit and semantic matches
+    and Existing durable knowledge
+        C->>T: Search for source and canonical Thoughts
+        T-->>C: Existing sources and graph context
+    and Existing thought stream
+        C->>O: Search ideas, tasks, and references
+        O-->>C: Related semantic thoughts
+    end
+    C->>T: Reuse or create source Thought and preserve evidence
+    opt Input is a loose idea or task
+        C->>O: Capture thought
+    end
+    C-->>U: Result, provenance, project impact, and any ambiguity

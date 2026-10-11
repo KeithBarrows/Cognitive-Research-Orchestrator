@@ -1,65 +1,67 @@
-# Full Brain And Mcp
+# Cognitive Research Orchestrator
 
-Cognitive Research Orchestrator (CRO) concept repository.
+Cognitive Research Orchestrator (CRO) is a local-first, MCP-facing orchestration layer for ChatGPT, Claude, Codex, and other MCP-compatible clients.
 
-This repository defines a local-first MCP orchestration model that coordinates:
+CRO helps a user capture information, recover relevant context, and maintain graph hygiene across three canonical owners:
 
-- OB1 for durable personal context and conclusions
-	*Public Open Brain/OB1 references describe a shared, persistent MCP memory layer with semantic/vector retrieval and explicit thought capture so multiple AI clients can read and write the same long-term context.*
-	[OB1 Open Brain Repository](https://github.com/NateBJones-Projects/OB1)
-- TheBrain for associative structure and relationship mapping
-	*TheBrain 15 provides local API and automation support for creating, linking, and querying thought data with real-time desktop feedback, plus high-speed local execution when the app is running.*
-	[TheBrain](https://thebrain.com/products/thebrain/thebrain15)
-    [TheBrain Local API](https://thebrain.com/blog/thebrain-api-local)
-- Karakeep for archived external sources and evidence
-	*Karakeep is an open-source, self-hostable "bookmark everything" platform with REST API/webhooks, full-text search, AI tagging/summarization, OCR, highlights, and archival features to reduce link rot.*
-	[Karakeep Documentation](https://docs.karakeep.app/)
+- **Project repositories** own project work, approved canon, decisions, skills, and runbooks.
+- **TheBrain** owns durable knowledge, sources, evidence, attachments, and associative structure.
+- **OB1 / Open Brain** owns the semantic thought stream: ideas, observations, tasks, references, and person notes that may matter later.
 
-The objective is to improve retrieval, relevance, provenance, and resurfacing across large personal research collections without collapsing the three systems into a single duplicated knowledge base.
+CRO owns behavior and orchestration, not knowledge. Its durable storage is limited to bounded operational state, bounded audit history, and rebuildable technical caches.
 
 ## Status
 
 - Architecture stage: concept and technical design
 - Working name: Cognitive Research Orchestrator (CRO)
 - Implementation language: open decision
+- Phase 0 capability discovery: complete
+- Runtime implementation: not started
 
-Primary architecture and design document:
+Primary design documents:
 
-- docs/README.md
+- [Technical concept and system architecture](docs/README.md)
+- [Data ownership ADR](docs/adr/0001-data-ownership-and-storage-boundaries.md)
+- [Integration capability matrix](docs/capability-matrix.md)
+- [Current design handoff](CRO-DESIGN-HANDOFF-2026-10-11.md)
+- [Current design addendum](CRO-DESIGN-ADDENDUM-2026-10-11.md)
 
 ## Architecture Diagram Set
 
-- docs/architecture/01-cognitive-model.mmd
-- docs/architecture/02-logical-architecture.mmd
-- docs/architecture/03-capture-flow.mmd
-- docs/architecture/04-federated-query.mmd
-- docs/architecture/05-relevance-lifecycle.mmd
+- [Cognitive model](docs/architecture/01-cognitive-model.mmd)
+- [Logical architecture](docs/architecture/02-logical-architecture.mmd)
+- [Capture flow](docs/architecture/03-capture-flow.mmd)
+- [Context recall](docs/architecture/04-federated-query.mmd)
+- [Relevance lifecycle](docs/architecture/05-relevance-lifecycle.mmd)
+- [Local-first deployment and future ingress boundary](docs/architecture/06-local-first-boundary.mmd)
 
 ## Core Design Direction
 
-- Keep canonical ownership separate by system
-- Link across systems rather than duplicate source content
-- Preserve provenance for every surfaced result
-- Age and demote stale implementation guidance instead of deleting it
-- Require explicit approval for high-impact cross-system writes
+- Use author-declared repository relationships before inferred relationships.
+- Preserve source evidence in TheBrain and loose thoughts in OB1.
+- Reuse existing Thoughts and create only high-value graph relationships.
+- Preserve capture intent even when enrichment fails.
+- Surface parked or speculative ideas without silently promoting them into project canon.
+- Keep provenance visible and distinguish source facts, user statements, and CRO inference.
+- Ask the user only when an action contains material ambiguity.
+- Use a disposable local hybrid-retrieval index to find canonical repository and TheBrain records, then fetch authoritative content from its owner.
+- Prefer local PostgreSQL/Supabase with `pgvector` for CRO-owned `cro_index` and `cro_runtime` data, separate from OB1-owned storage.
+- Keep sensitive source text and derived embeddings inside the trusted home environment.
 
 ## Planned Delivery Phases
 
-1. Technical discovery and capability matrix
-2. Read-only federated retrieval
-3. Capture enrichment pipeline
-4. Temporal relevance and supersession handling
-5. Resurfacing and reading-queue behavior
-6. Controlled cross-system writes with auditability
+1. Completed: verify TheBrain, OB1, and repository-adapter capabilities.
+2. Implement read-only, repo-grounded context recall.
+3. Implement general capture and source preservation.
+4. Add incomplete-capture recovery, temporal relevance, and graph hygiene.
+5. Add bounded resurfacing and serendipity retrieval.
+6. Add controlled writes, operational auditability, and skill hooks.
 
 ## Repository Layout
 
-- docs/: architecture, ADRs, and runbooks
-- src/: implementation code (to be created as decisions are finalized)
-- tests/: automated validation (to be created with implementation)
-- journal/: session continuity and operating notes
+- `docs/`: architecture, ADRs, capability discovery, and runbooks
+- `src/`: implementation code, once implementation is approved
+- `tests/`: automated validation, once implementation begins
+- `journal/`: session continuity and operating notes
 
-## Notes
-
-- This repository currently captures architecture, policy, and flow design.
-- Project scaffolding for a concrete .NET build should follow approved manifest-first instructions before any file generation.
+No runtime code should be inferred from the concept documents. Technical discovery and explicit implementation approval come first.

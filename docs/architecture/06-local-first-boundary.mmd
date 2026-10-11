@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph PUBLIC["PUBLIC / CLOUD — untrusted ingress only"]
+        M["Android or remote browser"] --> U["Future capture UI"]
+        U --> Q["Cloud Supabase<br/>Authenticated temporary inbound queue"]
+    end
+
+    subgraph HOME["TRUSTED HOME"]
+        P["Home-initiated pull"] --> Z["Local quarantine and validation"]
+        Z --> W["Restricted ingestion worker<br/>No shell, private reads, or unrestricted LAN"]
+        W --> C["CRO"]
+        C <--> T["TheBrain"]
+        C <--> O["OB1"]
+        C <--> R["Project repositories"]
+        C <--> D["Local PostgreSQL / Supabase<br/>cro_index + cro_runtime"]
+    end
+
+    Q -->|"outbound pull from home"| P
+    B["Trust boundary rule:<br/>no cloud retrieval or inbound home control"]
+    Q -.-> B
