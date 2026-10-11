@@ -1,4 +1,5 @@
 stateDiagram-v2
+    %% Capture-processing status such as Incomplete is modeled separately.
     [*] --> NeedsReview
     NeedsReview --> Current: Evidence supports current use
     Current --> Aging: Approaching lifecycle boundary
