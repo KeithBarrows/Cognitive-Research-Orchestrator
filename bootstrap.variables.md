@@ -11,7 +11,7 @@ web_llm_loading_note: "Not normally needed for this Software-domain repository, 
 # Bootstrap Variables
 
 ~~~
-BUCKET            = Infrastructure
+BUCKET            = Software
 IDENTITY          = Keith Barrows
 IDENTITY_SHORT    = Keith
 PROJECT           = Cognitive Research Orchestrator

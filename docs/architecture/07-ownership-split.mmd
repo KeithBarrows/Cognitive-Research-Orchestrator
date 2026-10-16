@@ -1,0 +1,13 @@
+flowchart TB
+    User(["You"]) --> CRO["CRO<br/>Orchestration layer<br/>(local-first, MCP-facing)"]
+
+    CRO --> TB["TheBrain<br/>Durable knowledge<br/>Evidence, Notes, attachments,<br/>meaningful graph relationships"]
+    CRO --> OB1["OB1<br/>Semantic thought history<br/>Ideas, observations, tasks,<br/>references, person notes"]
+    CRO --> REPO["Project Repositories<br/>Project work and canon"]
+
+    CRO -. "disposable index only<br/>(cro_index, cro_runtime)" .-> CRO
+
+    style CRO fill:#2b6cb0,color:#fff
+    style TB fill:#2f855a,color:#fff
+    style OB1 fill:#6b46c1,color:#fff
+    style REPO fill:#975a16,color:#fff
