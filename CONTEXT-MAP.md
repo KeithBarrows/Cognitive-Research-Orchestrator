@@ -12,7 +12,7 @@
 | Shared startup contract | `D:\Repos\.ai-config\startup.md` | Canonical cross-repository startup procedure | Verified 2026-10-11 | Every new session after bootstrap migration | Active |
 | Repository bootstrap variables | `bootstrap.variables.md` | Canonical project scope after approval | Proposed 2026-10-11 | Every new session after creation | Pending approval |
 | Git working state | Git status and diffs | Canonical for uncommitted repository state | Live | Before edits, tests, cleanup, or commits | Active |
-| Project journal | `journal/JOURNEY.md` | Curated history when entries exist | Currently contains no entries | A journal retrieval trigger fires | On demand |
+| Project journal | `.journal/journal.md` | Curated project history | Updated 2026-10-11 | A journal retrieval trigger fires | On demand |
 | Writing-program document | `docs/Writing Program and Author HQ Living Doc.md` | Supporting domain material, not CRO core architecture | Existing document | A writing integration specifically requires it | Excluded by default |
 
 ## Source precedence
@@ -52,7 +52,8 @@ Stop and ask if this precedence does not resolve a conflict.
 | Source or category | Why excluded now | Condition for reconsidering |
 | --- | --- | --- |
 | Future public capture implementation | Architecture only; outside MVP | User explicitly starts that project after local ingestion is secure |
-| Home Assistant, dashboards, backup automation, and local AI | Future platform direction | User explicitly brings one into scope |
+| Dashboards, backup automation, and local AI | Future platform direction | User explicitly brings one into scope |
+| Home Assistant (home-assistant.io) | Reconsidered and brought into scope 2026-10-16; parked for a dedicated future pass, not designed | Already reconsidered — remove this row once a design pass starts |
 | Repository write support | Initial MVP is read-only | Read-only retrieval succeeds and a separate write contract is approved |
 | Arbitrary binary parsing | Requires restricted format-specific extractors | A supported format and safety policy are approved |
 | Legacy `.ai` startup files | Superseded after shared-startup migration, but not yet safe to delete | New root bootstrap is verified and user approves archival |
@@ -68,3 +69,11 @@ Stop and ask if this precedence does not resolve a conflict.
   current Codex session.
 - The legacy `.ai` files have uncommitted changes and require a separate
   cleanup decision after migration verification.
+- Live TheBrain API check (2026-10-15) against the user's real Brain
+  confirmed Note-body search is unreliable, consistent with
+  `docs/capability-matrix.md` — no capability-matrix change needed, but
+  this is now confirmed against real data, not just test data.
+- Live OB1 re-investigation (2026-10-15) found behavioral details not
+  yet folded into `docs/capability-matrix.md` (type-classification
+  skew, no person/topic dedup, soft relevance scores, two-call ID+text
+  split) — that document needs a follow-up pass.

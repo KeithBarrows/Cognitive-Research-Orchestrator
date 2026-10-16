@@ -29,3 +29,5 @@ venv/
 # .NET
 bin/
 obj/
+
+.secrets/

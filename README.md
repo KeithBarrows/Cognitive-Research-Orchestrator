@@ -34,6 +34,7 @@ Primary design documents:
 - [Context recall](docs/architecture/04-federated-query.mmd)
 - [Relevance lifecycle](docs/architecture/05-relevance-lifecycle.mmd)
 - [Local-first deployment and future ingress boundary](docs/architecture/06-local-first-boundary.mmd)
+- [Top-level CRO/TheBrain/OB1 ownership split](docs/architecture/07-ownership-split.mmd)
 
 ## Core Design Direction
 
@@ -62,6 +63,6 @@ Primary design documents:
 - `docs/`: architecture, ADRs, capability discovery, and runbooks
 - `src/`: implementation code, once implementation is approved
 - `tests/`: automated validation, once implementation begins
-- `journal/`: session continuity and operating notes
+- `.journal/`: monthly commit logs and the curated project journal
 
 No runtime code should be inferred from the concept documents. Technical discovery and explicit implementation approval come first.
