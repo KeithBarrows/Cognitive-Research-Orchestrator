@@ -4,9 +4,9 @@
 
 **Status:** Approved concept architecture
 
-**Version:** 0.3
+**Version:** 0.4
 
-**Date:** 2026-10-11
+**Date:** 2026-10-20
 **Working name:** Cognitive Research Orchestrator (CRO)
 
 > The working name is descriptive. Product naming remains open.
@@ -15,13 +15,16 @@
 
 CRO is a local-first, MCP-facing orchestration layer that helps AI clients capture information, recall relevant context, and maintain graph hygiene across the user's existing systems.
 
-CRO coordinates three canonical owners:
+CRO coordinates four canonical owners:
 
 - **Project repositories** hold approved project work, canon, decisions, skills, and runbooks.
 - **TheBrain** holds durable knowledge, original sources, attachments, Notes, and meaningful relationships.
 - **OB1 / Open Brain** holds the semantic thought stream: ideas, observations, tasks, references, and person notes.
+- **Plane** holds tasks: self-hosted (Docker, free Community Edition), reached by CRO over its own REST API, the same pattern used for OB1.
 
-CRO is not a fourth knowledge system. It owns behavior and orchestration, not user knowledge. Its durable storage is limited to bounded operational state, bounded audit history, and rebuildable technical caches. A disposable local retrieval index may contain derived text chunks and embeddings, but canonical content remains in TheBrain and project repositories and is fetched live before final use.
+CRO is the sole MCP surface for every AI tool on this machine — OB1 and Plane are each single-user, local-only, and reached over REST, not a second MCP hop. After the one-time bootstrap, nothing writes to OB1, Plane, or TheBrain directly: every capture routes through CRO first, which classifies it (task → Plane, thought → TheBrain) and always creates or updates a matching OB1 thought, so OB1 holds a thought for everything across every backend, not just explicit captures.
+
+CRO is not a fifth knowledge system. It owns behavior and orchestration, not user knowledge. Its durable storage is limited to bounded operational state, bounded audit history, and rebuildable technical caches. A disposable local retrieval index may contain derived text chunks and embeddings, but canonical content remains in TheBrain and project repositories and is fetched live before final use.
 
 The guiding model is:
 
@@ -44,12 +47,13 @@ flowchart TD
     M <--> R["Project repositories<br/>Project truth and canon"]
     M <--> T["TheBrain<br/>Durable knowledge and evidence"]
     M <--> O["OB1<br/>Semantic thought stream"]
+    M <--> P["Plane<br/>Tasks"]
     M --> X["Context packets, capture results,<br/>reviews, and suggestions"]
 ```
 
-See [01-cognitive-model.mmd](architecture/01-cognitive-model.mmd).
+See [01-cognitive-model.mmd](architecture/01-cognitive-model.mmd) and [07-ownership-split.mmd](architecture/07-ownership-split.mmd).
 
-There are only two persistent personal knowledge or memory stores: TheBrain and OB1. Project repositories remain canonical for project artifacts. CRO may maintain infrastructure data, including a derived retrieval index, but that data must remain disposable and must not become another source of user truth.
+There are three persistent personal knowledge or memory stores: TheBrain, OB1, and Plane. Project repositories remain canonical for project artifacts. CRO may maintain infrastructure data, including a derived retrieval index, but that data must remain disposable and must not become another source of user truth.
 
 The decision is recorded in [ADR 0001](adr/0001-data-ownership-and-storage-boundaries.md).
 
@@ -60,6 +64,7 @@ The decision is recorded in [ADR 0001](adr/0001-data-ownership-and-storage-bound
 | Project repositories | Approved project artifacts, canon, decisions, manuscripts, cards, skills, runbooks, deliberately local research | General personal knowledge or unapproved brainstorms |
 | TheBrain | Durable sources, documents, URLs, attachments, summaries, provenance, people, organizations, concepts, events, and meaningful relationships | Project canon merely copied for convenience |
 | OB1 | Ideas, observations, tasks, references, person notes, thinking history, and user-behavior feedback worth remembering | Raw PDFs, full transcripts, or source archives |
+| Plane | Tasks and their work-item detail | General knowledge, ideas, or durable relationship truth |
 | CRO | Jobs, retries, schedules, health, idempotency, bounded audit records, hashes, derived text chunks and embeddings, Git commit IDs, and other rebuildable indexes | Summaries, conclusions, ideas, project decisions, or durable relationship truth |
 
 ### 3.1 Repository ownership
@@ -104,6 +109,14 @@ OB1 is a semantic inbox and thinking history. Its known thought classes are:
 Parked ideas belong here until the user chooses to promote them. Reading or resurfacing feedback also belongs in OB1 when it represents a durable user behavior, reaction, or thought.
 
 Live capability discovery verified capture, fetch-by-ID, semantic search, recent listing, and metadata filters across all five classes. Capture accepts content only and infers classification. Semantic results omit IDs, so stable hydration may require a separate compatibility search. The exposed connector has no explicit update, delete, relationship, bulk, transaction, or cursor-pagination operations.
+
+Household data (e.g. a family member's health information) is handled by an **attribution tag**, not an access boundary — tag which facts belong specifically to which person so two people's histories don't get merged or confused, rather than walling one person's data off from the other's.
+
+### 3.4 Plane ownership
+
+Plane is self-hosted (Docker, free Community Edition, AGPL-3.0) and owns tasks: the actual work item with its detail, separate from the OB1 thought that triggers it. CRO reaches Plane over its own REST API, the same pattern used for OB1 — not a second MCP hop.
+
+Whether Plane content also flows into TheBrain, or stays a separate lane, is still open. This also introduces a query shape outside pure knowledge recall: "what outstanding work should I tackle" reads from Plane directly, rather than searching TheBrain/OB1 for remembered material.
 
 ## 4. Architectural Principles
 
@@ -676,6 +689,11 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 - TheBrain titles stay compact, while Notes hold synthesized text and require explicit indexing.
 - Sensitive material and derived sensitive indexes never leave the trusted home environment.
 - Any future public capture path terminates in an untrusted inbound queue and grants no cloud retrieval access.
+- CRO is the sole MCP surface for every AI tool on this machine; OB1 and Plane are each single-user, local-only, and reached over REST, not a second MCP hop.
+- Plane joins CRO as a fourth canonical backend, for tasks, self-hosted via Docker.
+- After the one-time bootstrap, nothing writes to OB1, Plane, or TheBrain directly — every capture routes through CRO first, which always creates or updates a matching OB1 thought regardless of destination (OB1-universal-coverage).
+- Household data uses an attribution tag on facts belonging to a specific family member, not a scoped-access boundary.
+- CRO and its web/MCP surfaces may be exposed on the internal home network (e.g. reachable from a phone or laptop on the same WiFi); they must never be exposed through the router to the public internet.
 
 ## 17. Open Questions
 
@@ -687,7 +705,11 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 - Which TheBrain graph changes beyond source creation are safe to automate
 - How source volatility should be explained and overridden by the user
 - How Month and Year Thoughts should coexist with machine-readable temporal metadata
-- Which implementation language and MCP SDK best fit the verified capabilities
+- Whether Plane content also flows into TheBrain, or stays a separate lane
+- How standing resurfacing directives (user-set "watch for X" rules) should be stored, beyond the now-settled trigger mechanism (they ride inside the same context-pull a skill already needs)
+- What OIDC provider and account-allowlist mechanism should gate the future public ingest site
+- What migration plan moves OB1 from its current cloud hosting to internal-only
+- Whether the whole local Docker stack can be cloned from desktop to laptop for travel use, not just a data export/sync
 
 ## 18. Success Criteria
 
