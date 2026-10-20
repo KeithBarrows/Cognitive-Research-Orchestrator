@@ -9,6 +9,9 @@
 | Storage-boundary ADR | `docs/adr/0001-data-ownership-and-storage-boundaries.md` | Canonical for ownership and persistence boundaries | Accepted 2026-10-11 | Any storage, indexing, capture, or persistence decision | Active |
 | Architecture diagrams | `docs/architecture/*.mmd` | Supporting visual representation | Updated 2026-10-11 | Reviewing flows, boundaries, or component relationships | On demand |
 | Repository overview | `README.md` | Canonical concise project orientation | Updated 2026-10-11 | Session orientation or external project summary | Active |
+| Phase 1 plan draft | `docs/phase-1-plan-draft.md` | Proposed Phase 1 plan; canonical once approved per CURRENT.md's "Next checkpoint" | Drafted 2026-10-16 | Reviewing or approving the Phase 1 slice, language, schema, tests, or exclusions | Active, awaiting approval |
+| OB1 integration survey | `docs/ob1-integration-survey.md` | Reference catalog of OB1's extensions/recipes/schemas; not itself a design decision | Written 2026-10-16 | Checking whether an OB1 capability already exists before designing one | On demand |
+| Scouting notes | `docs/research/*.md` | Raw tool/API scouting notes, not a design decision; rescued 2026-10-20 from a stale duplicate folder | Dated individually, pre-2026-10-20 | Designing the future health-device ingestion item, or checking whether a scouted tool was already looked at | On demand |
 | Shared startup contract | `D:\Repos\.ai-config\startup.md` | Canonical cross-repository startup procedure | Verified 2026-10-11 | Every new session after bootstrap migration | Active |
 | Repository bootstrap variables | `bootstrap.variables.md` | Canonical project scope after approval | Proposed 2026-10-11 | Every new session after creation | Pending approval |
 | Git working state | Git status and diffs | Canonical for uncommitted repository state | Live | Before edits, tests, cleanup, or commits | Active |
@@ -61,8 +64,6 @@ Stop and ask if this precedence does not resolve a conflict.
 
 ## Known gaps
 
-- Phase 1 implementation language and MCP SDK are undecided.
-- Initial `cro_index` and `cro_runtime` schemas are not defined.
 - Chunking, ranking, and embedding choices are not finalized.
 - Skill `cro_context` validation rules are not finalized.
 - Plane is listed by the shared startup but is not available in the
@@ -73,7 +74,3 @@ Stop and ask if this precedence does not resolve a conflict.
   confirmed Note-body search is unreliable, consistent with
   `docs/capability-matrix.md` — no capability-matrix change needed, but
   this is now confirmed against real data, not just test data.
-- Live OB1 re-investigation (2026-10-15) found behavioral details not
-  yet folded into `docs/capability-matrix.md` (type-classification
-  skew, no person/topic dedup, soft relevance scores, two-call ID+text
-  split) — that document needs a follow-up pass.
