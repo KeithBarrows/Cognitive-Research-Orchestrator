@@ -2,390 +2,167 @@
 
 ## Outcome now
 
-Prepare and approve the bounded Phase 1 plan for read-only,
-repository-grounded context recall. Do not begin runtime implementation
-until that plan identifies the first vertical slice, acceptance tests,
-and implementation technology.
+Review and approve (or send back for revision) the drafted Phase 1
+plan (`docs/phase-1-plan-draft.md`). Do not begin runtime
+implementation until the user formally signs off.
 
 ## Current state
 
-- CRO is a local-first, MCP-facing orchestration layer. Project
-  repositories own project work and canon; TheBrain owns durable
-  knowledge, evidence, Notes, attachments, and meaningful graph
-  relationships; OB1 owns ideas, observations, tasks, references,
-  person notes, and other semantic thought history; CRO owns
-  orchestration plus bounded, rebuildable operational state.
-- TheBrain, OB1, and repository-adapter capability discovery is
-  complete. Architecture documentation reflects the 2026-10-11 handoff
-  and addendum, plus a new top-level ownership diagram
-  (`docs/architecture/07-ownership-split.mmd`, linked from README).
-  Runtime implementation has not started.
-- Repository startup uses the shared `D:\Repos\.ai-config\startup.md`
-  loader via `CLAUDE.md`; migration from the old local `.ai` loader is
-  complete. The working tree still contains unrelated pending changes
-  (`.gitignore`, journal files, `README.md`, `CONTEXT-MAP.md`,
-  `.mcp.json`) — not a clean implementation baseline.
-- **Working mode:** for CRO project work, the assistant's role is
-  Business Analyst — gather requirements and map relationships between
-  broad-scoped ideas. No schema or architecture work until the user
-  explicitly asks for it.
-- **Retrieval model (draft, not approved):** OB1 is a fast first-pass
-  SEARCH layer, used at both save and retrieve time — not a save-time
-  capture-then-promote pipeline. A hit in OB1 is a pointer into
-  TheBrain, where the full depth (Notes, files, images, associative
-  chain) lives. Retrieval must walk the TheBrain graph both down
-  (specific children) and up (broader parent subject). Live-verified
-  against the user's real Brain ("Growth") and real OB1 data (91
-  thoughts): TheBrain Note-body search is unreliable; OB1 type
+### Architecture (settled)
+
+- Ownership split: project repositories own project work and canon;
+  TheBrain owns durable knowledge, evidence, Notes, attachments, and
+  meaningful graph relationships; OB1 owns semantic thought history
+  (ideas, observations, tasks, references, person notes); Plane owns
+  tasks; CRO owns orchestration plus bounded, rebuildable operational
+  state only. Diagram: `docs/architecture/07-ownership-split.mmd`.
+- CRO is the sole MCP surface for every AI tool on this machine
+  (Claude Code, other terminal AI tools, a future local web chat).
+  OB1 and Plane are each single-user, local-only, and reached over
+  their own REST APIs — not a second MCP hop.
+- After the one-time bootstrap, nothing writes to OB1/Plane/TheBrain
+  directly. Everything routes through CRO first: a skill sends a
+  capture to CRO, CRO classifies it (task → Plane, thought →
+  TheBrain), creates or updates the connected Plane task and/or
+  TheBrain thought, and always creates or updates a matching OB1
+  thought (OB1-universal-coverage) — updating an existing OB1 thought
+  rather than duplicating it when new supporting data arrives.
+- Standing resurfacing directives (user-set "watch for X" rules) and
+  proactive skill-pull are one mechanism, not two: a directive is
+  checked inside the same context-pull a skill already needs when it
+  runs, not polled by a separate watcher. Storage/trigger design for
+  directives is not yet built.
+
+### Retrieval model (draft, not approved)
+
+- OB1 is a fast first-pass search layer, used at both save and
+  retrieve time. A hit in OB1 is a pointer into TheBrain, where the
+  full depth (Notes, files, images, associative chain) lives.
+- Retrieval walks the TheBrain graph both down (specific children) and
+  up (broader parent subject); serendipity capped at 1-2 secondary
+  results.
+- Verified against the user's real TheBrain ("Growth") and real OB1
+  data: TheBrain Note-body search is unreliable; OB1 type
   classification skews heavily to "observation" and shouldn't drive
   routing; OB1 doesn't deduplicate person/topic facets; OB1 relevance
   scores are soft, not a cutoff; getting a stable ID and ranked text
   from OB1 requires two separate calls.
-- **cro_index schema (draft, not implemented):** Supabase/pgvector
-  tables `nodes`, `chunks`, `edges`, `sync_state`, sized against a
-  645,000-item scale target (Jerry's Brain). Saved to session memory.
-- **Capture flow named, not designed:** a "please remember [link]"
-  command — an AI agent (likely OpenRouter) fetches and distills a
-  page, then CRO decides whether to save a new OB1 thought or append
-  to an existing TheBrain Thought, then updates `cro_index`. Email
-  named as a second ingestion source.
-- **Proactive retrieval, newly identified:** skills must be able to
-  pull CRO context automatically while running, not only when asked
-  (worked example: a chapter-outline skill surfacing EDS research
-  tagged to both the user's wife and the character Jennifer Rose).
-  This also requires standing resurfacing directives — user-set "watch
-  for X" rules CRO remembers and triggers unprompted — a new concept
-  with no design yet.
-- **EDS/Jennifer Rose trace (completed):** fiction-side canon is rich
-  (character card + dedicated medical worldbuilding card, 40 files).
-  Real-world side is untracked — `pers-health` holds only the user's
-  own data; his wife Kittery's EDS diagnosis exists only inside
-  fiction-research notes in `pers-writing/Engrams` (captured twice, no
-  dedup), alongside an informal, unenforced privacy boundary already
-  written down there.
-- **Infrastructure scope, named and deferred:** a public ingest site
-  (OIDC login, user-controlled account allowlist, anti-spoofing) for
-  capturing items while away from home; the full stack running 100% on
-  one machine via Docker-hosted Supabase (already running); OB1 moving
-  from its current cloud hosting to internal-only (unscheduled
-  migration); a laptop-sync method for travel, staying fully local;
-  future health-device ingestion (Oura, GuavaHealth, Google Health),
-  each undesigned.
-- **OB1's real scope is much larger than the 6 MCP tools tested, and a
-  prior plan for 3 of the above items already exists.** OB1
-  (`D:\Repos\KeithBarrows\OB1`) is Nate B. Jones's open-source "Open
-  Brain": one Postgres/pgvector database plus extensions (Household
-  Knowledge, Home Maintenance, Family Calendar, Meal Planning,
-  Professional CRM, Job Hunt), recipes (Gmail/Google Activity/chat-
-  export imports, dedup, digests, a proactive "Life Engine" assistant),
-  business-analyst-grade skills (competitive analysis, deal memos,
-  financial model review), and a Kubernetes self-hosted deployment
-  option. Its own `.planning/PROJECT.md` and `STATE.md` (dated
-  2026-06-22, confirmed still accurate 2026-10-16 — nothing has
-  changed) already scoped 3 of the infrastructure items above as
-  "Goals": Goal 1 (move OB1 to local Docker) was attempted and
-  abandoned — local kept breaking, so the user fell back to the
-  cloud-hosted OB1 currently in use, with very few of the available
-  extensions/recipes enabled; Goal 5 (self-host the 12-Week Execution
-  Board, exported from Lovable, into `QFCG/qfcg-planning`, running on
-  local Supabase) was never executed; Goal 2 (Gmail/Calendar
-  integration via `recipes/gmail-smart-pull`) was never executed. These
-  are the authoritative prior plans for those 3 items — reconcile
-  against them rather than redesigning from scratch. Confirmed
-  2026-10-16: nothing has changed on this plan since June.
-- **The OB1 fork (`D:\Repos\KeithBarrows\OB1`) was synced with its
-  upstream (`NateBJones-Projects/OB1`) on 2026-10-16** (116 files,
-  ~17,400 lines, not touched since June). Changes that matter for CRO:
-  (1) `update-thought-mcp` and `delete-thought-mcp` now exist as
-  optional integrations with dedicated safety skills — update/delete
-  are real now, just not installed in the user's live cloud instance;
-  (2) a formal "Ingestion Metadata Contract"
-  (`docs/ingestion-metadata-contract.md`) now defines exactly what
-  every importer should write per captured thought — `source_type`,
-  `importer_name`, `input_hash`, `content_fingerprint` (for dedup),
-  `sensitivity_tier`, and a `provenance` object — CRO's "please
-  remember [link]" capture flow should adopt this contract rather than
-  invent its own; correction: `enhanced-mcp`'s "deprecate and version
-  rather than delete" line is the OB1 maintainer's own independently
-  stated preference (quoted directly from their PR #127 closure), not
-  something borrowed from or by CRO's own `Incomplete`-tag rule — two
-  separate projects landing on the same idea coincidentally, not one
-  influencing the other; (3) `enhanced-mcp` and `rest-api` integrations exist,
-  a richer surface than the 6 tools `docs/capability-matrix.md`
-  tested; (4) a new browser capture extension pulls content directly
-  from open ChatGPT/Claude/Gemini tabs — a capture channel distinct
-  from the "please remember [link]" flow.
-- **`enhanced-mcp` (part of the same 2026-10-16 sync) is a second,
-  optional OB1 server — 13 tools instead of the 4-6 tested — and it is
-  targeted at the future local install, not the current cloud OB1
-  instance.** The user confirmed 2026-10-16 the cloud instance is
-  temporary and not worth upgrading; this capability is scoped for
-  when Goal 1 (local Docker OB1) actually happens. What it adds:
-  server-side `sensitivity_tier` (`standard`/`personal`/`restricted`)
-  with restricted content blocked from cloud capture outright — a real
-  enforcement mechanism for the Kittery/EDS privacy boundary, instead
-  of an informal unenforced note; automatic SHA-256 content-fingerprint
-  dedup on capture, fixing the "captured twice, no dedup" problem found
-  live in the user's actual data; `related_thoughts`, which finds
-  connections by shared topic or person inside OB1 itself — a lighter
-  version of the cross-domain graph-walk already designed into the
-  retrieval model. Delete was intentionally left out of this release
-  ("deprecate and version rather than delete" — matches CRO's own
-  `Incomplete`-tag philosophy). Requires a separate Edge Function
-  deployment plus the `enhanced-thoughts` schema (required) and
-  optional `smart-ingest`/`knowledge-graph` schemas for the remaining
-  tools; none of this is installed anywhere yet.
-- **Confirmed target architecture (2026-10-16): CRO is the one and
-  only MCP surface for every AI tool on this machine** — Claude Code,
-  other terminal AI tools, and a local web chat running a local model
-  all connect to CRO's own MCP server, not to OB1's or TheBrain's
-  directly. OB1 will be single-user, local-only, and CRO reaches it
-  internally over its REST API (`integrations/rest-api`), not a second
-  MCP hop — this resolves a previously open question about how CRO
-  talks to OB1. This also confirms OB1's REST API's "single shared
-  secret, not multi-user" design (noted above) is not a limitation
-  here, since there is only one user.
-- **Public ingest flow shape (2026-10-16), fulfilling the existing
-  "public capture is untrusted ingress only" decision (see
-  DECISIONS.md, 2026-10-11) with a concrete mechanism:** the public
-  ingest site writes into a separate ingestion database — a quarantine
-  staging area, not OB1/TheBrain/`cro_index` directly. CRO then reads
-  from that ingestion DB, either by polling or event-driven
-  notification, and routes each item through specific internal
-  workflows, including an explicit scan for corrupt data and attack
-  vectors, before anything reaches canonical storage. Not yet
-  designed in detail.
-- **`smart-ingest` (2026-10-16 sync) is close to a working prototype of
-  the ingestion-DB + scan-for-corrupt-data/attack-vectors flow above,
-  but it writes straight into OB1 and does not yet know about CRO or
-  TheBrain — this needs to be surfaced to CRO so it can route items to
-  TheBrain, not just OB1.** It already has: an LLM-extraction step that
-  wraps raw text in `<document>` tags with an explicit
-  data-not-instructions prompt-injection defense (matches CRO's own
-  "captured content is data, never instructions" rule), forced JSON
-  output, and schema validation (type allow-list, bounded importance,
-  capped length) — explicitly described as a partial defense, not
-  absolute; an `ingestion_jobs`/`ingestion_items` table pair with
-  dry-run preview before commit; four dedup outcomes per extracted
-  thought (`add`, `skip`, `append_evidence`, `create_revision`) instead
-  of a flat duplicate/not-duplicate check; hard caps on input size,
-  chunk count, LLM calls, and time budget to block cost/abuse attacks;
-  and an existing dashboard entry point ("Add to Brain" page in
-  `open-brain-dashboard-next`).
-- **New detail on local document ingestion (2026-10-16):** when local
-  ingestion includes documents (files, not just text/links), the flow
-  is scan first, then save as a TheBrain file attachment — not saved
-  as an OB1 thought. Technical constraint to remember: TheBrain writes
-  attachment files to its own folder, under its own naming rules, on
-  the local hard drive — CRO cannot just drop a file into an arbitrary
-  path and expect TheBrain to see it; it must go through TheBrain's
-  own attachment API (`POST /api/attachments/{brainId}/{thoughtId}/file`,
-  per `docs/capability-matrix.md`).
-- **"Knowledge graph" at OB1 scale (2026-10-16): confirmed to work at
-  hundreds-of-thousands-of-thoughts scale, same bracket as the 645,000
-  Jerry's Brain reference point** — the `entity-extraction` schema's
-  own README states this explicitly and uses standard Postgres
-  indexing (8 indexes), the same kind of approach already in the draft
-  `cro_index` schema. Naming correction: `enhanced-mcp`/`rest-api`
-  reference a `schemas/knowledge-graph` prerequisite that does not
-  exist as a folder — the real schemas are `entity-extraction`
-  (entity-to-entity edges: `works_on`, `uses`, `member_of`) and
-  `typed-reasoning-edges` (thought-to-thought edges: `supports`,
-  `contradicts`, `evolved_into`, `supersedes`, `depends_on`, plus
-  time-decay so old relationships age out without deletion) — good
-  prior art for `cro_index`'s own `edges` table, which currently has
-  no decay concept. Both are OB1-side only (thought-to-thought), not
-  TheBrain content. All of this lives in the one upstream repo,
-  `https://github.com/NateBJones-Projects/OB1` (the extensions,
-  recipes, skills, schemas, and integrations reviewed this session are
-  all part of that single source).
-- **`recipes/ob-graph` (2026-10-16): the manual counterpart to
-  `entity-extraction` — you build the graph by hand via 10 MCP tools**
-  (`create_node`, `create_edge`, `traverse_graph`, `find_path`, etc.),
-  rather than automatic extraction from thought content; the two are
-  independent, install either/both/neither. Scale is operation-
-  specific, not one flat number: general use is fine through
-  "thousands of nodes"; full path-traversal (`traverse_graph`, which
-  enumerates every possible path) needs an added confidence-weight
-  filter to prune low-value edges once past 100,000 edges — a real
-  constraint `entity-extraction`'s simpler lookup queries didn't have,
-  worth remembering against the 645,000-item Jerry's Brain scale
-  target. No external graph database — two Postgres tables plus a
-  recursive-CTE and an iterative-BFS SQL function, inside the free
-  Supabase tier. Inconsistency noted: this recipe's `delete_node` /
-  `delete_edge` tools do hard deletes with CASCADE, no soft-delete or
-  revision — the opposite of the independent "deprecate and version"
-  preference found in `enhanced-mcp` (see correction above: both are
-  OB1's own choices, not CRO's).
-- **`recipes/entity-wiki` (2026-10-16): synthesizes every thought
-  linked to one entity into one LLM-written wiki page** (Summary, Key
-  Facts, Timeline, Relationships, Open Questions) — atomic thoughts
-  stay the source of truth, the wiki is a regenerable cached view, not
-  a replacement. **Unresolved contradiction, not mine to settle:** its
-  own README says it's blocked — the `entity-extraction` schema/worker
-  it depends on are "not yet merged into OB1 `main`" — but that schema
-  and worker already exist in `main` as of today's sync. Likely just a
-  stale warning the PR author forgot to remove, but this is a repo
-  fact, not a live-database fact — verify directly before trusting
-  this recipe runs. **Pattern directly relevant to CRO's own retrieval
-  design:** storing a synthesized summary back as a searchable thought
-  causes search pollution — a summary restating many facts tends to
-  out-rank the original atomic facts it was built from, since it's
-  longer and more "on-topic." Their own mitigation (an
-  `exclude_from_default_search` metadata flag) is, by their own
-  admission, "a convention, not an enforcement" — the read side has to
-  actively honor it. CRO's capture/retrieval design should treat any
-  future distilled/summary content the same cautious way. Scale: fine
-  through "a few thousand entities"; past 10k the batch-candidate
-  lookup "dominates the run," scaling linearly, until a documented
-  faster RPC ships by default. Cost: ~$0.01-0.02 per entity page,
-  ~$0.25-0.50 for a batch of 25.
-- **Dashboard requirement, named and deferred:** a holistic dashboard
-  bundling CRO activity with actual writing/coding production,
-  migrating an existing Loveable-built dashboard (likely
-  `vision-board-builder`) rather than starting fresh, rehosted on the
-  local one-box stack. A separate, explicitly deferred thread: which
-  parts (if any) are publicly visible.
-- **Full OB1 integration sweep completed 2026-10-16, written up in
-  `docs/ob1-integration-survey.md`** (not repeated here in full). Top
-  findings: a complete self-hosted reference build
-  (`zebras/open-brain-self-hosted-guide.md`) closely matches the draft
-  `cro_index` schema; `recipes/local-brain-no-mcp` is close to a
-  ready-made blueprint for the already-decided "OB1 via REST, one
-  machine" architecture; `schemas/agent-memory` + its API is a
-  near-complete working model for CRO's two undesigned concepts
-  (proactive skill-pull, standing resurfacing directives);
-  `recipes/gmail-smart-pull` is a real pattern for the deferred
-  email-ingestion item. **Correction on household data:** no access
-  separation is needed between the user and his wife Kittery (married
-  ~36 years, share everything) — the actual need is just an
-  attribution tag on facts specifically hers, so their medical
-  histories don't get merged, not a scoped-access boundary like the
-  household extensions suggested.
-- **Sequencing decided (2026-10-16):** dashboard is parked — lowest
-  priority. Ingest gets real attention, not an afterthought. The
-  retrieval model + `cro_index` schema are the first vertical slice,
-  given how much independent validation they now have from the OB1
-  integration survey.
-- **New bootstrap step added to the order of operations:** before
-  anything else runs, a one-time raw read of the user's TheBrain(s) to
-  seed the new local OB1, plus a one-time read of the existing cloud
-  OB1's thoughts, transferred into the new local OB1. Single pass, not
-  an ongoing sync. Not yet designed.
-- **Standing-directive mechanism clarified (2026-10-16):** it is not a
-  separate always-on watcher. It rides inside the same context-pull
-  every skill already needs for the proactive-retrieval flow — flows
-  #3 and #4 are one mechanism, not two. A directive is checked
-  whenever a relevant skill runs, not polled independently.
-- **Home Automation (Home Assistant, home-assistant.io) is newly
-  in-scope (2026-10-16)**, reversing the prior exclusion (see
-  `CONTEXT-MAP.md`). Framed by the user as part of running the
-  homestead and an eventual Alexa replacement. Cursory check only:
-  Home Assistant has native MCP support as of its 2026.10 release,
-  plus REST/WebSocket APIs and community add-ons exposing its full API
-  surface as MCP tools — looks compatible with CRO's "CRO is the sole
-  MCP surface" decision. Parked for a dedicated future pass, not
-  designed.
-- **Local `ob1-local` Supabase instance inspected directly (2026-10-16)
-  — confirms almost nothing made it in.** Containers: database layer
-  is up (37h since last restart); the Edge Runtime (the piece that
-  actually serves the MCP server) crashed 2 months ago and has not
-  restarted — this is why "local kept breaking." Database contents:
-  only the bare getting-started schema (`thoughts` table, `pgvector`,
-  HNSW index, content-fingerprint dedup, RLS), matching the schema
-  already validated elsewhere; zero add-on schemas installed
-  (`enhanced-thoughts`, `entity-extraction`, `smart-ingest`,
-  `agent-memory` — none present); one row of data, and it is the
-  getting-started guide's own tutorial example, not real captured
-  data. **New concern:** this Postgres instance is shared with an
-  unrelated weather-station project's tables in the same `postgres`
-  database — not a clean, dedicated database to build the real
-  migration on top of.
+- Sensitivity tiers (`standard`/`personal`/`restricted`) gate what's
+  returned. For household data specifically: this is an attribution
+  tag on facts that are specifically the user's wife Kittery's (e.g.
+  her EDS diagnosis), not an access-control boundary — the two have
+  been married ~36 years and share everything, so there's no need to
+  wall off her data from his; the risk is their medical histories
+  getting merged/confused, not one seeing the other's data.
 
-- **Phase 1 plan drafted (2026-10-16), written up in
-  `docs/phase-1-plan-draft.md`** — all 5 items `CURRENT.md`'s "Next
-  checkpoint" requires now have content: first slice is TheBrain/OB1
-  retrieval (repo-grounded retrieval deferred to a second slice);
-  language is C#/.NET, Kestrel, minimal API endpoints (no controllers),
-  vertical slice organization, MediatR and Mediator both kept open for
-  the CQRS band (CQRS/ES used where it fits, not mandated),
-  FluentValidation, Serilog to the already-running local Seq container,
-  Npgsql; schema boundary is the draft `cro_index` schema; 8 acceptance
-  tests drafted, with the TheBrain-to-`cro_index`-and-OB1 bootstrap
-  data flow as the first one that must pass before anything else is
-  validated; an explicit exclusions list is drafted. **This is still a
-  draft, not yet formally approved as the Phase 1 plan** — the user has
-  not yet signed off per the "Next checkpoint" criteria.
-- **Plane confirmed self-hostable via Docker (official installer, free
-  Community Edition, AGPL-3.0).** **New requirement (2026-10-17): Plane
-  joins CRO as a third local backend, alongside TheBrain and OB1,
-  specifically for tasks.** Same architecture pattern as OB1 — reached
-  via its own API, not a second MCP hop. Genuinely undecided: whether
-  Plane content also flows into TheBrain, or stays a separate lane.
-  Worked example (not a command): a loose capture like "fix those 2
-  repos" becomes an OB1 thought (the trigger) plus a Plane task (the
-  actual work item with details) — and this surfaces a new query shape
-  the retrieval model hadn't covered: "what outstanding work should I
-  tackle," a task-prioritization question reading from Plane, not a
-  knowledge lookup. Not yet designed.
-- **Vision Board leaning internal-only (2026-10-17):** no real need
-  for external access found yet, except rare travel (e.g., a cruise)
-  where the user would want to work on it away from home. Sharpens
-  the earlier "which parts are public" question — now leaning toward
-  "none, except a travel-access path still to work out," likely via
-  the laptop-sync requirement below rather than a new public door.
-  Ramifications not yet explored.
-- **New research item, not started: dashboard/web UI visual design.**
-  Star Trek's LCARS-style station displays named as one reference
-  point among others — explicitly not the chosen direction, just a
-  starting example.
-- **Laptop-sync sharpened into a specific question (2026-10-17): can
-  the whole Docker stack itself be cloned from desktop to laptop**
-  for solely-laptop work, not just a data export/sync. Not yet
-  answered.
-- **Network exposure boundary clarified (2026-10-17):** web and MCP
-  artifacts may be exposed on the internal home network (e.g.,
-  reachable from a phone or laptop on the same WiFi) — this is fine
-  and intended. They must never be exposed through the router to the
-  public internet. Sharpens the existing "never expose to the public
-  internet" hard constraint without changing it — routine at-home
-  access needs no public door; only truly away-from-home access does
-  (via the public ingest site, or the laptop-clone path above).
-- **LCARS mockups reviewed (2026-10-18)** — see the artifact linked in
-  this session. **OB1-universal-coverage requirement, now with its
-  sync mechanism:** OB1 should hold a thought for everything across
-  every backend (TheBrain, Plane, Vision Board, etc.), not just
-  explicit captures. After the initial bootstrap, nothing writes to
-  OB1/Plane/TheBrain directly — everything routes through CRO first.
-  A skill sends a capture to CRO; CRO classifies it (task → Plane,
-  thought → TheBrain), creates the OB1 thought plus the connected
-  Plane task and/or TheBrain thought, and this is also where an
-  existing OB1 thought gets updated (not duplicated) when new
-  supporting data comes in for something already captured. **UI scale
-  doubt, honest and unresolved:** LCARS mockups look good but may not
-  stay usable at thousands of items across sources — flagged, not
-  rejected. **New UI reference: local-graph view** (one item + its
-  direct connections only, not the whole dataset) — modeled on
-  Obsidian's Graph View (global view = whole vault, overwhelming past
-  a few hundred notes; local view = one note + direct connections,
-  split-screen), and close to what TheBrain's own UI already renders
-  natively (confirmed live in the Jerry's Brain / "Growth" Brain
-  exploration earlier this session). Possible answer to the scale
-  doubt above. Not designed, not chosen.
-- **First hand-walked "semi-flow" exercise completed (2026-10-20):**
-  not the real CRO-routed capture pipeline (that doesn't exist yet) —
-  a manual walkthrough of what one piece would feel like. Steps done:
-  scraped a web article (direct fetch was blocked, browser automation
-  worked), wrote a notes/summary document (not a verbatim duplicate,
-  per copyright and sourcing-quality concerns — the source article
-  rests on a single unverified claimant), the user separately saved
-  real artifacts (2 video clips, a full page save, a header image)
-  into the same folder, the notes file was reorganized to point at
-  all of them, then the folder was read and one OB1 reference thought
-  was captured pointing at it. Confirms OB1 capture + file-folder
-  pointing works end to end by hand. **What's still missing, same gap
-  as before:** no TheBrain thought, no Plane task, no CRO-routed
-  classification — none of that exists to run yet.
+### `cro_index` schema (draft, not implemented)
+
+- Supabase/pgvector tables: `nodes`, `chunks`, `edges`, `sync_state`.
+- Sized against a 645,000-item scale target (Jerry's Brain), and
+  independently validated by two separate working OB1 self-hosted
+  implementations found in the OB1 integration survey.
+
+### Phase 1 plan (drafted 2026-10-16, awaiting formal approval)
+
+Full detail in `docs/phase-1-plan-draft.md`:
+
+1. **Slice:** TheBrain/OB1 retrieval, read-only. Repo-grounded
+   retrieval is the second slice. A one-time bootstrap (raw read of
+   TheBrain into `cro_index` and a new local OB1; cloud OB1's
+   thoughts transferred into that same local OB1, one direction only)
+   is a dependency, tested as acceptance test 0 before anything else.
+2. **Language:** C#/.NET, Kestrel, minimal API endpoints (no
+   controllers), vertical slice organization, MediatR and Mediator
+   both kept open for the CQRS band (CQRS/ES used only where it
+   fits), FluentValidation, Serilog to the already-running local Seq
+   container, Npgsql.
+3. **Schema:** the `cro_index` draft above.
+4. **Acceptance tests:** 8 drafted, including the bootstrap flow as
+   test 0.
+5. **Exclusions:** capture/ingest, the dashboard, standing directives,
+   proactive skill-pull, write support, Home Assistant, the public
+   ingest OIDC layer, OB1 migration-as-ongoing-capability — all listed
+   in full in the plan document.
+
+### OB1 status
+
+- Fork at `D:\Repos\KeithBarrows\OB1`, synced to upstream
+  (`NateBJones-Projects/OB1`) 2026-10-16. Full capability survey in
+  `docs/ob1-integration-survey.md`.
+- Currently in use: a cloud-hosted instance, confirmed temporary, with
+  very few of the available extensions/recipes enabled.
+- `enhanced-mcp` (13 tools vs. the 4-6 tested; server-side sensitivity
+  tiers; SHA-256 dedup; `related_thoughts`) is built but targeted at
+  the future local install, not the current cloud instance.
+- The local `ob1-local` Supabase instance exists but isn't a usable
+  base yet: its Edge Runtime (the piece serving the MCP server)
+  crashed 2 months ago and hasn't restarted; no add-on schemas are
+  installed; it shares its Postgres database with an unrelated
+  weather-station project's tables.
+
+### Plane
+
+- Confirmed self-hostable via Docker (official installer, free
+  Community Edition, AGPL-3.0).
+- Joins CRO as a third local backend, for tasks, on the same
+  REST-not-MCP pattern as OB1.
+- Open: whether Plane content also flows into TheBrain, or stays a
+  separate lane. Example query shape this adds: "what outstanding
+  work should I tackle" — a task-prioritization read from Plane, not
+  a knowledge lookup.
+
+### Capture flow (named, not designed)
+
+- "Please remember [link]": an AI agent fetches/distills a page, CRO
+  decides OB1 thought vs. TheBrain Thought append, then updates
+  `cro_index`. Email is a second ingestion source.
+- Public ingest site writes into a separate quarantine ingestion DB,
+  never straight into OB1/TheBrain/`cro_index`. CRO reads from that
+  DB (poll or event-driven) and scans for corrupt data/attack vectors
+  before anything reaches canonical storage. Not designed in detail.
+  OB1's own `smart-ingest` recipe is close to a working prototype of
+  this scan+dedup flow, but writes straight into OB1 today and isn't
+  CRO-aware yet.
+- Local document ingestion (files, not just text/links): scan first,
+  then save as a TheBrain file attachment (not an OB1 thought), via
+  TheBrain's own attachment API — CRO cannot drop a file into an
+  arbitrary path and expect TheBrain to see it.
+
+### First semi-flow exercise (completed 2026-10-20)
+
+A manual walkthrough only — not the real CRO-routed pipeline, which
+doesn't exist yet: scraped a web article, wrote a notes/summary
+document (not a verbatim duplicate, per copyright concerns), pointed
+it at user-saved local artifacts (video clips, a page save, an
+image), then captured one OB1 reference thought pointing at the
+folder. Confirms OB1 capture + folder-pointing works end to end by
+hand. Still missing: no TheBrain thought, no Plane task, no
+CRO-routed classification.
+
+### Deferred / parked
+
+- Public ingest site's OIDC login + account allowlist — undesigned.
+- OB1 cloud-to-local migration — unscheduled.
+- Laptop-sync, sharpened to: can the whole Docker stack be cloned
+  desktop → laptop (not just a data export/sync) — unanswered.
+- Future health-device ingestion (Oura, GuavaHealth, Google Health).
+- Home Assistant integration — in scope, parked for a dedicated pass.
+- Dashboard — lowest priority, parked. Plan is to migrate the
+  existing Lovable-built Vision Board rather than start fresh. LCARS
+  mockups were one visual exploration, not chosen; a local-graph view
+  (one item + direct connections, Obsidian-Graph-View-style) is a
+  candidate answer to an open doubt about whether any list/grid UI
+  stays usable at thousands of items — not designed, not chosen.
+- Network exposure: fine on the internal home network (phone/laptop
+  on the same WiFi); never exposed through the router to the public
+  internet.
+
+### Working mode
+
+Business Analyst mode for CRO requirements/relationship-mapping
+continues. Drafting the Phase 1 plan (language, schema, tests) was in
+scope because it directly answers the standing "Next checkpoint"
+criteria below — building it is not in scope until the user approves.
 
 ## Active decisions
 
@@ -427,34 +204,25 @@ and implementation technology.
 
 ## Open questions
 
-- Which implementation language and MCP SDK should Phase 1 use?
-- What is the first end-to-end read-only acceptance scenario?
-- What initial PostgreSQL schema should hold `cro_index` and
-  `cro_runtime`? (draft direction proposed 2026-10-15 — see Current
-  state)
-- What chunking and ranking policy is sufficient for the first slice?
-  (draft direction proposed 2026-10-15 — see Current state)
 - What is the final validation schema for skill `cro_context` blocks?
 - Which repository artifact types enter the first indexing allowlist?
-- How should standing resurfacing directives (user-set "watch for X"
-  rules) be stored and triggered? Newly identified 2026-10-15 — not yet
-  designed.
+- How should standing resurfacing directives be stored? (trigger
+  mechanism is settled — see Current state; storage/data model is not)
 - What OIDC provider and account-allowlist mechanism should gate the
   public ingest site?
 - What is the migration plan for moving OB1 from cloud to
   internal-only hosting?
-- What sync/replication method keeps a laptop copy of the full stack
-  local-only?
+- Can the whole local Docker stack be cloned from desktop to laptop
+  for travel use, not just a data export/sync?
+- Does Plane content also flow into TheBrain, or stay a separate lane?
+- What UI direction fits the dashboard at scale — is a local-graph
+  view (one item + direct connections) the answer to the open doubt
+  about list/grid UIs past a few hundred/thousand items?
 
 ## Next checkpoint
 
-The user approves a Phase 1 implementation plan containing:
-
-1. the first vertical slice;
-2. implementation language and dependencies;
-3. initial schema boundaries;
-4. acceptance tests;
-5. explicit exclusions.
+The user reviews `docs/phase-1-plan-draft.md` and either approves it
+as the Phase 1 plan or sends it back with requested changes.
 
 ## Approval boundaries
 
@@ -477,7 +245,6 @@ boundary.
 
 ## Last updated
 
-2026-10-20 by Claude Sonnet 5, after hand-walking the first capture
-"semi-flow" exercise end to end (scrape → notes → local artifacts →
-OB1 reference thought), confirming OB1 capture and folder-pointing
-work by hand while the real CRO-routed pipeline still doesn't exist.
+2026-10-20 by Claude Sonnet 5, reshaping this file from a dated diary
+into a topic-grouped description of present state (see DECISIONS.md
+for the settled decisions moved out of here).
