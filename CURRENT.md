@@ -316,6 +316,76 @@ and implementation technology.
   validated; an explicit exclusions list is drafted. **This is still a
   draft, not yet formally approved as the Phase 1 plan** — the user has
   not yet signed off per the "Next checkpoint" criteria.
+- **Plane confirmed self-hostable via Docker (official installer, free
+  Community Edition, AGPL-3.0).** **New requirement (2026-10-17): Plane
+  joins CRO as a third local backend, alongside TheBrain and OB1,
+  specifically for tasks.** Same architecture pattern as OB1 — reached
+  via its own API, not a second MCP hop. Genuinely undecided: whether
+  Plane content also flows into TheBrain, or stays a separate lane.
+  Worked example (not a command): a loose capture like "fix those 2
+  repos" becomes an OB1 thought (the trigger) plus a Plane task (the
+  actual work item with details) — and this surfaces a new query shape
+  the retrieval model hadn't covered: "what outstanding work should I
+  tackle," a task-prioritization question reading from Plane, not a
+  knowledge lookup. Not yet designed.
+- **Vision Board leaning internal-only (2026-10-17):** no real need
+  for external access found yet, except rare travel (e.g., a cruise)
+  where the user would want to work on it away from home. Sharpens
+  the earlier "which parts are public" question — now leaning toward
+  "none, except a travel-access path still to work out," likely via
+  the laptop-sync requirement below rather than a new public door.
+  Ramifications not yet explored.
+- **New research item, not started: dashboard/web UI visual design.**
+  Star Trek's LCARS-style station displays named as one reference
+  point among others — explicitly not the chosen direction, just a
+  starting example.
+- **Laptop-sync sharpened into a specific question (2026-10-17): can
+  the whole Docker stack itself be cloned from desktop to laptop**
+  for solely-laptop work, not just a data export/sync. Not yet
+  answered.
+- **Network exposure boundary clarified (2026-10-17):** web and MCP
+  artifacts may be exposed on the internal home network (e.g.,
+  reachable from a phone or laptop on the same WiFi) — this is fine
+  and intended. They must never be exposed through the router to the
+  public internet. Sharpens the existing "never expose to the public
+  internet" hard constraint without changing it — routine at-home
+  access needs no public door; only truly away-from-home access does
+  (via the public ingest site, or the laptop-clone path above).
+- **LCARS mockups reviewed (2026-10-18)** — see the artifact linked in
+  this session. **OB1-universal-coverage requirement, now with its
+  sync mechanism:** OB1 should hold a thought for everything across
+  every backend (TheBrain, Plane, Vision Board, etc.), not just
+  explicit captures. After the initial bootstrap, nothing writes to
+  OB1/Plane/TheBrain directly — everything routes through CRO first.
+  A skill sends a capture to CRO; CRO classifies it (task → Plane,
+  thought → TheBrain), creates the OB1 thought plus the connected
+  Plane task and/or TheBrain thought, and this is also where an
+  existing OB1 thought gets updated (not duplicated) when new
+  supporting data comes in for something already captured. **UI scale
+  doubt, honest and unresolved:** LCARS mockups look good but may not
+  stay usable at thousands of items across sources — flagged, not
+  rejected. **New UI reference: local-graph view** (one item + its
+  direct connections only, not the whole dataset) — modeled on
+  Obsidian's Graph View (global view = whole vault, overwhelming past
+  a few hundred notes; local view = one note + direct connections,
+  split-screen), and close to what TheBrain's own UI already renders
+  natively (confirmed live in the Jerry's Brain / "Growth" Brain
+  exploration earlier this session). Possible answer to the scale
+  doubt above. Not designed, not chosen.
+- **First hand-walked "semi-flow" exercise completed (2026-10-20):**
+  not the real CRO-routed capture pipeline (that doesn't exist yet) —
+  a manual walkthrough of what one piece would feel like. Steps done:
+  scraped a web article (direct fetch was blocked, browser automation
+  worked), wrote a notes/summary document (not a verbatim duplicate,
+  per copyright and sourcing-quality concerns — the source article
+  rests on a single unverified claimant), the user separately saved
+  real artifacts (2 video clips, a full page save, a header image)
+  into the same folder, the notes file was reorganized to point at
+  all of them, then the folder was read and one OB1 reference thought
+  was captured pointing at it. Confirms OB1 capture + file-folder
+  pointing works end to end by hand. **What's still missing, same gap
+  as before:** no TheBrain thought, no Plane task, no CRO-routed
+  classification — none of that exists to run yet.
 
 ## Active decisions
 
@@ -407,14 +477,7 @@ boundary.
 
 ## Last updated
 
-2026-10-16 by Claude Sonnet 5, after a full OB1 integration sweep
-(written up in `docs/ob1-integration-survey.md`), deciding the build
-sequence (retrieval model + `cro_index` schema first, dashboard
-parked, ingest prioritized, a new one-time TheBrain/cloud-OB1
-bootstrap step added), clarifying the standing-directive mechanism,
-bringing Home Automation (Home Assistant) into scope, directly
-inspecting the local `ob1-local` Supabase instance (schema only, no
-add-ons, no real data, API layer dead, shares a database with an
-unrelated project), and drafting a full Phase 1 plan
-(`docs/phase-1-plan-draft.md`) covering all 5 "Next checkpoint" items,
-not yet formally approved.
+2026-10-20 by Claude Sonnet 5, after hand-walking the first capture
+"semi-flow" exercise end to end (scrape → notes → local artifacts →
+OB1 reference thought), confirming OB1 capture and folder-pointing
+work by hand while the real CRO-routed pipeline still doesn't exist.
