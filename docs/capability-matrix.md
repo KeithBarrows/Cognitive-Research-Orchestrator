@@ -2,7 +2,7 @@
 
 **Status:** TheBrain, OB1, and repository adapter verified; Phase 0 capability discovery complete
 
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-20 (OB1 section: added 2026-10-15 live re-investigation findings against real user data, 91 thoughts)
 
 This matrix records verified integration behavior. A question mark means the capability has not yet been tested against the installed system. Desktop UI support does not imply API support.
 
@@ -273,6 +273,7 @@ This matrix records verified integration behavior. A question mark means the cap
 - **Verified behavior:** `limit` constrained result count; higher `threshold` removed lower-scoring results; a `0.99` threshold returned no result even for a query containing the test thought's unique token because its reported match was 61.2%.
 - **Limitations:** no IDs, URLs, raw embeddings, distance metric, embedding model/version, pagination cursor, or structured result object are exposed.
 - **Design impact:** semantic results are suitable for context packets but cannot directly drive fetch, update, or stable citations. CRO should preserve the displayed score as advisory and avoid aggressive thresholds.
+- **Reconfirmed 2026-10-15 against the user's real OB1 data (91 thoughts):** relevance scores are soft signals, not a reliable cutoff — a reasonable-sounding threshold can discard genuinely relevant results. CRO should rank and present candidates rather than gate them on a fixed score.
 
 ### ID-Bearing Compatibility Search
 
@@ -283,6 +284,7 @@ This matrix records verified integration behavior. A question mark means the cap
 - **Verified behavior:** a unique token query returned the new thought and an older semantically related CRO thought. A broader `publishing workflow` query returned no results even though semantic search returned three matches.
 - **Limitations:** no scores, full text, type, topics, people, timestamps, filter parameters, threshold, or result-limit control.
 - **Design impact:** this tool is necessary to obtain IDs but is not a substitute for semantic search. CRO may need a two-stage search-and-fetch workflow and must handle cases where semantic and compatibility results cannot be matched unambiguously.
+- **Reconfirmed 2026-10-15 against real data:** getting a stable ID and the ranked/scored text for the same thought requires two separate calls (`open_brain_search` for the ID, `open_brain_search_thoughts` for the ranked text) — there is no single call that returns both.
 
 ### Type, Topic, Person, and Date Filters
 
@@ -344,6 +346,7 @@ This matrix records verified integration behavior. A question mark means the cap
 - **Write behavior:** class is inferred from content. `open_brain_capture_thought` has no type parameter.
 - **Limitations:** classification cannot be forced or corrected through the connector.
 - **Design impact:** prompts should make intended thought shape explicit, but CRO must report the actual inferred class returned by capture.
+- **Reconfirmed 2026-10-15 against real data:** inferred classification skews heavily toward `observation` in practice. CRO should not use OB1's own type field to drive routing decisions — it is not a reliable classifier for CRO's purposes.
 
 ### Pagination and Result Limits
 
@@ -360,6 +363,7 @@ This matrix records verified integration behavior. A question mark means the cap
 - **Verified behavior:** an exact second capture reused the original ID, retained one record in stats/listing, recomputed topics, and updated `updated_at`.
 - **Not exposed:** duplicate-match reason, content hash, canonical ID in the capture response, or configurable merge policy.
 - **Design impact:** exact retry appears safe, but CRO still needs its own short-lived idempotency record around uncertain connector failures. Near-duplicate detection requires semantic search and user judgment.
+- **Reconfirmed 2026-10-15 against real data:** OB1 does not deduplicate across person/topic facets — the same real-world person or topic can end up represented by multiple distinct facet values rather than one canonical value. CRO's own capture/retrieval design must not assume OB1-side facet values are already deduplicated.
 
 ### Provenance and Relationships
 
