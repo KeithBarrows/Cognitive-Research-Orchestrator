@@ -1,0 +1,15 @@
+flowchart LR
+    TB["TheBrain<br/>(existing Growth Brain)"] -->|"one-time, raw read<br/>never written back"| CI["cro_index<br/>(new)"]
+    TB -->|"one-time, raw read<br/>never written back"| LOB1["Local OB1<br/>(new, Docker install)"]
+    COB1["Cloud OB1<br/>(existing thoughts,<br/>confirmed temporary)"] -->|"one-time transfer<br/>get-thoughts / save-thoughts"| LOB1
+    LOB1 -. "enable fitting fork extensions<br/>e.g. household/CRM attribution tagging" .-> LOB1
+
+    AT0["Acceptance test 0:<br/>content that exists only in TheBrain is<br/>findable through both local OB1 search<br/>and cro_index, linked back to its real<br/>TheBrain Thought ID"]
+    CI -.-> AT0
+    LOB1 -.-> AT0
+
+    style TB fill:#2f855a,color:#fff
+    style COB1 fill:#6b46c1,color:#fff
+    style LOB1 fill:#6b46c1,color:#fff
+    style CI fill:#2b6cb0,color:#fff
+    style AT0 fill:#742a2a,color:#fff

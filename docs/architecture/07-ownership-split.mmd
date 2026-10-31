@@ -1,13 +1,18 @@
 flowchart TB
     User(["You"]) --> CRO["CRO<br/>Orchestration layer<br/>(local-first, MCP-facing)"]
+    User --> SKILL["A skill<br/>(reads its own repo directly)"]
+    SKILL <--> CRO
 
     CRO --> TB["TheBrain<br/>Durable knowledge<br/>Evidence, Notes, attachments,<br/>meaningful graph relationships"]
-    CRO --> OB1["OB1<br/>Semantic thought history<br/>Ideas, observations, tasks,<br/>references, person notes"]
-    CRO --> REPO["Project Repositories<br/>Project work and canon"]
+    CRO --> OB1["OB1<br/>Semantic thought history<br/>Ideas, observations, tasks,<br/>references, person notes<br/>(local, Docker)"]
+    CRO --> PLANE["Plane<br/>Tasks and work-item detail<br/>(local, Docker)"]
+    SKILL --> REPO["Project Repositories<br/>Project work and canon<br/>(CRO never reads/writes this directly)"]
 
     CRO -. "disposable index only<br/>(cro_index, cro_runtime)" .-> CRO
 
     style CRO fill:#2b6cb0,color:#fff
     style TB fill:#2f855a,color:#fff
     style OB1 fill:#6b46c1,color:#fff
+    style PLANE fill:#b7791f,color:#fff
     style REPO fill:#975a16,color:#fff
+    style SKILL fill:#4a5568,color:#fff

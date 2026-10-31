@@ -86,8 +86,10 @@ This matrix records verified integration behavior. A question mark means the cap
   - `POST /api/notes/{brainId}/{thoughtId}/append`
 - **Required identifiers/parameters:** `brainId`, `thoughtId`, and body `{ "markdown": "..." }`.
 - **Verified behavior:** create/update, append, and readback in all three representations. Note metadata includes `modificationDateTime`.
-- **Limitations:** no explicit Note delete endpoint; Notes also appear as an attachment with `type=1` and `isNotes=true`. A unique string in a newly written Note was not returned by full search, so Note-content indexing is unsupported or not reliably immediate.
-- **Design impact:** CRO must fetch Notes explicitly for authoritative context and must not rely on `/api/search` to discover Note contents.
+- **Limitations:** no explicit Note delete endpoint; Notes also appear as an attachment with `type=1` and `isNotes=true`.
+- **Reconfirmed 2026-10-22 (supersedes the 2026-10-11 finding below):** Note-body search now works. Verified live against real data and a written-then-deleted test note. Indexing has a delay (~20s observed, not instant). Matching is literal/keyword, not semantic — a paraphrased query found nothing a literal one found. Notes also now carry real GitHub-style Markdown that round-trips correctly on read.
+- **Original 2026-10-11 finding (outdated):** a unique string in a newly written Note was not returned by full search at that time.
+- **Design impact:** CRO must still fetch Notes explicitly for authoritative context, since search returns candidates, not full content. `/api/search` can now be used to discover literal Note-text matches, but CRO's own `cro_index` remains responsible for meaning-based (semantic) matches and for combining TheBrain with OB1 results in one search.
 
 ### Attachments
 
@@ -187,8 +189,9 @@ This matrix records verified integration behavior. A question mark means the cap
   - `GET /api/search/public`
 - **Required parameters:** `queryText` and `maxResults`; optional `onlySearchThoughtNames`. Public search also accepts `excludeBrainIds`.
 - **Verified behavior:** Brain-scoped and all-accessible-Brains Thought-name search; public search with exclusion; attachment-filename search. Results can carry a Thought, link, attachment ID, result type, source/entity type, and cross-Brain provenance.
-- **Limitations:** no documented filters for Types, Tags, dates, or graph scope. The API does not claim semantic/vector search. A newly written Note body was not found. Some attachment search results contained placeholder Thought timestamps and zero-valued Brain IDs even though the source Thought ID was valid.
-- **Design impact:** treat search results as candidates, then hydrate by native Thought/attachment IDs. Combine name/content search with explicit graph traversal and Note reads.
+- **Limitations:** no documented filters for Types, Tags, dates, or graph scope. The API does not claim semantic/vector search — reconfirmed 2026-10-22, a paraphrased query returned nothing a literal query found. Some attachment search results contained placeholder Thought timestamps and zero-valued Brain IDs even though the source Thought ID was valid.
+- **Reconfirmed 2026-10-22:** Note-body text is now found by search (supersedes the earlier "a newly written Note body was not found" limitation). `onlySearchThoughtNames=true` correctly excludes Note hits when only thought-name search is wanted. New-content indexing has a short delay (~20s observed), not full-text-at-write-time immediacy.
+- **Design impact:** treat search results as candidates, then hydrate by native Thought/attachment IDs. Combine name/content search with explicit graph traversal and Note reads. Literal Note-text search is now native to TheBrain; `cro_index` is no longer needed for that job, only for semantic matching and cross-source (TheBrain + OB1) combination.
 
 ### Bulk Operations and Notifications
 
@@ -380,7 +383,16 @@ This matrix records verified integration behavior. A question mark means the cap
 - **Limitations:** no bulk create/fetch, transaction, rollback, webhook, change feed, or cursor-based export tool.
 - **Design impact:** CRO must bound concurrency, checkpoint multi-thought work, report partial completion, and avoid workflows that require atomic OB1 writes.
 
-## Repository adapter
+## Repository adapter (relabeled 2026-10-22 — skill-author reference, not a CRO capability)
+
+**This section no longer describes a CRO component.** Decided
+2026-10-22: CRO has no direct filesystem or Git access to any
+repository, ever. A repository's content reaches CRO only through a
+skill's explicit search (`recall_context`) or capture call — CRO never
+reads a repo on its own initiative. The verified Git/file behavior
+below remains accurate and useful as reference for a *skill author*
+building their own repo-reading logic; it is not something CRO itself
+runs.
 
 **Discovery status:** Exercised against the live CRO repository and isolated Git fixtures on Windows with Git `2.45.2.windows.1` and ripgrep `15.2.0` on 2026-10-11. Fixture repositories covered ignored files, staged and unstaged changes, deletion, untracked files, detached and unborn HEADs, nested repositories, a local submodule, and a directory junction. Temporary fixtures were removed after discovery.
 
@@ -484,8 +496,8 @@ This matrix records verified integration behavior. A question mark means the cap
 
 Phase 0 capability discovery is complete. Its verified implementation boundary is:
 
-1. Begin with read-only, repo-grounded context recall using conservative file policies and live hydration.
-2. Use the local derived index only for candidate retrieval; keep repository files authoritative.
+1. Begin with read-only TheBrain/OB1 retrieval. Repo-grounded retrieval is not a CRO-side feature at all (decided 2026-10-22) — see the Repository adapter section's relabel above.
+2. Use the local derived index only for candidate retrieval over TheBrain/OB1 content; CRO does not index repository files.
 3. Treat TheBrain and OB1 limitations exactly as recorded above rather than emulating unsupported mutation behavior.
-4. Keep repository writes, public ingress, Home Assistant, dashboards, backup automation, and local-AI integration outside the initial runtime scope.
+4. Keep repository access of any kind, public ingress, Home Assistant, dashboards, backup automation, and local-AI integration outside CRO's scope entirely.
 5. Preserve idempotency, bounded operational state, explicit partial completion, local-only sensitive data, and source-native identifiers throughout implementation.

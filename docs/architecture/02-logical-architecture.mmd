@@ -7,9 +7,9 @@ flowchart TB
     Q --> H["Hybrid retrieval and<br/>candidate ranking"]
     H --> I["cro_index<br/>Local PostgreSQL + pgvector"]
     I --> A
-    A --> R["Repository adapter"]
     A --> T["TheBrain Local API"]
-    A --> O["OB1 API"]
+    A --> O["OB1 API<br/>(local, Docker, REST)"]
+    A --> PL["Plane API<br/>(local, Docker, REST)"]
     W --> J["Background jobs"]
     J --> E["Extraction, relevance,<br/>and graph-hygiene engine"]
     E --> A

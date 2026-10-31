@@ -60,10 +60,10 @@ The exact schema remains a technical-design task, but the location and declarati
 ## Consequences
 
 - TheBrain becomes both the durable evidence store and the meaningful associative graph.
-- Repository access becomes a first-class adapter and retrieval source.
+- Repository access is explicitly **not** a CRO capability (decided 2026-10-22). CRO never reads a repository directly; any repo-sourced content reaches CRO only through a skill's explicit search or capture call.
 - OB1 is treated as a semantic inbox and thinking history rather than a raw document archive.
 - CRO data models must distinguish operational state from user knowledge.
-- TheBrain Note bodies require explicit reads and derived indexing because Local API search is not reliable for Note content.
+- TheBrain Note bodies still get explicit reads and derived indexing in CRO, now for semantic matching and cross-source retrieval rather than because Local API search can't find Note content — that gap closed 2026-10-22 (see `DECISIONS.md`).
 - Sensitive source text, chunks, and embeddings remain inside the trusted home environment.
 - A future public capture service may provide only an untrusted inbound queue; it receives no trusted retrieval path into CRO or local knowledge systems.
 - Existing Karakeep-specific documents, diagrams, flows, and tool names are superseded.
