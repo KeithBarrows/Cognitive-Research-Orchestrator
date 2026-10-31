@@ -43,12 +43,13 @@ Primary goals:
 
 ```mermaid
 flowchart TD
-    C["ChatGPT, Claude, Codex, and other clients"] --> M["CRO MCP<br/>Orchestration and attention"]
-    M <--> R["Project repositories<br/>Project truth and canon"]
+    C["ChatGPT, Claude, Codex, and other clients<br/>(a skill reads its own repo directly)"] --> M["CRO MCP<br/>Orchestration and attention"]
     M <--> T["TheBrain<br/>Durable knowledge and evidence"]
-    M <--> O["OB1<br/>Semantic thought stream"]
-    M <--> P["Plane<br/>Tasks"]
+    M <--> O["OB1<br/>Semantic thought stream<br/>(local, Docker)"]
+    M <--> P["Plane<br/>Tasks<br/>(local, Docker)"]
     M --> X["Context packets, capture results,<br/>reviews, and suggestions"]
+    REPO["Project repositories<br/>Project truth and canon<br/>(no direct CRO connection)"]
+    C -. "skill reads its own repo,<br/>then calls CRO to search/capture" .-> REPO
 ```
 
 See [01-cognitive-model.mmd](architecture/01-cognitive-model.mmd) and [07-ownership-split.mmd](architecture/07-ownership-split.mmd).
@@ -69,15 +70,12 @@ The decision is recorded in [ADR 0001](adr/0001-data-ownership-and-storage-bound
 
 ### 3.1 Repository ownership
 
-Repositories are first-class context sources. CRO should understand:
+**Decided 2026-10-22: CRO has no direct access to any repository — no filesystem reads, no Git state, ever.** A repository's content reaches CRO only through a skill acting on its behalf:
 
-- The current repo and project
-- The active skill or task
-- The supplied artifact or path
-- Explicit references in cards, outlines, manifests, frontmatter, or other project artifacts
-- Git state and artifact freshness where useful
+- **Pull:** a skill reads its own cards/files, pulls out a query term (a tag, a name, a topic), and calls CRO's search/`recall_context`. CRO answers only from its own stores — TheBrain, OB1, Plane, `cro_index` — and never reads the repository itself. The skill writes CRO's answer back into the repo content; CRO never writes to a repo either.
+- **Push:** repositories are never a push source. Capture only ever originates from the user directly (local push) or through the scheduled public-ingest queue (Section 13.1) — never from a skill acting automatically on repo content.
 
-CRO resolves the current project and artifact from repo context, the active skill, and the supplied artifact or path. It asks only when the remaining ambiguity is material.
+The Git-state and file-reading research in `docs/capability-matrix.md`'s Repository adapter section remains useful as reference for skill authors reading their own repo, but it is not a CRO-internal capability.
 
 ### 3.2 TheBrain ownership
 
@@ -94,7 +92,7 @@ TheBrain is both the durable evidence store and the meaningful associative graph
 
 Notes hold synthesized knowledge. Attachments preserve the lossless source.
 
-Thought titles are compact navigational identities, with an approximately 80-character soft limit unless an established Thought requires otherwise. Most useful textual material belongs in the Note. Because Local API discovery found that Note bodies are not reliably searchable, CRO must fetch and index Notes explicitly rather than rely on native TheBrain search.
+Thought titles are compact navigational identities, with an approximately 80-character soft limit unless an established Thought requires otherwise. Most useful textual material belongs in the Note. TheBrain's Local API now supports literal Note-body search (reconfirmed 2026-10-22), closing the earlier gap recorded in `capability-matrix.md`. CRO still fetches and indexes Notes itself for meaning-based (semantic) matching and for combining TheBrain results with OB1 in one search — jobs TheBrain's own search does not do.
 
 ### 3.3 OB1 ownership
 
@@ -175,9 +173,9 @@ flowchart TB
     Q --> H["Hybrid retrieval and<br/>candidate ranking"]
     H --> I["Derived local index<br/>PostgreSQL + pgvector"]
     I --> A
-    A --> R["Repository adapter"]
     A --> T["TheBrain Local API"]
-    A --> O["OB1 API"]
+    A --> O["OB1 API<br/>(local, Docker, REST)"]
+    A --> PL["Plane API<br/>(local, Docker, REST)"]
     W --> J["Background jobs"]
     J --> E["Extraction, relevance,<br/>and graph-hygiene engine"]
     E --> A
@@ -197,8 +195,7 @@ See [02-logical-architecture.mmd](architecture/02-logical-architecture.mmd).
 
 ### 5.2 Context and query planner
 
-- Resolves project, skill, and current artifact
-- Follows explicit repository references first
+- Accepts project, skill, and current-artifact context as supplied by the caller
 - Selects relevant adapters
 - Runs independent reads concurrently
 - Ranks and deduplicates without erasing native identity
@@ -207,10 +204,9 @@ See [02-logical-architecture.mmd](architecture/02-logical-architecture.mmd).
 
 ### 5.3 Capture and workflow service
 
-- Accepts heterogeneous inputs
+- Accepts heterogeneous inputs, from the user directly or the scheduled ingest queue — never from a skill
 - Preserves source material and user intent
-- Routes durable results to TheBrain or OB1
-- Proposes repo changes only when project integration is requested
+- Routes durable results to TheBrain, Plane, or OB1
 - Coordinates retries and partial completion
 
 ### 5.4 Capability-aware adapters
@@ -247,16 +243,16 @@ Retention must be explicit and bounded. Operational records must not evolve into
 
 ### 5.6 Derived local retrieval index
 
-TheBrain Note bodies are not reliably searchable through the Local API, and repository retrieval must cover both exact identifiers and conceptual matches. CRO therefore maintains a disposable local index over canonical sources.
+TheBrain's Local API now supports literal Note-body search (reconfirmed 2026-10-22), but it is keyword-only, not meaning-based, and repository retrieval must still cover both exact identifiers and conceptual matches. CRO therefore maintains a disposable local index over canonical sources, now scoped to semantic matching and cross-source (TheBrain + OB1) combination rather than being the only way to find Note text.
 
-The index may contain TheBrain titles and Notes, attachment metadata or safely extracted text, repository content, source hashes, chunks, embeddings, facets, relationships, and canonical identifiers. Retrieval combines:
+The index may contain TheBrain titles and Notes, attachment metadata or safely extracted text, source hashes, chunks, embeddings, facets, relationships, and canonical identifiers. It never contains repository content — CRO does not read repositories. Retrieval combines:
 
 - Exact and full-text matching
 - Semantic/vector matching
 - Metadata filtering
 - Relationship-aware expansion
 
-Large Notes and documents are indexed as content-aware chunks that retain their parent canonical identifier. Search returns candidate IDs; CRO then fetches live authoritative content from TheBrain or the repository before producing a final context packet.
+Large Notes and documents are indexed as content-aware chunks that retain their parent canonical identifier. Search returns candidate IDs; CRO then fetches live authoritative content from TheBrain before producing a final context packet.
 
 The preferred infrastructure is local PostgreSQL/Supabase with `pgvector`. CRO-owned `cro_index` and `cro_runtime` schemas or databases must remain separate from OB1-owned storage, even if they share a PostgreSQL server. Deleting and rebuilding the CRO index must never destroy user knowledge.
 
@@ -292,7 +288,7 @@ There is no `Complete` tag. Absence of `Incomplete` represents normal completion
 
 ### 6.3 Notes and attachments
 
-Notes may contain compact summaries, extracted concepts, provenance, source metadata, historical context, and key claims. Full large documents should remain attachments unless a verified API limitation requires a reviewed fallback. Note bodies require explicit reads and derived indexing because native search did not reliably find newly written Note content.
+Notes may contain compact summaries, extracted concepts, provenance, source metadata, historical context, and key claims. Full large documents should remain attachments unless a verified API limitation requires a reviewed fallback. TheBrain's native search now finds Note content literally (reconfirmed 2026-10-22, with a short ~20s indexing delay); CRO still reads and indexes Notes itself for semantic matching and cross-source retrieval.
 
 Attachments preserve PDFs, DOCX files, Markdown, transcripts, VTT files, HTML snapshots, images, screenshots, and other original evidence.
 
@@ -343,29 +339,30 @@ Supported input classes should include:
 
 ```mermaid
 sequenceDiagram
-    actor U as User or client
+    actor U as User (direct push, or the<br/>scheduled public-ingest queue)
     participant C as CRO
-    participant R as Project repo
     participant T as TheBrain
-    participant O as OB1
+    participant PL as Plane (local, Docker)
+    participant O as OB1 (local, Docker)
 
     U->>C: capture(input, optional_hint)
     C->>C: Inspect, extract, and classify
-    par Existing project context
-        C->>R: Resolve project and possible relevance
-        R-->>C: Explicit and semantic matches
-    and Existing durable knowledge
+    par Existing durable knowledge
         C->>T: Search for source and canonical Thoughts
         T-->>C: Existing sources and graph context
     and Existing thought stream
         C->>O: Search ideas, tasks, and references
         O-->>C: Related semantic thoughts
     end
-    C->>T: Reuse or create source Thought and preserve evidence
-    opt Input is a loose idea or task
-        C->>O: Capture thought
+    alt Classified as a task
+        C->>PL: Create or update the connected Plane task
+    else Classified as a durable source or thought
+        C->>T: Reuse or create source Thought and preserve evidence
     end
-    C-->>U: Result, provenance, project impact, and any ambiguity
+    note over C,O: OB1-universal-coverage (2026-10-18):<br/>every capture creates or updates a matching<br/>OB1 thought, no matter where it also lands
+    C->>O: Create or update matching OB1 thought
+    C-->>U: Result, provenance, and any ambiguity
+    note over U,C: Capture only ever comes from the user,<br/>direct or via the ingest queue — never from<br/>a skill acting on repo content automatically
 ```
 
 See [03-capture-flow.mmd](architecture/03-capture-flow.mmd).
@@ -404,39 +401,35 @@ When material matters, TheBrain should retain the original URL, access date, sou
 sequenceDiagram
     actor A as AI client or skill
     participant M as CRO MCP
-    participant R as Project repo
     participant T as TheBrain
     participant O as OB1
 
-    A->>M: recall_context(project, artifact, skill, subjects)
-    M->>R: Resolve artifact and explicit references
-    R-->>M: Current content and declared related artifacts
-    M->>M: Query local hybrid index for repository and TheBrain candidates
-    M->>R: Fetch authoritative project candidates
+    note over A: The skill already read its own repo/card<br/>content directly; it supplies query terms<br/>(e.g. a tag like "EDS") — CRO never reads the repo
+    A->>M: recall_context(subjects, skill_or_task, ...)
+    M->>M: Query local hybrid index for TheBrain candidates
     M->>T: Fetch authoritative Thoughts, Notes, and graph context
     M->>O: Search parked ideas and thought history
-    R-->>M: Live project content
     T-->>M: Live graph and source content
     O-->>M: Ranked thoughts
     M->>M: Rank, deduplicate, explain, and add 0-2 secondary items
     M-->>A: Compact provenance-preserving context packet
+    note over A: The skill writes CRO's answer back into<br/>the repo itself — CRO never writes to a repo
 ```
 
 See [04-federated-query.mmd](architecture/04-federated-query.mmd).
 
 Retrieval order is:
 
-1. Current artifact
-2. Explicit repository references
-3. Hybrid-index candidates from exact, semantic, metadata, and relationship signals
-4. Live repository and TheBrain hydration by canonical ID
-5. Direct OB1 semantic and metadata retrieval
-6. Zero to two bounded serendipity items
+1. Query terms supplied by the calling skill (already drawn from its own repo read)
+2. Hybrid-index candidates from exact, semantic, metadata, and relationship signals
+3. Live TheBrain hydration by canonical ID
+4. Direct OB1 semantic and metadata retrieval
+5. Zero to two bounded serendipity items
 
 This supports both directions:
 
-- **Impact forward:** what existing project material could a new capture affect?
-- **Recall backward:** what previously captured material could matter to the current artifact?
+- **Impact forward:** before a skill writes something, what does CRO already know that's relevant?
+- **Recall backward:** what previously captured material could matter to what a skill just read?
 
 ## 9. Skill Integration
 
@@ -451,7 +444,6 @@ cro_context:
     - worldbuilding_cards
     - plot_artifacts
   search:
-    - repository
     - thebrain
     - ob1
   serendipity_limit: 2
@@ -464,19 +456,19 @@ cro_context:
     - tasks
 ```
 
-The block is declarative. It describes context needs and possible outputs; it does not authorize writes by itself.
+The block is declarative. It describes context needs and possible outputs; it does not authorize writes by itself. `explicit_references` and project/artifact resolution are the skill's own job — CRO never reads them from the repo.
 
 ### 9.1 Pre-skill hook
 
-1. Resolve repo, project, skill, and artifact.
-2. Read author-declared references.
-3. Build working semantic context.
-4. Search the repository, TheBrain, and OB1 in the defined order.
-5. Return a compact context packet.
+1. The skill resolves its own repo, project, skill, and artifact — CRO plays no part in this step.
+2. The skill reads its own author-declared references (cards, outlines) directly.
+3. The skill builds its own working semantic context from what it just read.
+4. The skill calls CRO's search (TheBrain and OB1, in the defined order) with terms drawn from that context.
+5. CRO returns a compact context packet, built only from its own stores.
 
 ### 9.2 Post-skill hook
 
-Detect decisions, canon candidates, unresolved questions, parked ideas, research needs, contradictions, and tasks. Propose persistence according to canonical ownership. Do not silently promote brainstorms into canon.
+The skill detects decisions, canon candidates, unresolved questions, parked ideas, research needs, contradictions, and tasks, and surfaces them to the user. The user decides whether to capture anything into CRO — the skill never pushes automatically, and does not silently promote brainstorms into canon.
 
 ## 10. Proposed MCP Surface
 
@@ -616,21 +608,20 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 
 ### Phase 0: Technical discovery and contract design
 
-- Completed TheBrain, OB1, and repository-adapter discovery and reconciled the [capability matrix](capability-matrix.md).
+- Completed TheBrain and OB1 discovery and reconciled the [capability matrix](capability-matrix.md). Repository Git/file discovery was also completed but is relabeled as skill-author reference (decided 2026-10-22) — CRO itself never reads a repository.
 - Define the skill `cro_context` schema and validation rules.
-- Define repository reference conventions and artifact resolution precedence.
 - Confirm the boundary between TheBrain user data and CRO operational state.
 
 **Discovery result:** Required MVP source capabilities are verified or have explicit fallbacks. Final schema details are implementation-contract work, not further external capability discovery.
 
 ### Phase 1: Read-only context recall
 
-- Implement repository, TheBrain, and OB1 adapters.
-- Resolve project and current artifact.
-- Follow explicit references and assemble context packets.
+- Implement TheBrain and OB1 adapters (no repository adapter — CRO never reads a repo).
+- Accept project and current-artifact context as supplied by the calling skill.
+- Assemble context packets from TheBrain and OB1 only.
 - Preserve provenance and cap serendipity at two items.
 
-**Exit criterion:** One client can obtain grounded context from all three canonical owners without writes.
+**Exit criterion:** One client can obtain grounded context from TheBrain and OB1 without writes.
 
 ### Phase 2: General capture
 
@@ -662,11 +653,11 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 ### Phase 5: Skill hooks and controlled project writes
 
 - Run pre-skill context hooks from declarative blocks.
-- Run post-skill persistence analysis.
+- Support post-skill persistence analysis as a skill-side behavior, surfaced to the user — CRO never auto-receives a skill's write.
 - Add approval paths for canon and destructive changes.
 - Enforce bounded operational audit retention.
 
-**Exit criterion:** A skill receives relevant forgotten context and proposes correctly routed persistence without silently changing canon.
+**Exit criterion:** A skill receives relevant forgotten context and surfaces correctly routed persistence options to the user, who decides whether to capture anything, without silently changing canon.
 
 ## 16. Established Decisions
 
@@ -680,7 +671,9 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 - Normal completion is the absence of `Incomplete`; no `Complete` tag is used.
 - Durable reading and resurfacing feedback belongs in OB1 when it represents user behavior or thought.
 - Skills declare context requirements in a standard block inside the skill file.
-- Project and artifact resolution uses repo + skill + supplied artifact/path.
+- CRO has no direct filesystem or Git access to any repository, ever (2026-10-22). Project and artifact resolution is supplied by the calling skill, which reads its own repo directly.
+- Skills only ever pull from CRO (search/`recall_context`); they never push capture data to CRO automatically (2026-10-22).
+- Capture only originates from the user directly, or from the scheduled public-ingest queue — never from a skill (2026-10-22).
 - Serendipity retrieval is capped at one or two secondary items.
 - Volatility is computed and persisted only when useful.
 - CRO may retain bounded operational audit history but never user knowledge.
@@ -697,7 +690,6 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 
 ## 17. Open Questions
 
-- Repository-adapter capabilities and edge cases required for incremental indexing
 - Exact MVP schema, chunking policy, and ranking weights for the rebuildable hybrid index
 - PostgreSQL schema/database separation and operational retention settings for `cro_index` and `cro_runtime`
 - The final validation schema for the skill `cro_context` block
@@ -717,7 +709,7 @@ CRO succeeds when:
 
 1. The user can save a URL, file, or idea without deciding where it belongs.
 2. Original evidence remains durable and traceable.
-3. Project work automatically receives relevant repo, TheBrain, and OB1 context.
+3. Project work receives relevant TheBrain and OB1 context whenever a skill explicitly asks for it.
 4. Parked ideas surface without silently becoming canon.
 5. Failed enrichment preserves intent and is reviewable through `Incomplete`.
 6. TheBrain remains navigable without manual graph-taxonomy upkeep.

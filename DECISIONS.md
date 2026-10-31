@@ -270,3 +270,124 @@ that changes what "away from home" means.
 proves risky.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-10-17 session.
+
+---
+
+## 2026-10-20 — Phase 1 plan approved, with OB1-local bootstrap and doc refresh added
+
+**Status:** Active
+
+**Decision:** The Phase 1 plan (`docs/phase-1-plan-draft.md`) is
+approved. Three items added at approval: install OB1 local via
+Docker (fresh install, not a repair of the crashed `ob1-local`
+instance); transfer cloud OB1's thoughts to the new local OB1 using
+get-thoughts/save-thoughts calls; update the architecture documents
+and diagrams once that bootstrap work lands.
+
+**Replaces:** The plan's prior draft status and its vaguer
+"cloud OB1's thoughts are read once and transferred" bootstrap
+wording.
+
+**Reason and evidence:** User approval, with these three additions
+given directly at approval time.
+
+**Affected unfinished work:** Acceptance test 0 (bootstrap flow)
+now also requires a running local OB1 Docker container and a
+matching thought count after transfer.
+
+**Revisit when:** The bootstrap work is implemented, or the local
+instance's enhanced-mcp tool names turn out to differ materially
+from get-thoughts/save-thoughts.
+
+**Rollback path:** Revert to the prior draft wording; no canonical
+data is touched by this decision alone.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-10-20 session.
+
+---
+
+## 2026-10-22 — TheBrain adds Note search; cro_index's job narrows
+
+**Status:** Active
+
+**Decision:** TheBrain's Local API now supports Note-body search
+(verified live, twice against real data, once with a written-and-
+deleted test note). This closes the gap that was `cro_index`'s main
+reason for existing. `cro_index` is kept, but its job narrows: it no
+longer needs to be the only way to find Note text. It stays
+responsible for meaning-based (semantic) search and for combining
+TheBrain + OB1 results in one search — jobs TheBrain's new search
+still can't do (it is literal/keyword only, not semantic).
+
+**Replaces:** The 2026-10-11 "Use a disposable local hybrid retrieval
+index" decision's stated reason (Note-body search was unreliable).
+That decision's conclusion (build `cro_index`) still stands; only its
+justification changes.
+
+**Reason and evidence:** Live re-test 2026-10-22 against the real
+"Growth" Brain and an isolated test Brain. Found: Note search works;
+~20s indexing delay; literal/keyword matching only, not semantic;
+Markdown notes confirmed real and round-trip correctly.
+
+**Affected unfinished work:** `docs/capability-matrix.md`'s Notes and
+Search sections, and Phase 1 acceptance test 2's stated rationale
+("closes TheBrain's Note-search gap") need updated wording — the test
+itself still has value for the semantic/cross-source job.
+
+**Revisit when:** TheBrain adds its own semantic/fuzzy search, which
+would narrow `cro_index`'s remaining job further.
+
+**Rollback path:** None needed — this only corrects a reason, not a
+decision or any canonical data.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-10-22 session.
+
+---
+
+## 2026-10-22 — CRO never reads a repository directly; the "repository adapter" is cancelled
+
+**Status:** Active
+
+**Decision:** CRO has no direct filesystem or Git access to any
+repository, ever. There is no CRO-side "repository adapter." A
+repository's content reaches CRO only two ways, both skill-initiated
+and read-only from CRO's side:
+
+- **Pull:** a skill reads its own cards/files, pulls out a query term,
+  and calls CRO's search/`recall_context`. CRO answers only from
+  TheBrain/OB1/Plane/`cro_index`, never from the repo. The skill writes
+  CRO's answer back into its own repo content.
+- Capture (push) never comes from a skill. It only ever comes from the
+  user directly, or from the scheduled public-ingest queue.
+
+**Replaces:** Every prior description of CRO reading repositories
+directly — the "Repository adapter" as a live `IContextSource`, the
+Phase 1/Phase 2 "repository adapter" delivery-plan line items, and the
+Phase 1 plan's framing of repo-grounded retrieval as "deferred to a
+second slice." It is not deferred. It never happens inside CRO.
+
+**Reason and evidence:** User correction, worked through with a
+concrete example (a skill reading the Jennifer Rose card's "EDS" tag,
+querying CRO, and writing the answer back into the card by hand) and a
+second example (the `pers-research` repo being bulk-migrated into
+TheBrain/OB1/`cro_index` once, then archived — a one-time migration
+event, not an ongoing adapter relationship).
+
+**Affected unfinished work:** `docs/README.md` (Sections 3.1, 5, 5.4,
+7, 8, 9, 15, 16, 17, 18), ADR 0001, `docs/phase-1-plan-draft.md`,
+`docs/developer-architecture-overview.md`, and 6 of 8 architecture
+diagrams (`01`, `02`, `03`, `04`, `06`, `07`) all updated to match.
+`docs/capability-matrix.md`'s Repository adapter section is kept but
+relabeled as skill-author reference, not a CRO capability — the
+verified Git/file research is still real, just aimed at a component
+that no longer exists inside CRO.
+
+**Revisit when:** A future, separately-approved project explicitly
+gives CRO its own repository access — not expected under the current
+design.
+
+**Rollback path:** Reinstate the repository adapter as a new, explicit
+decision if a real need appears; the relabeled capability-matrix
+research would still apply.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-10-22 session.

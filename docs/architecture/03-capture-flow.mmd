@@ -1,24 +1,25 @@
 sequenceDiagram
-    actor U as User or client
+    actor U as User (direct push, or the<br/>scheduled public-ingest queue)
     participant C as CRO
-    participant R as Project repo
     participant T as TheBrain
-    participant O as OB1
+    participant PL as Plane (local, Docker)
+    participant O as OB1 (local, Docker)
 
     U->>C: capture(input, optional_hint)
     C->>C: Inspect, extract, and classify
-    par Existing project context
-        C->>R: Resolve project and possible relevance
-        R-->>C: Explicit and semantic matches
-    and Existing durable knowledge
+    par Existing durable knowledge
         C->>T: Search for source and canonical Thoughts
         T-->>C: Existing sources and graph context
     and Existing thought stream
         C->>O: Search ideas, tasks, and references
         O-->>C: Related semantic thoughts
     end
-    C->>T: Reuse or create source Thought and preserve evidence
-    opt Input is a loose idea or task
-        C->>O: Capture thought
+    alt Classified as a task
+        C->>PL: Create or update the connected Plane task
+    else Classified as a durable source or thought
+        C->>T: Reuse or create source Thought and preserve evidence
     end
-    C-->>U: Result, provenance, project impact, and any ambiguity
+    note over C,O: OB1-universal-coverage (2026-10-18):<br/>every capture creates or updates a matching<br/>OB1 thought, no matter where it also lands
+    C->>O: Create or update matching OB1 thought
+    C-->>U: Result, provenance, and any ambiguity
+    note over U,C: Capture only ever comes from the user,<br/>direct or via the ingest queue — never from<br/>a skill acting on repo content automatically

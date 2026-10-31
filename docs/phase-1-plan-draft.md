@@ -1,17 +1,16 @@
 # Phase 1 Plan — Draft
 
-**Status:** Draft. All 5 items `CURRENT.md`'s "Next checkpoint" requires
-for approval now have content. This document is the proposal; it becomes
-Active only once the user formally approves it (see `CURRENT.md` and
-`DECISIONS.md`).
+**Status:** Approved 2026-10-20 (see `DECISIONS.md`).
 
 ## 1. First vertical slice
 
-**TheBrain/OB1 retrieval** — not repo-grounded retrieval. Repo-grounded
-context recall was the project's original stated mission and already has
-mature groundwork (`docs/capability-matrix.md`'s repository adapter work),
-but this session's work concentrated entirely on TheBrain/OB1, so that
-becomes the second slice, built on top of this one.
+**TheBrain/OB1 retrieval.** Repo-grounded context recall, once the
+project's original stated mission, is no longer a CRO-side feature at
+all (decided 2026-10-22, see `docs/README.md` Section 3.1). CRO never
+reads a repository directly — a skill handles its own repo reads and
+only ever calls CRO to search or capture. The Git/file discovery in
+`docs/capability-matrix.md`'s Repository adapter section remains as
+skill-author reference, not CRO's own job.
 
 Scope: given a question, search `cro_index` (vector + full-text) for
 candidates drawn from both TheBrain and OB1, expand 1-2 hops via the
@@ -21,13 +20,31 @@ writes, no standing directives, no skill auto-pull, no dashboard, no
 public ingest — all deferred (see Exclusions).
 
 **Dependency, not part of this slice's feature scope but required before
-it can be tested:** a one-time bootstrap data flow. TheBrain is read
+it can be tested:** a one-time bootstrap data flow (diagrammed in
+`docs/architecture/08-bootstrap-flow.mmd`). TheBrain is read
 once, raw, and feeds both `cro_index` and a new local OB1 instance — one
 direction only, TheBrain is never written back to. Separately, the
 existing cloud OB1's thoughts are read once and transferred into the new
 local OB1 (OB1-to-OB1, no TheBrain involved). Acceptance test 0 below is
 this bootstrap flow itself — nothing else can be validated until it
 holds.
+
+Bootstrap sub-steps, made explicit on approval (2026-10-20):
+
+- Install OB1 local via Docker. The existing `ob1-local` Supabase
+  instance is not reusable as-is (crashed Edge Runtime, shared
+  Postgres with the weather-station project — see CURRENT.md's OB1
+  status note); this is a fresh install, not a repair.
+- Transfer cloud OB1's thoughts into the new local OB1 by reading
+  each thought from the cloud instance and writing it to the local
+  instance (get-thoughts / save-thoughts calls). Exact tool names
+  to confirm against the local instance's enhanced-mcp surface at
+  implementation time — the cloud instance exposes list_thoughts/
+  search_thoughts/capture_thought; the local one may differ.
+- Update the architecture documents and diagrams (`docs/README.md`,
+  `docs/architecture/*.mmd`) once the Docker install and transfer
+  mechanism are implemented, so the diagrams match what actually
+  runs rather than the planned version.
 
 ## 2. Implementation language and dependencies
 
@@ -82,12 +99,18 @@ working OB1 implementations found in the integration survey
 to. Success: content that exists only in TheBrain is findable through
 both OB1 search and `cro_index`, each result correctly linked back to
 its real TheBrain Thought ID. Nothing else is validated until this holds.
+Success also requires: the local OB1 Docker container is running
+and reachable, and the thought count in local OB1 matches the
+cloud source after transfer.
 
 1. A question returns results drawn from both TheBrain and OB1, not just
    one source.
 2. A result whose content only lives inside a TheBrain Note body is
-   still found — proves `cro_index` closes TheBrain's known
-   Note-search gap.
+   still found — confirms TheBrain's own Note search now finds literal
+   text (reconfirmed 2026-10-22; TheBrain closed this gap itself).
+   `cro_index` is still responsible for the meaning-based (semantic)
+   matches TheBrain's literal search misses, and for combining
+   TheBrain with OB1 results in one search.
 3. Every returned result is re-read from the live TheBrain/OB1 source at
    answer time — never served from the cached index alone.
 4. A narrow query can surface 1-2 broader related items via one hop up
@@ -102,7 +125,10 @@ its real TheBrain Thought ID. Nothing else is validated until this holds.
 
 ## 5. Explicit exclusions for Phase 1
 
-- Repo-grounded retrieval (now the second slice)
+- Repo-grounded retrieval as a CRO-side feature — cancelled entirely,
+  not deferred (decided 2026-10-22). CRO never reads a repository
+  directly; a skill reads its own repo and only calls CRO to search or
+  capture.
 - Any capture/ingest flow — the "please remember [link]" command, email
   ingestion, the public ingest site (read-only only this phase)
 - The holistic dashboard
@@ -116,3 +142,25 @@ its real TheBrain Thought ID. Nothing else is validated until this holds.
 - OB1's cloud-to-internal migration as an ongoing capability (the
   one-time bootstrap read is in scope per item 1's dependency note; a
   repeatable sync/migration tool is not)
+
+## 6. Developer-facing architecture review and package
+
+Added 2026-10-20. Separate from the bootstrap diagram refresh in
+Section 1 (which just keeps diagrams matching what actually runs).
+This is a dedicated review-and-presentation pass:
+
+- Review every existing architecture document and decision
+  (`docs/README.md`, the design handoff, the design addendum, ADR
+  0001, `docs/capability-matrix.md`, `DECISIONS.md`) for
+  consistency and completeness.
+- Redraw the architecture diagram set in Mermaid
+  (`docs/architecture/*.mmd`) so every settled decision through
+  this plan's approval is reflected — not just the 7 diagrams
+  already there, filling gaps where a settled decision has no
+  diagram yet.
+- Produce a single developer-facing package (one doc, linking the
+  diagrams) written for someone joining the project cold — a
+  future developer team, not just Keith — covering scope,
+  ownership boundaries, Phase 1 slice, and non-negotiables.
+- This is a documentation deliverable only. It does not change any
+  settled decision; it presents them.

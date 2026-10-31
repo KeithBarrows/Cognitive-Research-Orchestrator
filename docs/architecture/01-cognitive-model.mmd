@@ -1,10 +1,11 @@
 flowchart TD
-    C["ChatGPT, Claude, Codex, and other clients"] --> M["CRO MCP<br/>Orchestration and attention"]
-    M <--> R["Project repositories<br/>Project truth and canon"]
+    C["ChatGPT, Claude, Codex, and other clients<br/>(a skill reads its own repo directly)"] --> M["CRO MCP<br/>Orchestration and attention"]
     M <--> T["TheBrain<br/>Durable knowledge and evidence"]
-    M <--> O["OB1<br/>Semantic thought stream"]
+    M <--> O["OB1<br/>Semantic thought stream<br/>(local, Docker)"]
+    M <--> PL["Plane<br/>Tasks<br/>(local, Docker)"]
     M --> I["Derived local index<br/>Disposable candidate finder"]
-    R --> I
     T --> I
     I -. "canonical IDs; hydrate live" .-> M
     M --> X["Context packets, capture results,<br/>reviews, and suggestions"]
+    REPO["Project repositories<br/>Project truth and canon<br/>(no direct CRO connection)"]
+    C -. "skill reads its own repo,<br/>then calls CRO to search/capture" .-> REPO

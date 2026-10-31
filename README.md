@@ -25,6 +25,7 @@ Primary design documents:
 - [Integration capability matrix](docs/capability-matrix.md)
 - [Current design handoff](CRO-DESIGN-HANDOFF-2026-10-11.md)
 - [Current design addendum](CRO-DESIGN-ADDENDUM-2026-10-11.md)
+- [Developer architecture overview](docs/developer-architecture-overview.md) — start here if you're new to the project
 
 ## Architecture Diagram Set
 
@@ -35,6 +36,7 @@ Primary design documents:
 - [Relevance lifecycle](docs/architecture/05-relevance-lifecycle.mmd)
 - [Local-first deployment and future ingress boundary](docs/architecture/06-local-first-boundary.mmd)
 - [Top-level CRO/TheBrain/OB1 ownership split](docs/architecture/07-ownership-split.mmd)
+- [One-time bootstrap data flow](docs/architecture/08-bootstrap-flow.mmd)
 
 ## Core Design Direction
 

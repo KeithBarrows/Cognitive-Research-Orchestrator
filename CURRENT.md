@@ -2,9 +2,30 @@
 
 ## Outcome now
 
-Review and approve (or send back for revision) the drafted Phase 1
-plan (`docs/phase-1-plan-draft.md`). Do not begin runtime
-implementation until the user formally signs off.
+Phase 1 plan approved 2026-10-20 (see DECISIONS.md). Next work:
+install OB1 local via Docker, transfer cloud OB1 thoughts to it,
+then update the architecture documents and diagrams to match. Do
+not begin the retrieval-slice runtime code until that bootstrap
+work is done and verified.
+
+Decided 2026-10-22: CRO never reads a repository directly — no
+"repository adapter" exists or will exist inside CRO. See
+`DECISIONS.md`'s 2026-10-22 "CRO never reads a repository directly"
+entry for the full model (skill pulls via search, skill writes the
+answer back itself; capture only ever comes from the user directly
+or the scheduled ingest queue, never from a skill). Updated to
+match: `docs/README.md`, ADR 0001, `docs/phase-1-plan-draft.md`,
+`docs/developer-architecture-overview.md`, and diagrams `01`, `02`,
+`03`, `04`, `06`, `07`. `docs/capability-matrix.md`'s Repository
+adapter section is kept, relabeled as skill-author reference only.
+
+Done 2026-10-22: the developer-facing architecture review package
+(Section 6 of the Phase 1 plan) — reviewed `docs/README.md` and ADR
+0001 for stale text, added Plane to every diagram that was missing
+it, added the OB1-universal-coverage rule and a new bootstrap-flow
+diagram (`docs/architecture/08-bootstrap-flow.mmd`) where none
+existed, and wrote `docs/developer-architecture-overview.md` as the
+single linking page for a developer joining cold.
 
 ## Current state
 
@@ -99,6 +120,46 @@ Full detail in `docs/phase-1-plan-draft.md`:
   crashed 2 months ago and hasn't restarted; no add-on schemas are
   installed; it shares its Postgres database with an unrelated
   weather-station project's tables.
+- When installing OB1 local via Docker, also enable fork extensions
+  that fit real use, not just the stock 4-6 tools (full catalog in
+  `docs/ob1-integration-survey.md`). First confirmed example: the
+  household/CRM extension, already rescoped to attribution-tagging,
+  not access-separation (see `DECISIONS.md` 2026-10-16).
+- Correction (2026-10-22): `enhanced-mcp`'s 13-tool list does include
+  `update_thought` (real, working). `delete_thought` is intentionally
+  left out of that build — the maintainer wants a mark-and-restore
+  approach first, not a hard delete. OB1 cannot delete a thought
+  today, in any build, stock or enhanced.
+
+### TheBrain Note-search re-test (2026-10-22)
+
+- Live-retested against the real "Growth" Brain and an isolated test
+  Brain, using the Local API at `http://localhost:11522/api/`.
+  `docs/research/API-TheBrain.md`'s `localhost:8001` is stale/wrong
+  for this device.
+- Confirmed: Note-body search now works. The 2026-10-11
+  capability-matrix finding ("Note-content indexing is unsupported")
+  is outdated. Verified twice against real existing Notes, plus once
+  with a test note written and deleted during this re-test.
+- Confirmed: Notes support real GitHub-style Markdown, and it reads
+  back correctly.
+- New findings: indexing is not instant (roughly 20s lag observed);
+  the search is literal/keyword, not meaning-based — a paraphrased
+  query found nothing a literal one found; `onlySearchThoughtNames=
+  true` correctly excludes Note hits when you want thought-name-only
+  search.
+- Done 2026-10-22: `docs/capability-matrix.md`, `DECISIONS.md`, and
+  the Phase 1 plan are updated to match the re-test. See `DECISIONS.md`
+  2026-10-22 entry.
+- Decided 2026-10-22: keep `cro_index`, but its job narrows. It no
+  longer needs to be the only way to find Note text — TheBrain now
+  does that itself. `cro_index` stays responsible for meaning-based
+  (semantic) search and for combining TheBrain + OB1 results in one
+  search, until TheBrain adds its own fuzzy/semantic search.
+- OB1 was considered as the home for this fuzzy-search/sync job
+  instead of `cro_index` — rejected for now: OB1 has no delete tool in
+  any build (see the `enhanced-mcp` correction above), so it cannot
+  safely stay in sync with TheBrain edits and deletions on its own.
 
 ### Plane
 

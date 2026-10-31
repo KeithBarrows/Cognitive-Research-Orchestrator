@@ -1,24 +1,18 @@
 sequenceDiagram
     actor A as AI client or skill
     participant M as CRO MCP
-    participant R as Project repo
-    participant T as TheBrain
     participant I as CRO local hybrid index
+    participant T as TheBrain
     participant O as OB1
 
-    A->>M: recall_context(project, artifact, skill, subjects)
-    M->>R: Resolve artifact and explicit references
-    R-->>M: Current content and declared related artifacts
+    note over A: The skill already read its own repo/card<br/>content directly; it supplies query terms<br/>(e.g. a tag like "EDS") — CRO never reads the repo
+    A->>M: recall_context(subjects, skill_or_task, ...)
     M->>I: Exact + semantic + metadata + relationship query
     I-->>M: Candidate canonical IDs and matching chunks
-    par Hydrate repository candidates
-        M->>R: Fetch live authoritative artifacts
-        R-->>M: Current project content
-    and Hydrate TheBrain candidates
-        M->>T: Fetch live Thoughts, Notes, evidence, and graph context
-        T-->>M: Current durable knowledge
-    end
+    M->>T: Fetch live Thoughts, Notes, evidence, and graph context
+    T-->>M: Current durable knowledge
     M->>O: Search parked ideas and thought history
     O-->>M: Ranked thoughts
     M->>M: Rank, deduplicate, explain, and add 0-2 secondary items
     M-->>A: Compact provenance-preserving context packet
+    note over A: The skill writes CRO's answer back into<br/>the repo itself — CRO never writes to a repo
