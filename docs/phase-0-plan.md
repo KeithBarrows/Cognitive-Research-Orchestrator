@@ -12,6 +12,14 @@ against, on the laptop (per `CURRENT.md`'s non-negotiables — CRO runs
 and is coded on the laptop only). No CRO code gets written in this
 phase; this is infrastructure only.
 
+**The actual workflow is install → test → commit to a final setup,
+not just install (clarified 2026-11-04).** Several items below have
+more than one real candidate (the Postgres MCP, the travel-access
+naming scheme) — Phase 0's job is to actually try each one, since
+it's all disposable Docker and cheap to throw away what doesn't work,
+then write down which one won as the real, final setup. Don't decide
+those on paper alone.
+
 ## 2. Installs
 
 - **Docker Desktop** — confirm it's already installed and running on
@@ -57,6 +65,20 @@ phase; this is infrastructure only.
   to be configured against the new local Postgres+pgvector container
   and the new local Plane instance before any of the AI-directed
   testing below can run against the right database.
+- **`cro_index`'s Postgres MCP: trial both real candidates, keep
+  whichever works — decided 2026-11-04.** The Supabase MCP tools
+  won't talk to a plain Postgres+pgvector container (they're built
+  against Supabase's own API layer, confirmed not generic). Two real,
+  current options take a plain connection string instead:
+  `mcp-server-pgvector` (pgvector-specific: similarity search, hybrid
+  vector+full-text, upserts, index management) and `postgres-mcp`
+  (broader: schema introspection, migration tracking, pgvector among
+  other extensions). Neither has been live-tested yet — can't be,
+  until `cro_index`'s Postgres container exists. Since this is all
+  disposable Docker, run both as separate containers against the same
+  `cro_index` database, confirm which actually works end-to-end
+  (schema creation, inserts, vector similarity queries), and kill
+  whichever doesn't — no need to commit to one on paper first.
 - **A local DNS resolver, in Docker, on the laptop — added
   2026-11-04, resolves `CURRENT.md`'s hostname open question,
   corrected 2026-11-04.** dnsmasq (or Pi-hole, which uses dnsmasq
@@ -93,6 +115,31 @@ phase; this is infrastructure only.
   DNS via its internal DHCP — that gets replaced by the laptop's
   dnsmasq address once it exists, not pointed at 1.1.1.1/9.9.9.9
   directly (those are dnsmasq's own upstreams, one layer further in).
+- **Travel-access naming: test both real candidates, commit to one —
+  added 2026-11-04.** Two approaches exist for reaching CRO while
+  traveling (laptop-only, no other device involved — see
+  `CURRENT.md`), neither live-tested yet:
+  1. **Two names, zero infrastructure:** `cro.home.sol3.net` at home
+     (the dnsmasq override above, → the laptop's LAN IP) and plain
+     `cro.localhost` while traveling — reserved by RFC 6761 to always
+     resolve to `127.0.0.1`, confirmed implemented in .NET itself (the
+     runtime CRO is built on), no DNS record, no config, works
+     offline.
+  2. **One name everywhere:** a real, public wildcard DNS record,
+     `*.home.sol3.net` → `127.0.0.1`, published through sol3.net's
+     real DNS provider. Split-horizon: the home dnsmasq override wins
+     at home; the public record answers everywhere else. Costs one
+     more DNS record to publish and maintain.
+  **Caveat that could break option 2 on some networks, not seen until
+  just now:** some routers and DNS resolvers enable **DNS rebinding
+  protection**, which deliberately blocks any response pointing a
+  public-looking domain name at a private/loopback address — exactly
+  the pattern `*.home.sol3.net → 127.0.0.1` creates. Whether this
+  actually blocks it depends on which resolver a given foreign
+  network uses; not something to assume works until tested on a few
+  different networks. Test both approaches for real, on more than one
+  network if possible, and commit to whichever actually works as this
+  phase's final setup — don't decide on paper only.
 
 ## 2b. Why this matters for testing (added 2026-11-04)
 
@@ -113,9 +160,8 @@ code exists.
 - Whether the BeyondCompare TheBrain sync is a one-time copy or needs
   to stay a repeatable step (e.g. if the desktop's brains keep
   changing before the laptop becomes the sole working copy).
-- Whether devices get pointed at the new DNS resolver via the router's
-  DHCP DNS setting (every device, automatically) or configured
-  individually (just the desktop and laptop, for now) — not decided.
+- Which of the two travel-access naming approaches actually works —
+  genuinely unknown until tested against real networks (see above).
 
 ## 4. Exclusions
 
