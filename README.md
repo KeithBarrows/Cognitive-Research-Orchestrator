@@ -15,7 +15,7 @@ CRO owns behavior and orchestration, not knowledge. Its durable storage is limit
 - Architecture stage: concept and technical design
 - Working name: Cognitive Research Orchestrator (CRO)
 - Implementation language: open decision
-- Phase 0 capability discovery: complete
+- Phase 0 capability discovery: complete (the old `docs/README.md` §15 plan's Phase 0, superseded 2026-11-04 — see `docs/phase-roadmap.md`'s Epic 0 for current planning, a different thing: installs, not discovery)
 - Runtime implementation: not started
 
 Primary design documents:

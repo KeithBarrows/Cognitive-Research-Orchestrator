@@ -1,13 +1,16 @@
-# Phase 0 Plan — Installs
+# Epic — Installs
 
-**Status:** Named 2026-11-04, in response to a real gap — Phase 1's
+*(Formerly "Phase 0." File name stays `phase-0-plan.md` for stable
+history — see `docs/phase-roadmap.md` for the full Epic list.)*
+
+**Status:** Named 2026-11-04, in response to a real gap — Epic 1's
 plan assumed OB1 local and a dedicated Postgres existed, but neither
 install was ever written down as its own step. See
-`docs/phase-roadmap.md` for how this fits with Phases 1–5.
+`docs/phase-roadmap.md` for how this fits with the other Epics.
 
 ## 1. Scope
 
-Stand up every piece of software Phase 1's bootstrap code will run
+Stand up every piece of software Epic 1's bootstrap code will run
 against, on the laptop (per `CURRENT.md`'s non-negotiables — CRO runs
 and is coded on the laptop only). No CRO code gets written in this
 phase; this is infrastructure only.
@@ -15,16 +18,22 @@ phase; this is infrastructure only.
 **The actual workflow is install → test → commit to a final setup,
 not just install (clarified 2026-11-04).** Several items below have
 more than one real candidate (the Postgres MCP, the travel-access
-naming scheme) — Phase 0's job is to actually try each one, since
+naming scheme) — Epic 0's job is to actually try each one, since
 it's all disposable Docker and cheap to throw away what doesn't work,
 then write down which one won as the real, final setup. Don't decide
 those on paper alone.
 
 ## 2. Installs
 
+**Each item below now has its own Feature file** in
+`Epic 0 - Installs/` (added 2026-11-04), following the Plane
+EPIC/FEATURE/USER STORY convention in `docs/phase-roadmap.md`. This
+section stays as the Epic-level summary; the Feature files carry the
+install/test detail.
+
 - **Docker Desktop** — confirm it's already installed and running on
   the laptop; install it if not. Everything else in this phase runs
-  inside it.
+  inside it. (`Epic 0 - Installs/Feature 01 - Docker Desktop.md`)
 - **Postgres with the pgvector extension** — a container **dedicated
   to `cro_index`**, not shared with anything else. This matters
   specifically because the *old* local OB1 instance failed partly
@@ -32,17 +41,17 @@ those on paper alone.
   project (see `CURRENT.md`'s OB1 status note) — this is the same
   mistake, not repeated. Also satisfies the already-settled decision
   that `cro_index` storage stays separate from OB1-owned storage.
-- **OB1, fresh Docker install** — the real blocker flagged when Phase
+- **OB1, fresh Docker install** — the real blocker flagged when Epic
   1 was reviewed: the exact Docker image/compose setup and the local
   instance's actual REST API surface are both unverified. This phase
   is where that gets resolved — install it, then confirm live what its
   REST endpoints actually look like, the same way TheBrain's and
   Plane's were confirmed live before being written into the schema.
   Not reusing the existing `ob1-local` Supabase instance — fresh
-  install, per the existing Phase 1 note.
-- **Plane, fresh Docker install** — moved here from Phase 2's
+  install, per the existing Epic 1 note.
+- **Plane, fresh Docker install** — moved here from Epic 2's
   description, since it's an install step, not a Lookup-phase feature.
-  One project named "CRO." Phase 2 is still where the 2-3 hand-added
+  One project named "CRO." Epic 2 is still where the 2-3 hand-added
   Work Items and the actual Lookup capability happen — this phase
   just gets Plane running and reachable.
 - **TheBrain — no install, a manual file sync instead.** TheBrain
@@ -50,11 +59,11 @@ those on paper alone.
   files. Getting the same brains onto the laptop is a manual
   BeyondCompare sync of those files from wherever they currently live,
   not an API-driven migration. (TheBrain's Local API — the thing
-  Phase 1's bootstrap actually reads from — talks to whichever brain
+  Epic 1's bootstrap actually reads from — talks to whichever brain
   files are present on that machine; this step is what makes sure the
   real brains are actually there to read.)
 - **New MCP server connections, pointed at the new local instances —
-  added 2026-11-04.** Confirmed live during Phase 1 planning: the
+  added 2026-11-04.** Confirmed live during Epic 1 planning: the
   Plane and Postgres/Supabase MCP tools already available in this
   session are both pointed at the *wrong* targets — Plane at the
   existing writing/CreativeOS workspace, Postgres at OB1's cloud
@@ -141,9 +150,23 @@ those on paper alone.
   network if possible, and commit to whichever actually works as this
   phase's final setup — don't decide on paper only.
 
+**Feature file mapping** (`Epic 0 - Installs/`, added 2026-11-04):
+
+| Install item above | Feature file |
+|---|---|
+| Docker Desktop | `Feature 01 - Docker Desktop.md` |
+| Postgres + pgvector, dedicated to `cro_index` | `Feature 02 - Dedicated Postgres with pgvector for cro_index.md` |
+| OB1, fresh Docker install | `Feature 03 - OB1 Fresh Docker Install.md` |
+| Plane, fresh Docker install | `Feature 04 - Plane Fresh Docker Install.md` |
+| TheBrain file sync | `Feature 05 - TheBrain File Sync.md` |
+| New Plane MCP connection | `Feature 06 - Plane MCP Connection.md` |
+| `cro_index` Postgres MCP (trial both) | `Feature 07 - cro_index Postgres MCP Connection.md` |
+| Local DNS resolver | `Feature 08 - Local DNS Resolver.md` |
+| Travel-access naming | `Feature 09 - Travel-Access Naming.md` |
+
 ## 2b. Why this matters for testing (added 2026-11-04)
 
-With CRO's own C# code not written yet, Phase 0/1 can still be
+With CRO's own C# code not written yet, Epic 0/1 can still be
 verified directly — creating the `cro_index` schema, inserting test
 rows, confirming pgvector actually works, creating Plane's "CRO"
 project and its first Work Items, checking round-trips — all through
@@ -165,6 +188,6 @@ code exists.
 
 ## 4. Exclusions
 
-No CRO code. No bootstrap run (that's Phase 1, and it depends on this
+No CRO code. No bootstrap run (that's Epic 1, and it depends on this
 phase being done first). No Plane project configuration beyond
-getting it running (Work Items are Phase 2).
+getting it running (Work Items are Epic 2).

@@ -1,6 +1,6 @@
 # CRO Integration Capability Matrix
 
-**Status:** TheBrain, OB1, and repository adapter verified; Phase 0 capability discovery complete
+**Status:** TheBrain, OB1, and repository adapter verified; Phase 0 capability discovery complete (the old `docs/README.md` §15 delivery plan's Phase 0 — superseded 2026-11-04 by `docs/phase-roadmap.md`'s Epic 0, a different thing: Epic 0 is installs, not discovery)
 
 **Last updated:** 2026-10-20 (OB1 section: added 2026-10-15 live re-investigation findings against real user data, 91 thoughts)
 

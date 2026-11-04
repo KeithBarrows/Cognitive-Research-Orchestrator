@@ -1,53 +1,70 @@
-# CRO Phase Roadmap
+# CRO Epic Roadmap
 
-Broad-stroke overview of all planned phases. Phase 0 and Phase 1 are
-the two detailed enough to move toward physical architecture,
-prototyping, or an MVP build — Phases 2–5 are named and scoped at the
-50,000-foot level only (2026-11-04) and each needs its own detailed
-planning pass, the same way Phase 1 got one (live field verification
-against the real TheBrain/OB1/Plane APIs, a real schema, real
-acceptance tests) before it's buildable.
+*(Formerly the "CRO Phase Roadmap." Renamed 2026-11-04 — these are
+organized as Epics now, each breaking down into Features (see each
+`docs/phase-N-plan.md`) and, eventually, User Stories/PBIs. File
+names stay `phase-N-plan.md` for stable history.)*
 
-Phases 0–3 together are the usable MVP. Phases 4–5 extend it.
+Broad-stroke overview of all planned Epics. Epic 0 and Epic 1 are the
+two detailed enough to move toward physical architecture, prototyping,
+or an MVP build — Epics 2–6 are named and scoped at the 50,000-foot
+level only (2026-11-04) and each needs its own detailed planning pass,
+the same way Epic 1 got one (live field verification against the real
+TheBrain/OB1/Plane APIs, a real schema, real acceptance tests) before
+it's buildable.
+
+Epics 0–3 together are the usable MVP. Epics 4–6 extend it.
+
+**A note on where this content came from.** This repo had an older,
+separate 0-5 delivery plan (`docs/README.md` §15, written 2026-10-11,
+now superseded) whose numbers collided with this Epic list — same
+numbers, different content. Rather than just relabeling the collision
+away, that old plan's real designed content was folded into the
+correct Epic below wherever it fit; nothing was discarded. See
+"Where the old plan's content went" at the bottom of this doc.
 
 ## Diagram
 
 ```mermaid
 flowchart TD
-    P0["Phase 0 — Installs\nDocker Desktop, Postgres+pgvector\n(dedicated to cro_index), fresh OB1\nand Plane Docker installs, manual\nBeyondCompare sync of TheBrain's\nfiles onto the laptop.\n\n*Detailed — ready for prototyping*"]
-    P1["Phase 1 — Bootstrap\nRead TheBrain once.\nCreate/update OB1 + cro_index\n(including chunks/edges/embeddings).\nFlag possible reorg candidates\n(no action).\nSits in reserve for future resync.\n\n*Detailed — ready for prototyping*"]
-    P2["Phase 2 — Lookup + Plane\nSearch cro_index, live re-read,\nserendipity, sensitivity gating.\nSeed Plane's CRO project with\n2-3 Work Items (already installed\nin Phase 0) and index them.\n\n*Broad-stroke only*"]
-    P3["Phase 3 — Create/Update\nOngoing capture, not just the\none-time Phase 1 run.\nKeeps OB1 + cro_index current\ngoing forward.\n\n*Broad-stroke only*"]
-    P4["Phase 4 — Reorg\nAct on Phase 1's flags: move\nthoughts/notes between brains,\nresolve cross-brain duplicates.\n\n*Broad-stroke only*"]
-    P5["Phase 5 — External Gather\nPublic HTTP ingest point for\nnew entries (quarantine + scan\nbefore anything canonical).\n\n*Broad-stroke only*"]
+    E0["Epic 0 — Installs\nDocker Desktop, Postgres+pgvector\n(dedicated to cro_index), fresh OB1\nand Plane Docker installs, manual\nBeyondCompare sync of TheBrain's\nfiles onto the laptop.\n\n*Detailed — ready for prototyping*"]
+    E1["Epic 1 — Bootstrap\nRead TheBrain once.\nCreate/update OB1 + cro_index\n(including chunks/edges/embeddings).\nFlag possible reorg candidates\n(no action).\nSits in reserve for future resync.\n\n*Detailed — ready for prototyping*"]
+    E2["Epic 2 — Lookup + Plane\nSearch cro_index, live re-read,\nserendipity, sensitivity gating.\nStanding resurfacing directives.\nSeed Plane's CRO project with\n2-3 Work Items (already installed\nin Epic 0) and index them.\n\n*Broad-stroke only*"]
+    E3["Epic 3 — Create/Update\nOngoing capture, not just the\none-time Epic 1 run.\nHeterogeneous capture, reuse-or-\ncreate Thoughts, classification.\nKeeps OB1 + cro_index current\ngoing forward.\n\n*Broad-stroke only*"]
+    E4["Epic 4 — Reorg\nAct on Epic 1's flags: move\nthoughts/notes between brains,\nresolve cross-brain duplicates,\nrestructure suggestions.\n\n*Broad-stroke only*"]
+    E5["Epic 5 — External Gather\nPublic HTTP ingest point for\nnew entries (quarantine + scan\nbefore anything canonical).\n\n*Broad-stroke only*"]
+    E6["Epic 6 — Skill Hooks and\nControlled Writes\nPre-skill context hooks,\npost-skill persistence analysis,\napproval paths for canon changes.\n\n*Broad-stroke only*"]
 
-    P0 --> P1
-    P1 --> P2
-    P1 --> P3
-    P2 --> P4
-    P3 --> P4
-    P2 --> P5
-    P3 --> P5
+    E0 --> E1
+    E1 --> E2
+    E1 --> E3
+    E2 --> E4
+    E3 --> E4
+    E2 --> E5
+    E3 --> E5
+    E2 --> E6
+    E3 --> E6
 
     MVP["MVP — usable once 0-1-2-3 exist"]
-    P0 -.-> MVP
-    P1 -.-> MVP
-    P2 -.-> MVP
-    P3 -.-> MVP
+    E0 -.-> MVP
+    E1 -.-> MVP
+    E2 -.-> MVP
+    E3 -.-> MVP
 ```
 
-## Phase summary
+## Epic summary
 
-| Phase | Name | Scope, one line | Status |
+| Epic | Name | Scope, one line | Status |
 |---|---|---|---|
 | 0 | Installs | Docker Desktop, dedicated Postgres+pgvector, fresh OB1 + Plane installs, manual TheBrain file sync | **Detailed — `docs/phase-0-plan.md`** |
 | 1 | Bootstrap | One-time: read TheBrain, write OB1 + `cro_index` (nodes, chunks, edges), flag reorg candidates | **Detailed — `docs/phase-1-plan.md`, awaiting approval** |
-| 2 | Lookup + Plane | Search capability; seed and index Plane's CRO project | Broad-stroke — `docs/phase-2-plan.md` |
-| 3 | Create/Update | Ongoing capture (not one-time) | Broad-stroke — `docs/phase-3-plan.md` |
-| 4 | Reorg | Act on Phase 1's flags — move/merge for real | Broad-stroke — `docs/phase-4-plan.md` |
+| 2 | Lookup + Plane | Search capability; standing resurfacing directives; seed and index Plane's CRO project | Broad-stroke — `docs/phase-2-plan.md` |
+| 3 | Create/Update | Ongoing capture (not one-time); heterogeneous input, classification | Broad-stroke — `docs/phase-3-plan.md` |
+| 4 | Reorg | Act on Epic 1's flags — move/merge for real, restructure suggestions | Broad-stroke — `docs/phase-4-plan.md` |
 | 5 | External Gather | Public HTTP ingest point for new entries | Broad-stroke — `docs/phase-5-plan.md` |
+| 6 | Skill Hooks and Controlled Writes | How skills call CRO for context and report persistence decisions back | Broad-stroke — `docs/phase-6-plan.md` |
 
-## Cross-cutting decisions (apply to every phase, not just one)
+## Cross-cutting decisions (apply to every Epic, not just one)
 
 ### Implementation language and dependencies
 
@@ -113,26 +130,54 @@ integration survey (`docs/ob1-integration-survey.md`).
 
 ### Lookup-table resync (added 2026-11-04)
 
-A standing startup step, run before *any* phase that touches TheBrain
-— not a one-time Phase 1 task. `brains` and `thebrain_types` (see
+A standing startup step, run before *any* Epic that touches TheBrain
+— not a one-time Epic 1 task. `brains` and `thebrain_types` (see
 `docs/cro-index-schema.md`) both hold TheBrain's own freeform,
 user-editable lists (confirmed live: 8 real Types just in the Growth
 brain, and the brain count itself grew during this planning pass).
-Phase 1's bootstrap, Phase 3's ongoing create/update, and Phase 4's
+Epic 1's bootstrap, Epic 3's ongoing create/update, and Epic 4's
 reorg all depend on these two tables being current against TheBrain's
 live state, not just populated once at the start. Not yet assigned to
-a specific step in any phase doc — needs doing before Phase 1 is
-built, since Phase 1's own bootstrap is the first thing that would
-populate these tables.
+a specific step in any Epic doc — needs doing before Epic 1 is built,
+since Epic 1's own bootstrap is the first thing that would populate
+these tables.
+
+### Plane work-item hierarchy convention (added 2026-11-04)
+
+Plane itself has no native Epic/Feature/User-Story (or PBI) work item
+types — only generic work items with parent/child links. The
+convention for organizing this project's Plane work once Epic 0 and
+Epic 2 stand it up:
+
+- **Hierarchy via parent/child links**, not a type field — a Feature
+  is a child work item of its Epic; a User Story/PBI is a child of
+  its Feature.
+- **Level marked by a tag**, since Plane has no type field for this:
+  `EPIC`, `FEATURE`, `USER STORY` (or `PBI` — pick one and use it
+  consistently; not yet decided which).
+- This Epic-roadmap doc and each `docs/phase-N-plan.md`'s "Features"
+  section are the source material for actually creating these Plane
+  work items — not done yet, Plane itself doesn't exist until Epic 0
+  runs.
+- **Folder structure mirrors this hierarchy directly (added
+  2026-11-04):** `docs/Epic N - Title/` holds one subfolder per Epic.
+  Epic 0's is fully broken out — `Feature 01 - Title.md` through
+  `Feature 09 - Title.md`, one per install+test item in
+  `docs/phase-0-plan.md`. The other Epics still have just a `README.md`
+  pointing back to their `docs/phase-N-plan.md` until they get the
+  same treatment. When a Feature file gets broken down further, a
+  `User Story NN - Title.md` (or `PBI NN - Title.md`) pattern inside
+  the same Epic folder would be the natural next step — not done
+  anywhere yet.
 
 ### Developer-facing architecture review and package
 
-A standing, cross-phase documentation task, not scoped to one phase:
+A standing, cross-Epic documentation task, not scoped to one Epic:
 
 - Review every existing architecture document and decision
   (`docs/README.md`, the design handoff, the design addendum, ADR
   0001, `docs/capability-matrix.md`, `DECISIONS.md`) for consistency
-  and completeness as each phase lands.
+  and completeness as each Epic lands.
 - Keep the architecture diagram set in Mermaid (`docs/architecture/
   *.mmd`) matching every settled decision.
 - Keep a single developer-facing package (one doc, linking the
@@ -141,18 +186,35 @@ A standing, cross-phase documentation task, not scoped to one phase:
 - Documentation only. Never changes a settled decision; only presents
   it.
 
-## Known gaps not yet placed in any phase (named 2026-11-03, still open)
+## Known gaps not yet placed in any Epic
 
-- **Standing resurfacing directives / proactive skill-pull.** Core to
-  CRO's original point (surface things unasked, not just answer
-  queries) but not assigned to any of the 5 phases yet.
 - **Backup/disaster-recovery for the laptop-only setup.** CRO (and the
   local OB1 it writes to) now runs on the laptop only — see
   `CURRENT.md`'s non-negotiables. `cro_index` is disposable by design;
-  OB1's actual captured data from Phase 3 onward is not. No plan yet
+  OB1's actual captured data from Epic 3 onward is not. No plan yet
   for what happens if that laptop's drive fails.
 - **Auth on the LAN-exposed MCP/API surface.** Previously
   localhost-only; now reachable from the desktop over the LAN too.
   "Anyone on the home network" is the real trust boundary now, not
   "this one machine." No deliberate decision made yet, even to accept
   the risk as-is.
+
+(Standing resurfacing directives, previously listed here, is now
+homed in Epic 2 — see "Where the old plan's content went" below.)
+
+## Where the old plan's content went (2026-11-04 reconciliation)
+
+`docs/README.md` §15 had its own 0-5 delivery plan, written
+2026-10-11, whose numbers collided with this Epic list — same
+numbers, entirely different content. No direct contradictions were
+found with anything decided since; the old plan is marked superseded
+in `docs/README.md` itself, and its real content is now homed here:
+
+| Old §15 phase | What it actually covered | Where it lives now |
+|---|---|---|
+| 0: Technical discovery and contract design | TheBrain/OB1 capability discovery (completed), schema groundwork | Superseded by this Epic list's own live-verification passes (Epic 0/1) — same kind of work, already redone and extended |
+| 1: Read-only context recall | Adapters, assemble context packets, **serve a client**, provenance, serendipity cap 2 | Split: "populate" → Epic 1; "serve a client," provenance, and the serendipity-cap-2 rule → Epic 2's Features |
+| 2: General capture | Heterogeneous capture inputs, reuse-or-create Thoughts, preserve attachments, capture loose ideas in OB1, report project impact without changing canon | Epic 3's Features (almost the entire old phase, nearly verbatim) |
+| 3: Recovery and graph hygiene | Duplicate/orphan/stale-node/hub detection, reviewable relationship suggestions | Split: detection → Epic 1's Features; the "reviewable suggestions" resolution half → Epic 4's Features |
+| 4: Relevance and resurfacing | Standing directives, stale/supersession review, forgotten-item resurfacing | Epic 2's Features, as "Standing resurfacing directives" — previously sat in this doc's "known gaps" list unplaced; the old plan turned out to already have real designed content for it |
+| 5: Skill hooks and controlled project writes | Pre-skill context hooks, post-skill persistence analysis, approval paths, audit retention | New **Epic 6**, built almost entirely from this old phase |

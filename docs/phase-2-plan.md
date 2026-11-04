@@ -1,7 +1,10 @@
-# Phase 2 Plan — Lookup + Plane
+# Epic — Lookup + Plane
+
+*(Formerly "Phase 2." File name stays `phase-2-plan.md` for stable
+history — see `docs/phase-roadmap.md` for the full Epic list.)*
 
 **Status:** Broad-stroke only (named 2026-11-04). Not yet detailed —
-needs its own live-verification pass (same treatment Phase 1 got
+needs its own live-verification pass (same treatment Epic 1 got
 against TheBrain/OB1) before it's buildable. See
 `docs/phase-roadmap.md`.
 
@@ -27,13 +30,47 @@ not here. What's left for this phase:
 - Schema: `plane_workitems`, settled in `docs/cro-index-schema.md`,
   confirmed against a real live work item's fields (title, body,
   status, tags, optional start/end dates). Unlike TheBrain/OB1
-  (populated by Phase 1's bootstrap), Plane is introduced in this
+  (populated by Epic 1's bootstrap), Plane is introduced in this
   phase — so indexing the 2-3 hand-added Work Items into `chunks`/
-  `plane_workitems` happens here too, not in Phase 1.
+  `plane_workitems` happens here too, not in Epic 1.
 
-## 2. Acceptance tests (moved here from the original Phase 1 draft,
+## Features
+
+- **Lookup query:** given a question, search `cro_index` (vector +
+  full-text) for candidates, re-read the live canonical source before
+  answering. The core of this Epic; see Scope above.
+- **Provenance and serendipity hop:** every result traces back to a
+  real source record; a narrow query may surface 1-2 broader related
+  items via one hop up the TheBrain graph. Folded in 2026-11-04 from
+  the old plan's "Read-only context recall" phase (`docs/README.md`
+  §15, now superseded), which described this as "assemble context
+  packets... preserve provenance... cap serendipity at two" — same
+  rule, now named as its own Feature rather than buried in a phase
+  description.
+- **Plane onboarding:** seed and index the "CRO" project's 2-3
+  hand-added Work Items. See Scope above.
+- **Standing resurfacing directives — folded in 2026-11-04.** Moved
+  here from `docs/phase-roadmap.md`'s "known gaps" list, where it sat
+  unplaced; the old plan's "Relevance and resurfacing" phase
+  (`docs/README.md` §15, now superseded) had real designed content
+  for it:
+  - Compute source volatility and temporal relevance.
+  - Add stale and supersession review (flag when something's likely
+    outdated, not just old).
+  - Record durable behavior feedback in OB1 (what the user actually
+    found useful).
+  - Bounded forgotten-item retrieval — resurface useful older
+    material without repetitive noise.
+  - **Placement is a judgment call, not a certainty:** this is
+    proactive surfacing, not reactive search, so it's arguably its
+    own Epic rather than a Feature of Lookup. Placed here because it
+    shares Lookup's retrieval machinery (`cro_index`, `edges`,
+    serendipity) rather than needing its own data flow — revisit if
+    it turns out to need more than that.
+
+## 2. Acceptance tests (moved here from the original Epic 1 draft,
 2026-11-04 — these are about search quality, which is this phase's
-job, not Phase 1's bootstrap)
+job, not Epic 1's bootstrap)
 
 1. A question returns results drawn from TheBrain, OB1, and Plane —
    not just one source.
@@ -63,7 +100,7 @@ model/dimension, chunk-splitting rule, `edges`/`sync_state` detail —
 all settled now in `docs/cro-index-schema.md`. What's actually still
 open for this phase specifically:
 
-- How `node_links` rows get created in general (beyond the Phase 1
+- How `node_links` rows get created in general (beyond the Epic 1
   duplicate-flagging case) — manual, title-similarity match, graph-edge
   inference.
 - Attribution (whose fact something is) as a concept separate from
@@ -74,6 +111,6 @@ open for this phase specifically:
 
 ## 4. Exclusions
 
-Everything Phase 1 excluded, still excluded here, plus: acting on a
-reorg flag (Phase 4), ongoing capture beyond manual lookup (Phase 3),
-external HTTP ingest (Phase 5).
+Everything Epic 1 excluded, still excluded here, plus: acting on a
+reorg flag (Epic 4), ongoing capture beyond manual lookup (Epic 3),
+external HTTP ingest (Epic 5).

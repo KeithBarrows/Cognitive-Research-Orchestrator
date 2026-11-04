@@ -1,4 +1,7 @@
-# Phase 5 Plan — External Gather
+# Epic — External Gather
+
+*(Formerly "Phase 5." File name stays `phase-5-plan.md` for stable
+history — see `docs/phase-roadmap.md` for the full Epic list.)*
 
 **Status:** Broad-stroke only (named 2026-11-04). Not yet detailed.
 See `docs/phase-roadmap.md`.
@@ -35,4 +38,4 @@ anything reaches canonical storage.
 
 ## 4. Exclusions
 
-Everything excluded through Phase 4, still excluded.
+Everything excluded through Epic 4, still excluded.

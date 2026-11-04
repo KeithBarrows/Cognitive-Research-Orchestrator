@@ -2,8 +2,8 @@
 
 ## Outcome now
 
-Phase 1 plan still needs approval (corrected 2026-11-04 — the
-2026-10-20 "approved" note here and in `docs/phase-1-plan.md`'s
+Epic 1 (Bootstrap) plan still needs approval (corrected 2026-11-04 —
+the 2026-10-20 "approved" note here and in `docs/phase-1-plan.md`'s
 header were both wrong; see `DECISIONS.md`'s 2026-10-20 entry, which
 is a record of what was believed at the time, not evidence that
 approval actually happened). Next work once approved: install OB1
@@ -87,46 +87,66 @@ single linking page for a developer joining cold.
   independently validated by two separate working OB1 self-hosted
   implementations found in the OB1 integration survey.
 
-### Phase roadmap (restructured 2026-11-04 — supersedes the old
-"Phase 1 plan" single-doc framing below)
+### Epic roadmap (restructured 2026-11-04 — supersedes the old
+"Phase 1 plan" single-doc framing below; renamed Phase→Epic
+2026-11-04 since these are organized as Epics, breaking down into
+Features and eventually User Stories/PBIs — see `docs/phase-
+roadmap.md`'s Plane tagging convention)
 
-Full detail in `docs/phase-roadmap.md`, with each phase detailed in
-its own `docs/phase-N-plan.md`. Phase 0 and Phase 1 are detailed
-enough to move toward prototyping; Phases 2–5 are named at the
-broad-stroke level only.
+Full detail in `docs/phase-roadmap.md`, with each Epic detailed in
+its own `docs/phase-N-plan.md` (file names unchanged for stable
+history). Epic 0 and Epic 1 are detailed enough to move toward
+prototyping; Epics 2–6 are named at the broad-stroke level only.
 
-0. **Phase 0 — Installs** (`docs/phase-0-plan.md`, added 2026-11-04):
+**Note:** there was also an older, separate 0-5 delivery plan
+(`docs/README.md` §15, predates this Epic list) whose numbers
+collided with these — marked superseded 2026-11-04; its real content
+was folded into the correct Epic below. See `docs/phase-roadmap.md`'s
+"Where the old plan's content went" for the full mapping.
+
+0. **Epic 0 — Installs** (`docs/phase-0-plan.md`, added 2026-11-04):
    no CRO code, infrastructure only. Docker Desktop, a Postgres+
    pgvector container dedicated to `cro_index` (never shared, the
    same mistake that broke the old OB1-local instance), a fresh OB1
-   Docker install (resolves the real unverified gap in what Phase 1
+   Docker install (resolves the real unverified gap in what Epic 1
    assumed existed), a fresh Plane Docker install, and a manual
    BeyondCompare file sync bringing TheBrain's brains onto the laptop.
-1. **Phase 1 — Bootstrap** (`docs/phase-1-plan.md`, still awaiting
+1. **Epic 1 — Bootstrap** (`docs/phase-1-plan.md`, still awaiting
    approval): a single run, not continuous. Read TheBrain once, create
    or update matching OB1 + `cro_index` entries — including `chunks`
-   and `edges`, not deferred to Phase 2 (resolved 2026-11-04) — flag
-   (never act on) Thoughts/notes that might need reorg. TheBrain stays
-   fully read-only this phase — the earlier "Slice 2" write-support
-   exception was moved out to Phase 4 on 2026-11-04, not kept here.
-2. **Phase 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
-   the actual search/retrieval capability, plus seeding Plane's CRO
-   project (already installed in Phase 0) with 2-3 hand-added Work
-   Items and indexing them.
-3. **Phase 3 — Create/Update** (`docs/phase-3-plan.md`, broad-stroke):
-   the ongoing version of Phase 1's one-time run — keeps OB1 and
-   `cro_index` current as new things happen, not just at bootstrap.
-4. **Phase 4 — Reorg** (`docs/phase-4-plan.md`, broad-stroke): acts on
-   Phase 1's flags for real — moving a Thought/Note between brains,
-   resolving the real "Kittery exists in 2 brains, unlinked" case.
-   This is the one place TheBrain write support happens.
-5. **Phase 5 — External Gather** (`docs/phase-5-plan.md`,
+   and `edges`, not deferred to Epic 2 (resolved 2026-11-04) — flag
+   (never act on) Thoughts/notes that might need reorg, including
+   duplicate/orphan/stale-node detection folded in from the old plan.
+   TheBrain stays fully read-only this Epic — the earlier "Slice 2"
+   write-support exception was moved out to Epic 4, not kept here.
+2. **Epic 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
+   the actual search/retrieval capability (with provenance and the
+   serendipity-cap-2 rule, folded in from the old plan), standing
+   resurfacing directives (also folded in — previously an unplaced
+   gap), plus seeding Plane's CRO project (already installed in
+   Epic 0) with 2-3 hand-added Work Items and indexing them.
+3. **Epic 3 — Create/Update** (`docs/phase-3-plan.md`, broad-stroke):
+   the ongoing version of Epic 1's one-time run — keeps OB1 and
+   `cro_index` current as new things happen. Nearly all of its content
+   (heterogeneous capture, reuse-or-create Thoughts, classification)
+   is folded in from the old plan's "General capture" phase.
+4. **Epic 4 — Reorg** (`docs/phase-4-plan.md`, broad-stroke): acts on
+   Epic 1's flags for real — moving a Thought/Note between brains,
+   resolving the real "Kittery exists in 2 brains, unlinked" case,
+   plus restructure suggestions folded in from the old plan. This is
+   the one place TheBrain write support happens.
+5. **Epic 5 — External Gather** (`docs/phase-5-plan.md`,
    broad-stroke): a public HTTP ingest point for new entries, scanned
    and quarantined before anything reaches canonical storage.
+6. **Epic 6 — Skill Hooks and Controlled Writes**
+   (`docs/phase-6-plan.md`, new 2026-11-04, built entirely from the
+   old plan's "Skill hooks and controlled project writes" phase): how
+   a skill calls CRO for context and reports its own persistence
+   decision back — CRO never auto-receives a skill's write.
 
-Phases 0–3 together are the usable MVP. Phases 4–5 extend it.
+Epics 0–3 together are the usable MVP. Epics 4–6 extend it.
 
-(Repo-grounded retrieval is **not** a phase — cancelled entirely
+(Repo-grounded retrieval is **not** an Epic — cancelled entirely
 2026-10-22, see `docs/README.md` Section 3.1.)
 
 Cross-cutting decisions that apply to every phase (language/stack,
@@ -354,7 +374,8 @@ criteria below — building it is not in scope until the user approves.
 - What is the final validation schema for skill `cro_context` blocks?
 - Which repository artifact types enter the first indexing allowlist?
 - How should standing resurfacing directives be stored? (trigger
-  mechanism is settled — see Current state; storage/data model is not)
+  mechanism is settled — see Current state; storage/data model is
+  not; now homed in Epic 2, see `docs/phase-2-plan.md`'s Features)
 - What OIDC provider and account-allowlist mechanism should gate the
   public ingest site?
 - What is the migration plan for moving OB1 from cloud to
@@ -367,8 +388,8 @@ criteria below — building it is not in scope until the user approves.
 ## Next checkpoint
 
 The user reviews `docs/phase-1-plan.md` and either approves it as the
-Phase 1 (Bootstrap) plan or sends it back with requested changes.
-Phases 2–5 (`docs/phase-roadmap.md`) are broad-stroke only and don't
+Epic 1 (Bootstrap) plan or sends it back with requested changes.
+Epics 2–6 (`docs/phase-roadmap.md`) are broad-stroke only and don't
 need approval yet — each needs its own detailed planning pass first.
 
 ## Approval boundaries

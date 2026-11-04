@@ -606,6 +606,14 @@ Minimum operational signals include adapter health, capture backlog, enrichment 
 
 ## 15. Delivery Plan
 
+**Superseded 2026-11-04.** This entire §15 delivery plan (Phases 0-5
+below) predates and collides in numbering with the Epic roadmap at
+`docs/phase-roadmap.md` — same numbers, different content. Nothing
+here contradicts a decision made since; its real content was folded
+into the correct Epic. See `docs/phase-roadmap.md`'s "Where the old
+plan's content went" for the full mapping. Kept below as the
+historical record, not as current planning.
+
 ### Phase 0: Technical discovery and contract design
 
 - Completed TheBrain and OB1 discovery and reconciled the [capability matrix](capability-matrix.md). Repository Git/file discovery was also completed but is relabeled as skill-author reference (decided 2026-10-22) — CRO itself never reads a repository.
