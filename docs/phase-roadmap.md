@@ -1,25 +1,27 @@
 # CRO Phase Roadmap
 
-Broad-stroke overview of all planned phases. Phase 1 is the only one
-detailed enough to move toward physical architecture, prototyping, or
-an MVP build — Phases 2–5 are named and scoped at the 50,000-foot
-level only (2026-11-04) and each needs its own detailed planning pass,
-the same way Phase 1 got one (live field verification against the
-real TheBrain/OB1/Plane APIs, a real schema, real acceptance tests)
-before it's buildable.
+Broad-stroke overview of all planned phases. Phase 0 and Phase 1 are
+the two detailed enough to move toward physical architecture,
+prototyping, or an MVP build — Phases 2–5 are named and scoped at the
+50,000-foot level only (2026-11-04) and each needs its own detailed
+planning pass, the same way Phase 1 got one (live field verification
+against the real TheBrain/OB1/Plane APIs, a real schema, real
+acceptance tests) before it's buildable.
 
-Phases 1–3 together are the usable MVP. Phases 4–5 extend it.
+Phases 0–3 together are the usable MVP. Phases 4–5 extend it.
 
 ## Diagram
 
 ```mermaid
 flowchart TD
-    P1["Phase 1 — Bootstrap\nRead TheBrain once.\nCreate/update OB1 + cro_index.\nFlag possible reorg candidates\n(no action).\nSits in reserve for future resync.\n\n*Detailed — ready for prototyping*"]
-    P2["Phase 2 — Lookup + Plane\nSearch cro_index, live re-read,\nserendipity, sensitivity gating.\nIntroduce Plane as a 3rd data store\n(fresh Docker install, CRO project).\n\n*Broad-stroke only*"]
+    P0["Phase 0 — Installs\nDocker Desktop, Postgres+pgvector\n(dedicated to cro_index), fresh OB1\nand Plane Docker installs, manual\nBeyondCompare sync of TheBrain's\nfiles onto the laptop.\n\n*Detailed — ready for prototyping*"]
+    P1["Phase 1 — Bootstrap\nRead TheBrain once.\nCreate/update OB1 + cro_index\n(including chunks/edges/embeddings).\nFlag possible reorg candidates\n(no action).\nSits in reserve for future resync.\n\n*Detailed — ready for prototyping*"]
+    P2["Phase 2 — Lookup + Plane\nSearch cro_index, live re-read,\nserendipity, sensitivity gating.\nSeed Plane's CRO project with\n2-3 Work Items (already installed\nin Phase 0) and index them.\n\n*Broad-stroke only*"]
     P3["Phase 3 — Create/Update\nOngoing capture, not just the\none-time Phase 1 run.\nKeeps OB1 + cro_index current\ngoing forward.\n\n*Broad-stroke only*"]
     P4["Phase 4 — Reorg\nAct on Phase 1's flags: move\nthoughts/notes between brains,\nresolve cross-brain duplicates.\n\n*Broad-stroke only*"]
     P5["Phase 5 — External Gather\nPublic HTTP ingest point for\nnew entries (quarantine + scan\nbefore anything canonical).\n\n*Broad-stroke only*"]
 
+    P0 --> P1
     P1 --> P2
     P1 --> P3
     P2 --> P4
@@ -27,7 +29,8 @@ flowchart TD
     P2 --> P5
     P3 --> P5
 
-    MVP["MVP — usable once 1-2-3 exist"]
+    MVP["MVP — usable once 0-1-2-3 exist"]
+    P0 -.-> MVP
     P1 -.-> MVP
     P2 -.-> MVP
     P3 -.-> MVP
@@ -37,8 +40,9 @@ flowchart TD
 
 | Phase | Name | Scope, one line | Status |
 |---|---|---|---|
-| 1 | Bootstrap | One-time: read TheBrain, write OB1 + `cro_index`, flag reorg candidates | **Detailed — `docs/phase-1-plan.md`, awaiting approval** |
-| 2 | Lookup + Plane | Search capability; Plane joins as a 3rd data store | Broad-stroke — `docs/phase-2-plan.md` |
+| 0 | Installs | Docker Desktop, dedicated Postgres+pgvector, fresh OB1 + Plane installs, manual TheBrain file sync | **Detailed — `docs/phase-0-plan.md`** |
+| 1 | Bootstrap | One-time: read TheBrain, write OB1 + `cro_index` (nodes, chunks, edges), flag reorg candidates | **Detailed — `docs/phase-1-plan.md`, awaiting approval** |
+| 2 | Lookup + Plane | Search capability; seed and index Plane's CRO project | Broad-stroke — `docs/phase-2-plan.md` |
 | 3 | Create/Update | Ongoing capture (not one-time) | Broad-stroke — `docs/phase-3-plan.md` |
 | 4 | Reorg | Act on Phase 1's flags — move/merge for real | Broad-stroke — `docs/phase-4-plan.md` |
 | 5 | External Gather | Public HTTP ingest point for new entries | Broad-stroke — `docs/phase-5-plan.md` |

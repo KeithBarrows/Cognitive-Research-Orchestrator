@@ -56,9 +56,15 @@ Bootstrap sub-steps, made explicit on approval (2026-10-20):
 
 `brains`, `thebrain_types`, `sensitivity_tiers`, `thebrain_nodes`,
 `ob1_nodes`, `node_links` (`duplicate_candidate` rows only — the
-move/merge `link_type`s belong to Phase 4). `plane_workitems` exists
-in the schema already but isn't populated until Phase 2. Full detail:
-`docs/cro-index-schema.md`.
+move/merge `link_type`s belong to Phase 4), `chunks`, `edges`,
+`sync_state`. `plane_workitems` exists in the schema already but
+isn't populated until Phase 2. Full detail: `docs/cro-index-schema.md`.
+
+**Resolved 2026-11-04: `chunks`/`edges` are populated in this phase,
+not Phase 2.** Phase 2 only *searches* what this phase populates —
+it doesn't do any indexing itself. This means the local embedding
+model (`ElBruno.LocalEmbeddings`, settled 2026-11-04) is needed as
+part of this phase's own code, not deferred.
 
 **Added step (2026-11-04):** before reading any Thought content,
 sync `brains` and `thebrain_types` against TheBrain's live
@@ -73,12 +79,15 @@ has to happen again before Phase 3 and Phase 4 run too.
 
 **0. The bootstrap data flow itself, proven first.** TheBrain feeds
 `cro_index` and the new local OB1, one direction, TheBrain never
-written to. Success: content that exists only in TheBrain is findable
-through both OB1 and `cro_index`, each result correctly linked back to
-its real TheBrain Thought ID. Success also requires: the local OB1
-Docker container is running and reachable, and the thought count in
-local OB1 matches the cloud source after transfer. Nothing else is
-validated until this holds.
+written to. Success: content that exists only in TheBrain has a
+`thebrain_nodes` row, at least one `chunks` row with a real 384-dim
+embedding, and (where applicable) `edges` rows, each correctly linked
+back to its real TheBrain Thought ID — checked by querying `cro_index`
+directly, not through a search feature (that's Phase 2; it doesn't
+exist yet). Success also requires: the local OB1 Docker container is
+running and reachable, and the thought count in local OB1 matches the
+cloud source after transfer. Nothing else is validated until this
+holds.
 
 1. `cro_index` can be deleted and rebuilt from TheBrain + OB1 with zero
    data loss — proves the "disposable index" rule actually holds.

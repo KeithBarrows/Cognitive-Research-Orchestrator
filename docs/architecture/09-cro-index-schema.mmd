@@ -82,6 +82,12 @@ erDiagram
         timestamptz created_at
     }
 
+    sync_state {
+        text source PK
+        boolean is_synced
+        timestamptz last_synced_at
+    }
+
     brains ||--o{ thebrain_nodes : "hosts (TheBrain only)"
     brains ||--o{ thebrain_types : "scopes (types are per-brain)"
     thebrain_types ||--o{ thebrain_nodes : "categorizes (nullable)"

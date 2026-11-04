@@ -91,20 +91,28 @@ single linking page for a developer joining cold.
 "Phase 1 plan" single-doc framing below)
 
 Full detail in `docs/phase-roadmap.md`, with each phase detailed in
-its own `docs/phase-N-plan.md`. Only Phase 1 is detailed enough to
-move toward prototyping; Phases 2–5 are named at the broad-stroke
-level only.
+its own `docs/phase-N-plan.md`. Phase 0 and Phase 1 are detailed
+enough to move toward prototyping; Phases 2–5 are named at the
+broad-stroke level only.
 
+0. **Phase 0 — Installs** (`docs/phase-0-plan.md`, added 2026-11-04):
+   no CRO code, infrastructure only. Docker Desktop, a Postgres+
+   pgvector container dedicated to `cro_index` (never shared, the
+   same mistake that broke the old OB1-local instance), a fresh OB1
+   Docker install (resolves the real unverified gap in what Phase 1
+   assumed existed), a fresh Plane Docker install, and a manual
+   BeyondCompare file sync bringing TheBrain's brains onto the laptop.
 1. **Phase 1 — Bootstrap** (`docs/phase-1-plan.md`, still awaiting
    approval): a single run, not continuous. Read TheBrain once, create
-   or update matching OB1 + `cro_index` entries, flag (never act on)
-   Thoughts/notes that might need reorg. TheBrain stays fully
-   read-only this phase — the earlier "Slice 2" write-support
+   or update matching OB1 + `cro_index` entries — including `chunks`
+   and `edges`, not deferred to Phase 2 (resolved 2026-11-04) — flag
+   (never act on) Thoughts/notes that might need reorg. TheBrain stays
+   fully read-only this phase — the earlier "Slice 2" write-support
    exception was moved out to Phase 4 on 2026-11-04, not kept here.
 2. **Phase 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
-   the actual search/retrieval capability, plus Plane joining as a
-   third data store — a fresh, blank Plane install into Docker, one
-   project named "CRO," 2-3 hand-added Work Items to start.
+   the actual search/retrieval capability, plus seeding Plane's CRO
+   project (already installed in Phase 0) with 2-3 hand-added Work
+   Items and indexing them.
 3. **Phase 3 — Create/Update** (`docs/phase-3-plan.md`, broad-stroke):
    the ongoing version of Phase 1's one-time run — keeps OB1 and
    `cro_index` current as new things happen, not just at bootstrap.
@@ -116,7 +124,7 @@ level only.
    broad-stroke): a public HTTP ingest point for new entries, scanned
    and quarantined before anything reaches canonical storage.
 
-Phases 1–3 together are the usable MVP. Phases 4–5 extend it.
+Phases 0–3 together are the usable MVP. Phases 4–5 extend it.
 
 (Repo-grounded retrieval is **not** a phase — cancelled entirely
 2026-10-22, see `docs/README.md` Section 3.1.)
@@ -285,10 +293,28 @@ criteria below — building it is not in scope until the user approves.
   exists — nothing to stand up, keep in sync, or tear down on the
   desktop. This also gives each vertical slice a real, fixed endpoint
   to test against from the desktop (or anywhere else on the LAN),
-  instead of a local-only dev server. Requires a permanent hostname
-  for the laptop's CRO endpoint, set up on both machines (e.g. a
-  `hosts`-file entry, or equivalent) — not yet configured; see Open
-  questions.
+  instead of a local-only dev server.
+- **Permanent hostname — resolved 2026-11-04, corrected 2026-11-04.**
+  Not a per-machine `hosts`-file edit (doesn't scale once more
+  subdomains exist — see below). Instead: a subdomain of `sol3.net` —
+  the user's long-term **personal** domain, correctly distinct from
+  `quantumfracturecreative.com` (the writing/business domain,
+  already used that way for `vision.quantumfracturecreative.com` —
+  not the right domain for CRO, a personal-infrastructure project).
+  E.g. `cro.home.sol3.net`, resolved to the laptop's LAN IP by a small
+  local DNS resolver (dnsmasq or Pi-hole — Pi-hole's own local-DNS UI
+  doesn't support wildcards, so use dnsmasq directly if a wildcard is
+  ever wanted) running **in Docker, on the laptop itself** —
+  consistent with the laptop-only rule above. Chosen over `.home.arpa`
+  specifically because a real owned-domain subdomain can get genuine,
+  browser-trusted HTTPS certificates via a DNS-01 challenge;
+  `.home.arpa` never can. A made-up TLD (`.lan`, `.home`) was ruled
+  out — those can leak lookups to the public DNS root and
+  occasionally collide with something real. Future web sites get the
+  same subdomain treatment, not a one-off special case for CRO. Added
+  to `docs/phase-0-plan.md` as an explicit install step. Not yet
+  implemented — this is the chosen approach, not confirmation it's
+  running.
 - **The tablet half's integrated GPU is off-limits for any CRO
   workload. The base's discrete GPU (GTX 1660 Ti, 6GB) is allowed, but
   only if explicitly pinned there (added 2026-11-04, refined
@@ -325,10 +351,6 @@ criteria below — building it is not in scope until the user approves.
 
 ## Open questions
 
-- What permanent hostname/endpoint setup (e.g. a `hosts`-file entry on
-  both the laptop and the desktop) makes the laptop's CRO endpoint
-  reachable from the desktop by a fixed name, not an IP that can
-  change?
 - What is the final validation schema for skill `cro_context` blocks?
 - Which repository artifact types enter the first indexing allowlist?
 - How should standing resurfacing directives be stored? (trigger

@@ -244,16 +244,44 @@ answering, per the acceptance tests) and the shared topic/person is
 whatever's common between their `topics`/`people` lists. Matches the
 existing "disposable index" rule — don't store what can be derived.
 
-**Still open:** exactly when `edges` rows get populated (presumably
-during Phase 1's bootstrap, by walking each Thought's `/graph`
-response — confirmed live that endpoint exists and returns parents/
-children/jumps — but not yet written down as a rule).
+**Settled 2026-11-04: `edges` (and `chunks`) are populated during
+Phase 1's bootstrap, not deferred to Phase 2.** `edges` rows come from
+walking each Thought's `/graph` response (confirmed live that the
+endpoint exists and returns parents/children/jumps) during the same
+bootstrap pass that populates `thebrain_nodes`/`ob1_nodes`. Phase 2
+only *searches* what Phase 1 already populated — it doesn't populate
+anything itself. This resolves the earlier contradiction between
+acceptance test 0 (which needs content "findable through `cro_index`")
+and the old schema list that left `chunks`/`edges` out of Phase 1
+entirely.
 
 ## sync_state
 
-Bootstrap/rebuild tracking — **not yet designed at all**, not even a
-first column proposal. Needed before Phase 1's "safe to re-run" test
-(see `docs/phase-1-plan.md` acceptance test 2) can actually be built.
+Bootstrap/rebuild tracking. Settled 2026-11-04 — a status record, one
+row per source, not a duplicate-prevention mechanism by itself.
+
+| Column | Type | Notes |
+|---|---|---|
+| `source` | text, PK | `'thebrain'` \| `'ob1'` \| `'plane'` |
+| `is_synced` | boolean, default `false` | whether this source has ever completed a full bootstrap pass |
+| `last_synced_at` | timestamptz, nullable | null until the first successful sync |
+
+**What this table does and doesn't guarantee.** It answers "has this
+source been synced, and when" — useful for operational visibility
+(has Phase 1 actually run? when?). It does **not**, by itself, prevent
+duplicate rows on a second run (Phase 1 acceptance test 3). That
+protection has to come from the bootstrap code itself doing an
+upsert-by-`source_id` against `thebrain_nodes`/`ob1_nodes`/
+`plane_workitems` — if a row for that `source_id` already exists,
+update it; never blindly insert. `sync_state` and the upsert logic are
+two different mechanisms serving two different purposes; this table
+alone would not make test 3 pass.
+
+**Coarser than `brains`/`thebrain_types`' own tracking, deliberately.**
+Those two tables already have their own `last_synced_at` per brain/
+per type (added earlier for the same freeform-growth reason). This
+table tracks the bootstrap pass as a whole, per source — a different,
+coarser granularity, not a duplicate of that tracking.
 
 ## Still to settle
 
@@ -289,11 +317,12 @@ the numbered convention every other architecture diagram in this repo
 uses. The copy below is kept in sync by hand — if the two ever
 disagree, the `.mmd` file is the source of truth.
 
-`sync_state` is left out — it has no columns designed yet (see above).
 `node_links`, `chunks`, and `edges` each reference "one of three
 tables" via a `type`/`id` pair, not a real foreign key — Mermaid has
 no notation for that, so each is drawn with a relationship line to all
 three node tables, labeled as app-enforced, not database-enforced.
+`sync_state` has no FK relationships to draw — its `source` column is
+a plain string tag, not a reference to any other table.
 
 ```mermaid
 erDiagram
@@ -378,6 +407,12 @@ erDiagram
         text relationship
         text source
         timestamptz created_at
+    }
+
+    sync_state {
+        text source PK
+        boolean is_synced
+        timestamptz last_synced_at
     }
 
     brains ||--o{ thebrain_nodes : "hosts (TheBrain only)"

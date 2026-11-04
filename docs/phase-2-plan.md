@@ -13,21 +13,23 @@ Plane. Expand 1-2 hops via the cached graph `edges` table when useful,
 then re-read the live canonical source before answering. Read-only
 against all three sources.
 
-**Plane joins as the third data store, introduced in this phase.**
-Confirmed with the user (2026-11-04):
+**Plane joins as the third data store.** The actual Docker install
+moved to `docs/phase-0-plan.md` (2026-11-04) — installs happen there,
+not here. What's left for this phase:
 
-- A **fresh, blank Plane install into Docker** — not reusing the
-  existing cloud Plane workspace already connected to this session
-  (that one belongs to the writing/CreativeOS projects, confirmed by
-  listing it live: Author Operations, JT Kaelen, Infrastructure,
-  Quantum Fracture Press — no CRO project there).
-- **A single Plane project named "CRO."**
+- A **single Plane project named "CRO"** (fresh, blank — not the
+  existing cloud Plane workspace already connected to this session,
+  confirmed live to belong to the writing/CreativeOS projects instead:
+  Author Operations, JT Kaelen, Infrastructure, Quantum Fracture
+  Press — no CRO project there).
 - The user hand-adds just 2-3 Work Items to start, rather than CRO
   populating it automatically.
-- Schema: `plane_workitems`, already drafted in
-  `docs/cro-index-schema.md` ahead of this phase, confirmed against a
-  real live work item's fields (title, body, status, tags, optional
-  start/end dates).
+- Schema: `plane_workitems`, settled in `docs/cro-index-schema.md`,
+  confirmed against a real live work item's fields (title, body,
+  status, tags, optional start/end dates). Unlike TheBrain/OB1
+  (populated by Phase 1's bootstrap), Plane is introduced in this
+  phase — so indexing the 2-3 hand-added Work Items into `chunks`/
+  `plane_workitems` happens here too, not in Phase 1.
 
 ## 2. Acceptance tests (moved here from the original Phase 1 draft,
 2026-11-04 — these are about search quality, which is this phase's
@@ -56,16 +58,19 @@ job, not Phase 1's bootstrap)
 
 ## 3. Not yet designed
 
+Resolved since this doc was first written (2026-11-04): embedding
+model/dimension, chunk-splitting rule, `edges`/`sync_state` detail —
+all settled now in `docs/cro-index-schema.md`. What's actually still
+open for this phase specifically:
+
 - How `node_links` rows get created in general (beyond the Phase 1
   duplicate-flagging case) — manual, title-similarity match, graph-edge
   inference.
-- Embedding model/API, dimension, and where embedding happens.
-- Chunk boundaries and whether `sensitivity_tier_id` lives on the
-  chunk, the node, or both (see `docs/cro-index-schema.md`'s "Who Am
-  I" example).
-- `edges` table detail, `sync_state` detail.
 - Attribution (whose fact something is) as a concept separate from
   sensitivity (how private it is) — not modeled anywhere yet.
+- The actual Lookup query logic itself (how a question becomes a
+  vector search plus a graph-hop expansion) — named in Scope above,
+  not yet designed step-by-step.
 
 ## 4. Exclusions
 
