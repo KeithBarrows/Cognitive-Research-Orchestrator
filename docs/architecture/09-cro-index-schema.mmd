@@ -1,0 +1,102 @@
+erDiagram
+    brains {
+        text id PK
+        text name
+        boolean included_in_index
+        timestamptz last_synced_at
+    }
+
+    thebrain_types {
+        text id PK
+        text source_brain_id FK
+        text name "refreshed on each sync"
+        timestamptz last_synced_at
+    }
+
+    sensitivity_tiers {
+        text id PK
+        text description
+    }
+
+    thebrain_nodes {
+        uuid id PK
+        text source_id
+        text source_brain_id FK
+        text title
+        text category_type_id FK
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    ob1_nodes {
+        uuid id PK
+        text source_id
+        text title
+        text category "OB1's own auto-set type"
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    plane_workitems {
+        uuid id PK
+        text source_id
+        text identifier
+        text title
+        text body
+        text status
+        text category "CRO's own, no native field needed"
+        text_array tags "carries Pri1-5/Sev1-5 back into Plane"
+        date start_date
+        date end_date
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    node_links {
+        text from_type "app-enforced, not a real FK"
+        uuid from_id
+        text to_type "app-enforced, not a real FK"
+        uuid to_id
+        text link_type
+        boolean confirmed_by_user
+        timestamptz created_at
+    }
+
+    chunks {
+        uuid id PK
+        text node_type "app-enforced, not a real FK"
+        uuid node_id
+        integer chunk_index
+        text text
+        vector_384 embedding "MiniLM via ElBruno.LocalEmbeddings, CPU-pinned"
+        timestamptz created_at
+    }
+
+    edges {
+        text from_type "app-enforced, not a real FK"
+        uuid from_id
+        text to_type "app-enforced, not a real FK"
+        uuid to_id
+        text relationship
+        text source
+        timestamptz created_at
+    }
+
+    brains ||--o{ thebrain_nodes : "hosts (TheBrain only)"
+    brains ||--o{ thebrain_types : "scopes (types are per-brain)"
+    thebrain_types ||--o{ thebrain_nodes : "categorizes (nullable)"
+    sensitivity_tiers ||--o{ thebrain_nodes : "tags (node-level only)"
+    sensitivity_tiers ||--o{ ob1_nodes : "tags (node-level only)"
+    sensitivity_tiers ||--o{ plane_workitems : "tags (node-level only)"
+
+    thebrain_nodes ||--o{ node_links : "from/to, app-enforced"
+    ob1_nodes ||--o{ node_links : "from/to, app-enforced"
+    plane_workitems ||--o{ node_links : "from/to, app-enforced"
+
+    thebrain_nodes ||--o{ chunks : "has text in, app-enforced"
+    ob1_nodes ||--o{ chunks : "has text in, app-enforced"
+    plane_workitems ||--o{ chunks : "has text in, app-enforced"
+
+    thebrain_nodes ||--o{ edges : "from/to, app-enforced"
+    ob1_nodes ||--o{ edges : "from/to, app-enforced"
+    plane_workitems ||--o{ edges : "from/to, app-enforced"

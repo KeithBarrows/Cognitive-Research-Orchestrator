@@ -2,11 +2,15 @@
 
 ## Outcome now
 
-Phase 1 plan approved 2026-10-20 (see DECISIONS.md). Next work:
-install OB1 local via Docker, transfer cloud OB1 thoughts to it,
-then update the architecture documents and diagrams to match. Do
-not begin the retrieval-slice runtime code until that bootstrap
-work is done and verified.
+Phase 1 plan still needs approval (corrected 2026-11-04 — the
+2026-10-20 "approved" note here and in `docs/phase-1-plan.md`'s
+header were both wrong; see `DECISIONS.md`'s 2026-10-20 entry, which
+is a record of what was believed at the time, not evidence that
+approval actually happened). Next work once approved: install OB1
+local via Docker, transfer cloud OB1 thoughts to it, then update the
+architecture documents and diagrams to match. Do not begin the
+retrieval-slice runtime code until that bootstrap work is done and
+verified.
 
 Decided 2026-10-22: CRO never reads a repository directly — no
 "repository adapter" exists or will exist inside CRO. See
@@ -14,7 +18,7 @@ Decided 2026-10-22: CRO never reads a repository directly — no
 entry for the full model (skill pulls via search, skill writes the
 answer back itself; capture only ever comes from the user directly
 or the scheduled ingest queue, never from a skill). Updated to
-match: `docs/README.md`, ADR 0001, `docs/phase-1-plan-draft.md`,
+match: `docs/README.md`, ADR 0001, `docs/phase-1-plan.md`,
 `docs/developer-architecture-overview.md`, and diagrams `01`, `02`,
 `03`, `04`, `06`, `07`. `docs/capability-matrix.md`'s Repository
 adapter section is kept, relabeled as skill-author reference only.
@@ -83,27 +87,48 @@ single linking page for a developer joining cold.
   independently validated by two separate working OB1 self-hosted
   implementations found in the OB1 integration survey.
 
-### Phase 1 plan (drafted 2026-10-16, awaiting formal approval)
+### Phase roadmap (restructured 2026-11-04 — supersedes the old
+"Phase 1 plan" single-doc framing below)
 
-Full detail in `docs/phase-1-plan-draft.md`:
+Full detail in `docs/phase-roadmap.md`, with each phase detailed in
+its own `docs/phase-N-plan.md`. Only Phase 1 is detailed enough to
+move toward prototyping; Phases 2–5 are named at the broad-stroke
+level only.
 
-1. **Slice:** TheBrain/OB1 retrieval, read-only. Repo-grounded
-   retrieval is the second slice. A one-time bootstrap (raw read of
-   TheBrain into `cro_index` and a new local OB1; cloud OB1's
-   thoughts transferred into that same local OB1, one direction only)
-   is a dependency, tested as acceptance test 0 before anything else.
-2. **Language:** C#/.NET, Kestrel, minimal API endpoints (no
-   controllers), vertical slice organization, MediatR and Mediator
-   both kept open for the CQRS band (CQRS/ES used only where it
-   fits), FluentValidation, Serilog to the already-running local Seq
-   container, Npgsql.
-3. **Schema:** the `cro_index` draft above.
-4. **Acceptance tests:** 8 drafted, including the bootstrap flow as
-   test 0.
-5. **Exclusions:** capture/ingest, the dashboard, standing directives,
-   proactive skill-pull, write support, Home Assistant, the public
-   ingest OIDC layer, OB1 migration-as-ongoing-capability — all listed
-   in full in the plan document.
+1. **Phase 1 — Bootstrap** (`docs/phase-1-plan.md`, still awaiting
+   approval): a single run, not continuous. Read TheBrain once, create
+   or update matching OB1 + `cro_index` entries, flag (never act on)
+   Thoughts/notes that might need reorg. TheBrain stays fully
+   read-only this phase — the earlier "Slice 2" write-support
+   exception was moved out to Phase 4 on 2026-11-04, not kept here.
+2. **Phase 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
+   the actual search/retrieval capability, plus Plane joining as a
+   third data store — a fresh, blank Plane install into Docker, one
+   project named "CRO," 2-3 hand-added Work Items to start.
+3. **Phase 3 — Create/Update** (`docs/phase-3-plan.md`, broad-stroke):
+   the ongoing version of Phase 1's one-time run — keeps OB1 and
+   `cro_index` current as new things happen, not just at bootstrap.
+4. **Phase 4 — Reorg** (`docs/phase-4-plan.md`, broad-stroke): acts on
+   Phase 1's flags for real — moving a Thought/Note between brains,
+   resolving the real "Kittery exists in 2 brains, unlinked" case.
+   This is the one place TheBrain write support happens.
+5. **Phase 5 — External Gather** (`docs/phase-5-plan.md`,
+   broad-stroke): a public HTTP ingest point for new entries, scanned
+   and quarantined before anything reaches canonical storage.
+
+Phases 1–3 together are the usable MVP. Phases 4–5 extend it.
+
+(Repo-grounded retrieval is **not** a phase — cancelled entirely
+2026-10-22, see `docs/README.md` Section 3.1.)
+
+Cross-cutting decisions that apply to every phase (language/stack,
+schema, the developer-doc-review task) now live in
+`docs/phase-roadmap.md` rather than being repeated per phase.
+`docs/cro-index-schema.md` has the full current schema: `brains`,
+`sensitivity_tiers`, `thebrain_nodes`, `ob1_nodes`, `plane_workitems`,
+and one generic `node_links` table (replacing the short-lived
+`thebrain_node_links` draft from 2026-11-03, consolidated 2026-11-04
+once Plane made growing a separate table per source pair unworkable).
 
 ### OB1 status
 
@@ -255,6 +280,33 @@ criteria below — building it is not in scope until the user approves.
   one place CRO runs. Do not design, suggest, or build a
   desktop-hosted CRO, a desktop-to-laptop sync path, or a
   Docker-stack clone between the two machines.
+- **All CRO coding happens on the laptop too, not just the Docker
+  runtime.** Keeps the one Docker stack the only stack that ever
+  exists — nothing to stand up, keep in sync, or tear down on the
+  desktop. This also gives each vertical slice a real, fixed endpoint
+  to test against from the desktop (or anywhere else on the LAN),
+  instead of a local-only dev server. Requires a permanent hostname
+  for the laptop's CRO endpoint, set up on both machines (e.g. a
+  `hosts`-file entry, or equivalent) — not yet configured; see Open
+  questions.
+- **The tablet half's integrated GPU is off-limits for any CRO
+  workload. The base's discrete GPU (GTX 1660 Ti, 6GB) is allowed, but
+  only if explicitly pinned there (added 2026-11-04, refined
+  2026-11-04).** This is a Surface Book: the tablet/display half and
+  the keyboard base each have their own GPU. Corrected root cause: the
+  user's prior Surface Book 2 failure was a battery-in-the-display-
+  panel heat problem while gaming (WoW) on AC power — not a docking-
+  station issue (the user doesn't use a dock; just AC power or an
+  external battery pack) and not simply "GPU load" in the abstract.
+  That history points specifically at the tablet half, not the base.
+  Anything that touches a GPU must be deliberately pinned — via
+  Windows' per-app Graphics preference setting, or the equivalent for
+  a Docker container — to the base's GPU specifically, never left on a
+  default that could pick the tablet's. The local embedding model
+  (see "Current state" below) stays CPU-only anyway, not because the
+  base GPU is forbidden, but because a model this small gains nothing
+  from one — the pinning rule is for any future dependency that
+  *would* actually benefit from a GPU.
 - CRO must not become a user-knowledge store.
 - Sensitive content, derived text, and embeddings remain inside the
   trusted home environment.
@@ -273,6 +325,10 @@ criteria below — building it is not in scope until the user approves.
 
 ## Open questions
 
+- What permanent hostname/endpoint setup (e.g. a `hosts`-file entry on
+  both the laptop and the desktop) makes the laptop's CRO endpoint
+  reachable from the desktop by a fixed name, not an IP that can
+  change?
 - What is the final validation schema for skill `cro_context` blocks?
 - Which repository artifact types enter the first indexing allowlist?
 - How should standing resurfacing directives be stored? (trigger
@@ -288,8 +344,10 @@ criteria below — building it is not in scope until the user approves.
 
 ## Next checkpoint
 
-The user reviews `docs/phase-1-plan-draft.md` and either approves it
-as the Phase 1 plan or sends it back with requested changes.
+The user reviews `docs/phase-1-plan.md` and either approves it as the
+Phase 1 (Bootstrap) plan or sends it back with requested changes.
+Phases 2–5 (`docs/phase-roadmap.md`) are broad-stroke only and don't
+need approval yet — each needs its own detailed planning pass first.
 
 ## Approval boundaries
 

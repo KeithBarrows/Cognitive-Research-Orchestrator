@@ -108,14 +108,21 @@ Diagram: [`docs/architecture/06-local-first-boundary.mmd`](architecture/06-local
 
 ## 7. What Phase 1 actually builds
 
-Phase 1 is read-only TheBrain/OB1 retrieval — not the repo-grounded
-retrieval that was the project's original stated mission (that's
-Phase 2, building on this). Language: C#/.NET, Kestrel, minimal APIs,
-vertical-slice organization. 8 acceptance tests, including the
-bootstrap flow above as test 0.
+Corrected 2026-11-04 — this section was stale on two counts: repo-
+grounded retrieval is not a future phase, it was cancelled entirely
+(2026-10-22, see Section 3.1 of `docs/README.md`); and the single
+"Phase 1" has since been split into a 5-phase roadmap.
 
-Full detail, including explicit exclusions for this phase:
-[`docs/phase-1-plan-draft.md`](phase-1-plan-draft.md).
+Phase 1 is a one-time bootstrap run: read TheBrain once, create or
+update matching OB1 + `cro_index` entries, flag (never act on)
+Thoughts/notes that might need reorg. Read-only against TheBrain.
+Language: C#/.NET, Kestrel, minimal APIs, vertical-slice organization.
+Lookup/search is a separate phase (Phase 2), not part of this one.
+
+Full detail: [`docs/phase-roadmap.md`](phase-roadmap.md) for the
+overall shape and cross-cutting decisions, and
+[`docs/phase-1-plan.md`](phase-1-plan.md) for Phase 1's own scope,
+schema, acceptance tests, and exclusions.
 
 ## 8. Hard constraints — do not violate these
 

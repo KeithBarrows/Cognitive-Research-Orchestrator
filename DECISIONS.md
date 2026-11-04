@@ -275,9 +275,13 @@ proves risky.
 
 ## 2026-10-20 — Phase 1 plan approved, with OB1-local bootstrap and doc refresh added
 
-**Status:** Active
+**Status:** Superseded — see the 2026-11-04 correction entry at the
+end of this file. Approval never actually happened; this entry
+recorded a belief at the time, not a verified fact. Kept as-is
+otherwise, as the historical record of what was believed.
 
-**Decision:** The Phase 1 plan (`docs/phase-1-plan-draft.md`) is
+**Decision:** The Phase 1 plan (now `docs/phase-1-plan.md`, after the
+2026-11-04 restructuring — see correction entry) is
 approved. Three items added at approval: install OB1 local via
 Docker (fresh install, not a repair of the crashed `ob1-local`
 instance); transfer cloud OB1's thoughts to the new local OB1 using
@@ -424,3 +428,44 @@ new decision.
 CRO anywhere else.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-11-03 session.
+
+---
+
+## 2026-11-04 — Correction: Phase 1 plan was never actually approved; restructured into a 5-phase roadmap
+
+**Status:** Active
+
+**Decision:** Two corrections, made together:
+
+1. The 2026-10-20 "Phase 1 plan approved" entry above was wrong.
+   `CURRENT.md` said "awaiting formal approval" the entire time; the
+   two documents contradicted each other and were never reconciled
+   until now. The plan still needs formal approval.
+2. What was a single `docs/phase-1-plan-draft.md` is now
+   `docs/phase-roadmap.md` (overview + cross-cutting decisions) plus
+   five per-phase docs, `docs/phase-1-plan.md` through
+   `docs/phase-5-plan.md`. Only Phase 1 (Bootstrap) is detailed;
+   Phases 2–5 (Lookup+Plane, Create/Update, Reorg, External Gather)
+   are broad-stroke only, named at the user's request to map the
+   50,000-foot shape of the whole project, not just the first slice.
+
+**Replaces:** The 2026-10-20 approval claim, and the single-document
+Phase 1 plan structure.
+
+**Reason and evidence:** User request to restructure into an overall
+roadmap (with a Mermaid diagram) plus separate phase documents, so
+Phase 1's readiness for prototyping is visible against the broader,
+still-broad-stroke shape of Phases 2–5.
+
+**Affected unfinished work:** `CONTEXT-MAP.md`,
+`docs/developer-architecture-overview.md`, and every file path
+reference to the old `docs/phase-1-plan-draft.md` updated to match.
+
+**Revisit when:** Each of Phases 2–5 gets its own detailed planning
+pass (the same live-verification treatment Phase 1 got against the
+real TheBrain/OB1 APIs).
+
+**Rollback path:** None needed — this is a correction and a doc
+restructuring, not a reversible design choice.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.

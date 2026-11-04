@@ -1,0 +1,401 @@
+# cro_index schema
+
+Draft, settled table-by-table through live verification against the
+real TheBrain local API and the real OB1 instance (2026-11-03). Replaces
+the earlier reference to a `project_cro_index_schema_draft.md` session
+file, which was never actually saved anywhere.
+
+## Why one table per source, not a single shared table
+
+An earlier draft used a single `nodes` table with a `source` column
+distinguishing `'thebrain'` vs `'ob1'` rows. Dropped: that assumes a
+1:1 identity between a TheBrain Thought and an OB1 thought, which
+isn't true. A single OB1 thought can correspond to zero or more
+TheBrain Thoughts (and now Plane work items), and vice versa.
+Source-specific tables (`thebrain_nodes`, `ob1_nodes`,
+`plane_workitems`) plus one generic `node_links` table model that
+honestly.
+
+## brains
+
+Parent table to `thebrain_nodes` only — OB1 has no brain concept.
+Same resync concern as `thebrain_types` below: the list of brains
+itself can grow (confirmed live going from an initial assumption of
+one or two to 8 real brains during this planning), so `last_synced_at`
+was added 2026-11-04 to track it, not just populate it once.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | text | TheBrain's own GUID |
+| `name` | text | e.g. "Growth", "Filing Cabinet" |
+| `included_in_index` | boolean | `false` for `CRO API Discovery 2026-10-11` and `Blue Skies Unlimited` (scratch/discovery brains); `true` for Growth, Filing Cabinet, Future Life, SW Architecture, MVP 2013, Lifestyle Defined. This is a `cro_index` indexing-scope toggle only — it does not touch TheBrain itself. |
+| `last_synced_at` | timestamptz | when this row was last refreshed against TheBrain's live `/brains` list |
+
+## thebrain_types
+
+Parent table to `thebrain_nodes.category_type_id`. Added 2026-11-04
+after a direct warning: TheBrain's Types are themselves regular,
+user-editable Thoughts — freeform, not a fixed enum. Confirmed live
+against a real endpoint (`/thoughts/{brainId}/types`, brain-scoped,
+same as Thoughts themselves): 8 real Types exist in Growth right now
+(Audio, Books, CLOSED, Personal Growth (The Process), Projects,
+Purpose, Success Example, Timeline). This table is what gets
+re-synced — individual `thebrain_nodes` rows just hold a stable FK.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | text | TheBrain's Type-Thought GUID |
+| `source_brain_id` | text, FK → `brains.id` | Types are per-brain, confirmed live by the brain-scoped endpoint |
+| `name` | text | refreshed on each sync — never treated as permanent |
+| `last_synced_at` | timestamptz | when this row was last refreshed against TheBrain's live Types list |
+
+**Cross-phase concern, not just a schema note (per the user's own
+framing, 2026-11-04):** resyncing `brains` and `thebrain_types` against
+TheBrain's live state needs to be a standing startup step, run before
+*any* phase that touches TheBrain — Phase 1's bootstrap, Phase 3's
+ongoing create/update, and Phase 4's reorg all depend on these two
+tables being current, not just populated once. Not yet placed as an
+explicit task in any phase doc — see `docs/phase-roadmap.md`'s
+cross-cutting section, which needs this added.
+
+## sensitivity_tiers
+
+Lookup table, referenced by both node tables, so the tier values live
+in one place instead of being repeated free text.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | text, PK | `'standard'`, `'personal'`, `'restricted'` |
+| `description` | text | Tier reflects how private the *content* is, never just whether a specific person is named. Correction (2026-11-03): the real "Who Am I" Thought's note mentions "my wife, Kittery," but naming her is not itself sensitive — that note is `standard`. `restricted` = actual medical diagnosis/records content, confirmed live to live in the Filing Cabinet brain — never returned without explicit override (see CURRENT.md's non-negotiables). `personal` is reserved for content that's genuinely private but not restricted-grade (exact bar still to define). Whose fact something is (attribution) is a separate question from how private it is — see "Still to settle." |
+
+## thebrain_nodes
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | ours |
+| `source_id` | text | TheBrain's Thought GUID |
+| `source_brain_id` | text, FK → `brains.id` | which brain it's in — required because TheBrain's API is brain-scoped (`/thoughts/{brainId}/{thoughtId}`), confirmed live |
+| `title` | text | TheBrain's real `name` field — confirmed live to be a clean, author-written title, unlike OB1's |
+| `category_type_id` | text, FK → `thebrain_types.id`, nullable | **Corrected 2026-11-04 — was a frozen `category` text column, now a live FK.** TheBrain's Types are themselves regular, user-editable Thoughts (confirmed live: 8 exist in Growth right now, via `/thoughts/{brainId}/types`) — freeform, can be renamed, added, or removed at any time. Storing a resolved name as plain text would go stale the moment that happens. The FK points at `thebrain_types`, which is the thing that gets re-synced, not every node that references it. `null` means no type set (confirmed live on "Who Am I"). |
+| `sensitivity_tier_id` | text, FK → `sensitivity_tiers.id`, default `'standard'` | set per-thought by CRO's own classification at index time; never inherited from the brain, never copied from a source field (TheBrain has none) |
+| `updated_at` | timestamptz | TheBrain's `modificationDateTime` |
+
+## ob1_nodes
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | ours |
+| `source_id` | text | OB1's thought uuid — confirmed live, a real stable id |
+| `title` | text | OB1's title field is auto-generated (date + truncated body text), confirmed live — not a clean title the way TheBrain's `name` is |
+| `category` | text | OB1's own auto-set `metadata.type` — confirmed live: `observation`, `task`, `reference`, `idea`, `person_note`. Copied straight from the source, unlike `sensitivity_tier_id` below. |
+| `sensitivity_tier_id` | text, FK → `sensitivity_tiers.id`, default `'standard'` | same rule as `thebrain_nodes` — OB1 has no native sensitivity field either |
+| `updated_at` | timestamptz | OB1's `metadata.updated_at`, confirmed live distinct from `created_at` |
+
+## plane_workitems
+
+Third node table, added 2026-11-03 once Plane joined TheBrain and OB1
+as a data store going forward. Columns confirmed live against a real
+Plane work item (a different workspace than the one that will
+actually host the CRO project — that's a fresh, blank Plane install,
+per the user — but the API shape is identical either way).
+
+**`category` exists here too, same mechanism as `sensitivity_tier_id`
+— corrected 2026-11-04.** `sensitivity_tier_id` was never native-
+sourced on *any* of the three node tables; it's always CRO's own
+classification. `category` works the same way on `plane_workitems`:
+`cro_index` can assign it without Plane itself needing a matching
+field. Not a real asymmetry after all — this workspace's plan tier
+blocking custom properties (confirmed live — the tool call errored)
+only matters for what Plane itself can store, not for what
+`cro_index` stores about a Plane work item.
+
+**Priority and severity are different: they're meant to be visible
+inside Plane itself, not just in `cro_index`.** Since this workspace
+can't do custom fields, CRO writes them into Plane's own `tags`
+instead, using `Pri1`–`Pri5` and `Sev1`–`Sev5` (1 = highest, 5 =
+lowest, user's convention 2026-11-04) — a tag round-trips into Plane's
+UI the way a `cro_index`-only column never would.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | ours |
+| `source_id` | text | Plane's work item uuid |
+| `identifier` | text | e.g. "CRO-3" — human-readable |
+| `title` | text | Plane's `name` |
+| `body` | text | Plane's `description_stripped` — plain text, better for chunking than `description_html` |
+| `status` | text | the state's name — kept as plain text, not a lookup table, since this is one project with a small status list |
+| `category` | text | CRO's own classification, same as `thebrain_nodes`/`ob1_nodes` — no native Plane field backs it, same as `sensitivity_tier_id` below never has one either |
+| `tags` | text[] | Plane's labels — a simple array, not a separate labels table. Also where CRO writes priority (`Pri1`–`Pri5`) and severity (`Sev1`–`Sev5`) back into Plane itself, since there's no native field for either here |
+| `start_date` | date, nullable | confirmed live: Plane allows null |
+| `end_date` | date, nullable | Plane's `target_date` |
+| `sensitivity_tier_id` | text, FK → `sensitivity_tiers.id`, default `'standard'` | same rule as the other two node tables |
+| `updated_at` | timestamptz | Plane's own `updated_at` |
+
+## node_links
+
+Replaces the earlier `node_links` (TheBrain↔OB1 only) and
+`thebrain_node_links` (TheBrain↔TheBrain) drafts — one generic table
+now, since a third source (Plane) made growing a separate pairwise
+table per combination unworkable. Handles any combination: TheBrain↔
+OB1, TheBrain↔Plane, OB1↔Plane, and same-type links (TheBrain↔
+TheBrain, for the cross-brain-duplicate case) all in one table.
+`from_type`/`to_type` plus `from_id`/`to_id` identify which node table
+each side's id belongs to — Postgres can't enforce a polymorphic FK
+directly, so this pairing is an app-level rule CRO must honor when
+writing, not something the database itself checks.
+
+| Column | Type | Notes |
+|---|---|---|
+| `from_type` | text | `'thebrain'` \| `'ob1'` \| `'plane'` |
+| `from_id` | uuid | id in the matching node table (`thebrain_nodes`, `ob1_nodes`, or `plane_workitems`) |
+| `to_type` | text | same three values |
+| `to_id` | uuid | same rule |
+| `link_type` | text | `'reference'` (general cross-reference, e.g. a Plane work item pointing at a TheBrain thought) \| `'duplicate_candidate'` (CRO-detected, e.g. same title in two brains) \| `'confirmed_same_entity'` (user confirmed) \| `'native'` (a real TheBrain cross-brain link, if one is ever found in active use) |
+| `confirmed_by_user` | boolean, default `false` | distinguishes an automatic CRO guess from something the user has actually verified |
+| `created_at` | timestamptz | |
+
+**Invariant to enforce at write time (not a DB constraint):** every
+`ob1_nodes` row must have at least one `node_links` row pointing at it
+from `'thebrain'` or `'plane'` — an OB1 entry never stands alone. A
+TheBrain or Plane entry may have zero links.
+
+## chunks
+
+The actual text content, split for embedding/search — see
+`CURRENT.md`'s chunking primer for why this exists separately from the
+node tables. Uses the same polymorphic `type`/`id` pairing as
+`node_links`, so one `chunks` table covers all three node tables
+instead of three separate chunk tables.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | ours |
+| `node_type` | text | `'thebrain'` \| `'ob1'` \| `'plane'` |
+| `node_id` | uuid | id in the matching node table |
+| `chunk_index` | integer | position within the node's text (0-based) |
+| `text` | text | the chunk's raw text |
+| `embedding` | vector(384) | **Settled 2026-11-04.** `ElBruno.LocalEmbeddings` (NuGet), default `sentence-transformers/all-MiniLM-L6-v2` model via ONNX Runtime, 384 dimensions. Runs in-process inside CRO itself — no separate server, no network call, nothing leaves the laptop. Built on `Microsoft.Extensions.AI`'s `IEmbeddingGenerator` abstraction, which is interfaces only and contains no model or compute itself. **Kept on the CPU execution provider** — not because either GPU is forbidden (the base's GTX 1660 Ti is allowed, if explicitly pinned there — see `CURRENT.md`'s non-negotiables), but because a model this small (~22-87MB depending on precision) gains nothing from one. The tablet half's integrated GPU stays off-limits regardless, per the user's actual Surface Book 2 history. Upgrade path if quality ever falls short: the same package's EmbeddingGemma variant (768-dim) — if that ever genuinely needs GPU acceleration, it must be pinned to the base's dGPU explicitly, never left on a default. |
+| `created_at` | timestamptz | |
+
+**No `sensitivity_tier_id` on `chunks` — corrected 2026-11-04.**
+Sensitivity lives on the node (thought/work item) only, matching how
+OB1 itself classifies: its `category` field (added to `ob1_nodes`
+above) is set once per thought, not per paragraph. A chunk inherits
+its tier by joining back to its node; it never carries its own.
+
+**Chunk-splitting rule (settled 2026-11-04):** split on logical
+blocks first — Markdown heading boundaries, confirmed live as a real,
+natural split point in the "Who Am I" example (9 headings, 6
+meaningful sections). Within a block:
+- If the block is **under the ceiling, it's one chunk.**
+- If a block **exceeds the ceiling**, split it further — by paragraph
+  break, then by sentence if a single paragraph is still too long.
+- If a thought/note has **no logical blocks at all** (no headings, no
+  Note body) — confirmed live as a real case (the Flipboard bookmark
+  thought) — fall back to one chunk made from the title alone.
+
+**The ceiling itself (settled 2026-11-04):** the real limit is
+**256 WordPiece tokens** — a hard model limit for `all-MiniLM-L6-v2`,
+not an estimate. Two things confirmed from the model's own
+documentation that make this one worth getting right, not rounding
+loosely:
+- The model's tokenizer config file says 512, but the model itself
+  truncates at 256 and was never trained past that — trusting the 512
+  figure would silently lose the back half of some chunks.
+- Quality degrades even approaching 256, not just past it — the model
+  "has not been trained to perform on sequences that exceed 256
+  tokens." This isn't just a cutoff; it's a reason to split well
+  *before* hitting the limit, not right up against it.
+
+**Character estimate vs. the real check — don't conflate them.**
+~1000 characters is a reasonable *planning* estimate (≈4 characters
+per WordPiece token for English text), useful for a first pass at
+where to split cheaply. The **actual enforcement must count real
+tokens from the same tokenizer the model uses**, not characters —
+the ratio varies by text (punctuation-heavy or jargon-heavy text
+tokenizes differently than plain prose), so a character count alone
+can both over- and under-estimate the true token count.
+
+## edges
+
+The cached graph-relationship table — a fast local copy of
+relationships that already exist in TheBrain (parent/child/jump) or
+OB1 (shared people/topics), so a search's "serendipity" hop doesn't
+need a live round-trip per hop. Same polymorphic pairing as
+`node_links`, but `edges` is about a source's own native graph
+structure; `node_links` is about cross-source (or cross-brain)
+identity/reference. Different purpose, same shape.
+
+| Column | Type | Notes |
+|---|---|---|
+| `from_type` | text | `'thebrain'` \| `'ob1'` \| `'plane'` |
+| `from_id` | uuid | id in the matching node table |
+| `to_type` | text | same three values |
+| `to_id` | uuid | same rule |
+| `relationship` | text | e.g. `'parent'` \| `'child'` \| `'jump'` (TheBrain-native) or `'shared_topic'` \| `'shared_person'` (OB1-native) — source-dependent, not a fixed enum across sources |
+| `source` | text | which system's native relationship this mirrors — `'thebrain'` \| `'ob1'` |
+| `created_at` | timestamptz | |
+
+**No separate column for *which* topic/person two OB1 nodes
+share — resolved 2026-11-04, user's own observation.** Storing the
+specific shared value on the edge row would just duplicate something
+derivable: re-read either linked node live (already required before
+answering, per the acceptance tests) and the shared topic/person is
+whatever's common between their `topics`/`people` lists. Matches the
+existing "disposable index" rule — don't store what can be derived.
+
+**Still open:** exactly when `edges` rows get populated (presumably
+during Phase 1's bootstrap, by walking each Thought's `/graph`
+response — confirmed live that endpoint exists and returns parents/
+children/jumps — but not yet written down as a rule).
+
+## sync_state
+
+Bootstrap/rebuild tracking — **not yet designed at all**, not even a
+first column proposal. Needed before Phase 1's "safe to re-run" test
+(see `docs/phase-1-plan.md` acceptance test 2) can actually be built.
+
+## Still to settle
+
+- How `node_links` rows get created in general (manual, title-
+  similarity match, graph-edge inference) — still open.
+- **Cross-brain/cross-source duplicate detection** — table exists
+  (`node_links`, `link_type = 'duplicate_candidate'`, above). Still
+  open: how CRO actually decides two rows are the same real thing in
+  the first place (title match? something smarter?). CRO never
+  auto-merges — this only ever creates a flagged candidate for the
+  user to confirm.
+- **The restructure-flow UX** (CRO asking "should this be moved to
+  Filing Cabinet?", surfacing "this thought exists in 2 brains") —
+  named 2026-11-04 as Phase 4 scope (acting on flags Phase 1 raised).
+  Not yet designed.
+- **The actual move-between-brains mechanism** — Phase 4 scope.
+  TheBrain's API supports creating/deleting Thoughts and Notes; moving
+  one between brains likely means recreate-in-target plus delete-
+  from-source. Unverified against the live API that this round-trips
+  without data loss, including attachments.
+- **Attribution vs. sensitivity are two separate questions, not one.**
+  Sensitivity (`sensitivity_tier_id`) is how private the content is.
+  Attribution — whose fact this specifically is (e.g. this is
+  Kittery's diagnosis, not Keith's) — is a different axis, not yet
+  modeled anywhere in this schema. Needed before `restricted` can be
+  applied correctly to Filing Cabinet content; not needed for the
+  `standard` "Who Am I" case.
+
+## Full schema diagram
+
+Canonical copy: `docs/architecture/09-cro-index-schema.mmd`, matching
+the numbered convention every other architecture diagram in this repo
+uses. The copy below is kept in sync by hand — if the two ever
+disagree, the `.mmd` file is the source of truth.
+
+`sync_state` is left out — it has no columns designed yet (see above).
+`node_links`, `chunks`, and `edges` each reference "one of three
+tables" via a `type`/`id` pair, not a real foreign key — Mermaid has
+no notation for that, so each is drawn with a relationship line to all
+three node tables, labeled as app-enforced, not database-enforced.
+
+```mermaid
+erDiagram
+    brains {
+        text id PK
+        text name
+        boolean included_in_index
+        timestamptz last_synced_at
+    }
+
+    thebrain_types {
+        text id PK
+        text source_brain_id FK
+        text name "refreshed on each sync"
+        timestamptz last_synced_at
+    }
+
+    sensitivity_tiers {
+        text id PK
+        text description
+    }
+
+    thebrain_nodes {
+        uuid id PK
+        text source_id
+        text source_brain_id FK
+        text title
+        text category_type_id FK
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    ob1_nodes {
+        uuid id PK
+        text source_id
+        text title
+        text category "OB1's own auto-set type"
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    plane_workitems {
+        uuid id PK
+        text source_id
+        text identifier
+        text title
+        text body
+        text status
+        text category "CRO's own, no native field needed"
+        text_array tags "carries Pri1-5/Sev1-5 back into Plane"
+        date start_date
+        date end_date
+        text sensitivity_tier_id FK
+        timestamptz updated_at
+    }
+
+    node_links {
+        text from_type "app-enforced, not a real FK"
+        uuid from_id
+        text to_type "app-enforced, not a real FK"
+        uuid to_id
+        text link_type
+        boolean confirmed_by_user
+        timestamptz created_at
+    }
+
+    chunks {
+        uuid id PK
+        text node_type "app-enforced, not a real FK"
+        uuid node_id
+        integer chunk_index
+        text text
+        vector_384 embedding "MiniLM via ElBruno.LocalEmbeddings, CPU-pinned"
+        timestamptz created_at
+    }
+
+    edges {
+        text from_type "app-enforced, not a real FK"
+        uuid from_id
+        text to_type "app-enforced, not a real FK"
+        uuid to_id
+        text relationship
+        text source
+        timestamptz created_at
+    }
+
+    brains ||--o{ thebrain_nodes : "hosts (TheBrain only)"
+    brains ||--o{ thebrain_types : "scopes (types are per-brain)"
+    thebrain_types ||--o{ thebrain_nodes : "categorizes (nullable)"
+    sensitivity_tiers ||--o{ thebrain_nodes : "tags (node-level only)"
+    sensitivity_tiers ||--o{ ob1_nodes : "tags (node-level only)"
+    sensitivity_tiers ||--o{ plane_workitems : "tags (node-level only)"
+
+    thebrain_nodes ||--o{ node_links : "from/to, app-enforced"
+    ob1_nodes ||--o{ node_links : "from/to, app-enforced"
+    plane_workitems ||--o{ node_links : "from/to, app-enforced"
+
+    thebrain_nodes ||--o{ chunks : "has text in, app-enforced"
+    ob1_nodes ||--o{ chunks : "has text in, app-enforced"
+    plane_workitems ||--o{ chunks : "has text in, app-enforced"
+
+    thebrain_nodes ||--o{ edges : "from/to, app-enforced"
+    ob1_nodes ||--o{ edges : "from/to, app-enforced"
+    plane_workitems ||--o{ edges : "from/to, app-enforced"
+```
