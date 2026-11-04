@@ -68,3 +68,24 @@ Primary design documents:
 - `.journal/`: monthly commit logs and the curated project journal
 
 No runtime code should be inferred from the concept documents. Technical discovery and explicit implementation approval come first.
+
+# NOTE (to be deleted once handled)
+
+Contradictions still in the files
+
+1. CURRENT.md "Active decisions" still has three stale lines:
+   - "Candidate repository and TheBrain records are hydrated…" (CRO never reads repos).
+   - "Repository writes are outside the initial read-only MVP."
+   - "TheBrain Note bodies require explicit fetching and indexing" (Note search works now).
+2. CURRENT.md "Retrieval model" still says Note-body search is unreliable. The re-test section further down says it works.
+3. CURRENT.md open question still asks which repository artifact types enter the indexing allowlist.
+4. CURRENT.md Epic folders: It never mentions the docs/Epic N - …/ folders or the nine Epic 0 Feature files. The Non-negotiables also say "see 'Current state' below" for the embedding model, but that text moved to the schema doc.
+5. CONTEXT-MAP.md "Known gaps" still says the 2026-10-15 check found Note search unreliable. It still lists the Codex-session and legacy .ai items.
+6. CONTEXT-MAP.md rows:
+   - The capability matrix is still described as covering "repository-adapter" behavior.
+   - bootstrap.variables.md is still "Pending approval."
+   - Several freshness dates still read 2026-10-11.
+   - The journal is "Updated 2026-10-11."
+7. DECISIONS.md (unchanged): It has no entries for several 2026-11-04 decisions: the Phase→Epic rename, plain Postgres, the schema redesign, the sol3.net hostname, the GPU rule, or the sensitivity-tier correction. Its last entry still says "5-phase roadmap."
+8. README.md (unchanged): It still lists "repo-grounded context recall" as a delivery phase and says the implementation language is an open decision.
+9. D:\Repos\... paths: CURRENT.md and CONTEXT-MAP.md still use D:\Repos\... paths, and there is no D: drive on this machine. bootstrap.variables.md has the same paths.
