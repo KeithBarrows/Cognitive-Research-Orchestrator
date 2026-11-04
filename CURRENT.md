@@ -204,8 +204,9 @@ CRO-routed classification.
 
 - Public ingest site's OIDC login + account allowlist — undesigned.
 - OB1 cloud-to-local migration — unscheduled.
-- Laptop-sync, sharpened to: can the whole Docker stack be cloned
-  desktop → laptop (not just a data export/sync) — unanswered.
+- Laptop-sync — resolved 2026-11-03: not needed. CRO runs on the
+  laptop only (see Non-negotiables), so there is nothing to clone or
+  sync from desktop to laptop.
 - Future health-device ingestion (Oura, GuavaHealth, Google Health).
 - Home Assistant integration — in scope, parked for a dedicated pass.
 - Dashboard — lowest priority, parked. Plan is to migrate the
@@ -247,6 +248,13 @@ criteria below — building it is not in scope until the user approves.
 
 **Hard constraints:**
 
+- **CRO runs on the laptop, not the desktop.** The CRO API/MCP is
+  exposed on the internal LAN as well as locally on the laptop. This
+  is deliberate: when traveling, nothing needs to be synced *from*
+  the laptop (Docker stack included) — the laptop already is the
+  one place CRO runs. Do not design, suggest, or build a
+  desktop-hosted CRO, a desktop-to-laptop sync path, or a
+  Docker-stack clone between the two machines.
 - CRO must not become a user-knowledge store.
 - Sensitive content, derived text, and embeddings remain inside the
   trusted home environment.
@@ -273,8 +281,6 @@ criteria below — building it is not in scope until the user approves.
   public ingest site?
 - What is the migration plan for moving OB1 from cloud to
   internal-only hosting?
-- Can the whole local Docker stack be cloned from desktop to laptop
-  for travel use, not just a data export/sync?
 - Does Plane content also flow into TheBrain, or stay a separate lane?
 - What UI direction fits the dashboard at scale — is a local-graph
   view (one item + direct connections) the answer to the open doubt
@@ -305,6 +311,12 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-03 by Claude Sonnet 5: added the hard constraint that CRO
+runs on the laptop (not the desktop), with its API/MCP exposed on
+the LAN and locally, specifically so nothing needs syncing from the
+laptop while traveling. Resolved the now-answered laptop-sync open
+question and deferred item to match.
 
 2026-10-20 by Claude Sonnet 5, reshaping this file from a dated diary
 into a topic-grouped description of present state (see DECISIONS.md

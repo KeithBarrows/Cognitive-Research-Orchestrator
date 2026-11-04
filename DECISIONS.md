@@ -391,3 +391,36 @@ decision if a real need appears; the relabeled capability-matrix
 research would still apply.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-10-22 session.
+
+---
+
+## 2026-11-03 — CRO runs on the laptop, not the desktop
+
+**Status:** Active
+
+**Decision:** CRO (the full Docker stack) runs on the laptop only. Its
+API/MCP surface is exposed both on the internal LAN and locally on the
+laptop itself. No desktop-hosted CRO, no desktop-to-laptop sync path,
+and no Docker-stack clone between the two machines.
+
+**Replaces:** The earlier open question of whether the whole local
+Docker stack could be cloned from desktop to laptop for travel use.
+
+**Reason and evidence:** User directive. The point is to remove travel
+friction — since CRO already lives on the laptop, nothing needs to be
+synced *from* the laptop before a trip. Hosting it on the desktop
+instead would recreate exactly the sync problem this decision avoids.
+
+**Affected unfinished work:** Any future install/ops documentation,
+deployment scripts, or Docker Compose setup for CRO must target the
+laptop as the only host. `CURRENT.md`'s Non-negotiables, deferred/
+parked list, and open questions updated to match.
+
+**Revisit when:** A real multi-machine requirement appears (e.g. the
+laptop becomes unavailable as a host) and is explicitly approved as a
+new decision.
+
+**Rollback path:** Supersede this decision explicitly before hosting
+CRO anywhere else.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-03 session.
