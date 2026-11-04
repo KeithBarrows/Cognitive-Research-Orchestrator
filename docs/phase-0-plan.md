@@ -77,10 +77,22 @@ phase; this is infrastructure only.
   laptop** — set via the router's DHCP DNS setting, so any new device
   that joins the network picks it up automatically, not a per-device
   setup chore. This means dnsmasq must also forward every non-local
-  query (ordinary internet domains) to a real upstream DNS (e.g.
-  1.1.1.1 or 8.8.8.8) — it becomes the network's primary resolver for
-  everything, not just these subdomains, so normal browsing can't
-  break for every other device on the network.
+  query (ordinary internet domains) to a real upstream DNS — it
+  becomes the network's primary resolver for everything, not just
+  these subdomains, so normal browsing can't break for every other
+  device on the network. **Upstream chosen, 2026-11-04: Cloudflare
+  `1.1.1.1` primary, Quad9 `9.9.9.9` secondary/fallback.** 1.1.1.1 is
+  the fastest of the major public resolvers (~11ms median) with the
+  cleanest privacy stance among them (no IP logging, query data
+  purged within 24 hours, independently audited); 9.9.9.9 is kept as
+  a fallback for its built-in blocking of known-malicious domains,
+  reasonable given this network also carries CRO's own sensitive
+  infrastructure traffic, not just casual browsing. dnsmasq supports
+  multiple upstreams, so this isn't an either/or.
+  Router note: the Gryphon router currently hands out the ISP's own
+  DNS via its internal DHCP — that gets replaced by the laptop's
+  dnsmasq address once it exists, not pointed at 1.1.1.1/9.9.9.9
+  directly (those are dnsmasq's own upstreams, one layer further in).
 
 ## 2b. Why this matters for testing (added 2026-11-04)
 
