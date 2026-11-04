@@ -13,6 +13,7 @@
 | Epic 0 plan | `docs/phase-0-plan.md` | Epic 0 (Installs) plan — infrastructure only, no CRO code | Added 2026-11-04 | Reviewing what needs installing (Docker, Postgres+pgvector, OB1, Plane, TheBrain file sync) before Epic 1 can run | Active |
 | Epic 1 plan | `docs/phase-1-plan.md` | Epic 1 (Bootstrap) plan — still needs approval | Still needing approval as of 2026-11-04 | Reviewing the Epic 1 bootstrap slice, its schema touch, tests, or exclusions | Active, not yet approved |
 | Epic 2-6 plans | `docs/phase-2-plan.md` .. `docs/phase-6-plan.md` | Broad-stroke only, not yet detailed | Named 2026-11-04 (Epic 6 added 2026-11-04) | Reviewing Lookup+Plane, ongoing capture, reorg, external-gather, or skill-hooks scope | Broad-stroke |
+| `cro_index` schema | `docs/cro-index-schema.md` (canonical copy of the diagram: `docs/architecture/09-cro-index-schema.mmd`) | Canonical for the 10-table `cro_index` schema — settled through live verification against TheBrain, OB1, and Plane | Settled 2026-11-04 | Any `cro_index` table, column, embedding, or chunking question | Active |
 | Developer architecture overview | `docs/developer-architecture-overview.md` | Summary/index pointing to the canonical sources below; not itself a decision source | Written 2026-10-22 | Onboarding a new developer, or wanting one page that links everything | Active |
 | OB1 integration survey | `docs/ob1-integration-survey.md` | Reference catalog of OB1's extensions/recipes/schemas; not itself a design decision | Written 2026-10-16 | Checking whether an OB1 capability already exists before designing one | On demand |
 | Scouting notes | `docs/research/*.md` | Raw tool/API scouting notes, not a design decision; rescued 2026-10-20 from a stale duplicate folder | Dated individually, pre-2026-10-20 | Designing the future health-device ingestion item, or checking whether a scouted tool was already looked at | On demand |
@@ -68,7 +69,9 @@ Stop and ask if this precedence does not resolve a conflict.
 
 ## Known gaps
 
-- Chunking, ranking, and embedding choices are not finalized.
+- Embedding model and chunk-splitting rule are settled (2026-11-04,
+  see `docs/cro-index-schema.md`); **ranking** across the three
+  sources at query time is still not finalized — that's Epic 2's job.
 - Skill `cro_context` validation rules are not finalized.
 - Plane is listed by the shared startup but is not available in the
   current Codex session.

@@ -2,34 +2,14 @@
 
 ## Outcome now
 
-Epic 1 (Bootstrap) plan still needs approval (corrected 2026-11-04 —
-the 2026-10-20 "approved" note here and in `docs/phase-1-plan.md`'s
-header were both wrong; see `DECISIONS.md`'s 2026-10-20 entry, which
-is a record of what was believed at the time, not evidence that
-approval actually happened). Next work once approved: install OB1
-local via Docker, transfer cloud OB1 thoughts to it, then update the
-architecture documents and diagrams to match. Do not begin the
-retrieval-slice runtime code until that bootstrap work is done and
-verified.
+Epic 1 (Bootstrap) plan still needs approval — see `docs/phase-
+1-plan.md`. Next work once approved: Epic 0's installs
+(`docs/phase-0-plan.md`), then Epic 1's bootstrap code.
 
-Decided 2026-10-22: CRO never reads a repository directly — no
-"repository adapter" exists or will exist inside CRO. See
-`DECISIONS.md`'s 2026-10-22 "CRO never reads a repository directly"
-entry for the full model (skill pulls via search, skill writes the
-answer back itself; capture only ever comes from the user directly
-or the scheduled ingest queue, never from a skill). Updated to
-match: `docs/README.md`, ADR 0001, `docs/phase-1-plan.md`,
-`docs/developer-architecture-overview.md`, and diagrams `01`, `02`,
-`03`, `04`, `06`, `07`. `docs/capability-matrix.md`'s Repository
-adapter section is kept, relabeled as skill-author reference only.
-
-Done 2026-10-22: the developer-facing architecture review package
-(Section 6 of the Phase 1 plan) — reviewed `docs/README.md` and ADR
-0001 for stale text, added Plane to every diagram that was missing
-it, added the OB1-universal-coverage rule and a new bootstrap-flow
-diagram (`docs/architecture/08-bootstrap-flow.mmd`) where none
-existed, and wrote `docs/developer-architecture-overview.md` as the
-single linking page for a developer joining cold.
+Settled, not re-narrated here — see `DECISIONS.md`: CRO never reads a
+repository directly (2026-10-22); the developer-facing architecture
+review package (`docs/developer-architecture-overview.md`) is
+complete and current (2026-10-22).
 
 ## Current state
 
@@ -73,19 +53,23 @@ single linking page for a developer joining cold.
   scores are soft, not a cutoff; getting a stable ID and ranked text
   from OB1 requires two separate calls.
 - Sensitivity tiers (`standard`/`personal`/`restricted`) gate what's
-  returned. For household data specifically: this is an attribution
-  tag on facts that are specifically the user's wife Kittery's (e.g.
-  her EDS diagnosis), not an access-control boundary — the two have
-  been married ~36 years and share everything, so there's no need to
-  wall off her data from his; the risk is their medical histories
+  returned, based on how private the *content* is — **not** on
+  whether a specific person is named (corrected 2026-11-04; the real
+  "Who Am I" TheBrain note mentions "my wife, Kittery" by name and is
+  still `standard` — naming someone isn't itself sensitive). The two
+  have been married ~36 years and share everything, so household data
+  isn't walled off by person — the risk is their medical histories
   getting merged/confused, not one seeing the other's data.
+  `restricted` = actual medical/financial-grade records, confirmed
+  live to live in TheBrain's Filing Cabinet brain. Attribution (whose
+  fact something is) is a separate, not-yet-modeled axis from
+  sensitivity (how private it is).
 
-### `cro_index` schema (draft, not implemented)
-
-- Supabase/pgvector tables: `nodes`, `chunks`, `edges`, `sync_state`.
-- Sized against a 645,000-item scale target (Jerry's Brain), and
-  independently validated by two separate working OB1 self-hosted
-  implementations found in the OB1 integration survey.
+`cro_index`'s real schema (10 tables, settled through live
+verification) lives in the Epic roadmap section below, not here — the
+schema used to be sketched in this section too, but that sketch
+(`nodes`, `chunks`, `edges`, `sync_state`) is now wrong and fully
+superseded.
 
 ### Epic roadmap (restructured 2026-11-04 — supersedes the old
 "Phase 1 plan" single-doc framing below; renamed Phase→Epic
@@ -202,7 +186,7 @@ once Plane made growing a separate table per source pair unworkable).
   true` correctly excludes Note hits when you want thought-name-only
   search.
 - Done 2026-10-22: `docs/capability-matrix.md`, `DECISIONS.md`, and
-  the Phase 1 plan are updated to match the re-test. See `DECISIONS.md`
+  the Epic 1 plan are updated to match the re-test. See `DECISIONS.md`
   2026-10-22 entry.
 - Decided 2026-10-22: keep `cro_index`, but its job narrows. It no
   longer needs to be the only way to find Note text — TheBrain now
@@ -217,9 +201,20 @@ once Plane made growing a separate table per source pair unworkable).
 ### Plane
 
 - Confirmed self-hostable via Docker (official installer, free
-  Community Edition, AGPL-3.0).
+  Community Edition, AGPL-3.0) — brings its own bundled Postgres
+  (plus Redis, MinIO), never shared with `cro_index` or OB1's
+  Postgres.
 - Joins CRO as a third local backend, for tasks, on the same
-  REST-not-MCP pattern as OB1.
+  REST-not-MCP pattern as OB1. Installed in Epic 0 (one project named
+  "CRO"); seeded with 2-3 hand-added Work Items and indexed in
+  Epic 2.
+- Work item fields confirmed live against a real Plane workspace:
+  title, body (plain text preferred for chunking over the HTML
+  version), status, labels/tags, optional start/end dates. The
+  connected workspace's plan tier has no custom-property or native
+  category support — category, priority (`Pri1`-`Pri5`), and severity
+  (`Sev1`-`Sev5`) are carried as plain tags instead (see
+  `docs/cro-index-schema.md`'s `plane_workitems` table).
 - Open: whether Plane content also flows into TheBrain, or stays a
   separate lane. Example query shape this adds: "what outstanding
   work should I tackle" — a task-prioritization read from Plane, not
@@ -275,15 +270,16 @@ CRO-routed classification.
 ### Working mode
 
 Business Analyst mode for CRO requirements/relationship-mapping
-continues. Drafting the Phase 1 plan (language, schema, tests) was in
+continues. Drafting the Epic roadmap (language, schema, tests) was in
 scope because it directly answers the standing "Next checkpoint"
 criteria below — building it is not in scope until the user approves.
 
 ## Active decisions
 
 - The CRO index is disposable infrastructure, not a knowledge store.
-- Local PostgreSQL/Supabase with `pgvector` is the preferred index
-  direction.
+- Local Postgres + `pgvector` — **plain Postgres, not Supabase**, for
+  `cro_index` specifically (settled 2026-11-04): `cro_index` doesn't
+  need Supabase's Auth/Realtime/Storage layers, only OB1 does.
 - CRO-owned `cro_index` and `cro_runtime` storage must remain separate
   from OB1-owned storage.
 - Retrieval combines exact text, semantic similarity, metadata, and
@@ -412,6 +408,17 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-04 by Claude Sonnet 5 (working-context-2-shape): removed the
+`cro_index` schema sketch that had gone factually wrong (it still
+listed `nodes`/`chunks`/`edges`/`sync_state` after today's full
+10-table redesign — the Epic roadmap section already has the real
+one), corrected the sensitivity-tier description (naming someone
+isn't itself sensitive), expanded the thin Plane section with today's
+confirmed fields and the category/priority/severity-as-tags decision,
+compressed "Outcome now" down to present-state facts instead of
+re-narrating decisions already recorded in DECISIONS.md, and fixed a
+few leftover "Phase 1 plan" phrasings to "Epic 1"/"Epic roadmap."
 
 2026-11-03 by Claude Sonnet 5: added the hard constraint that CRO
 runs on the laptop (not the desktop), with its API/MCP exposed on
