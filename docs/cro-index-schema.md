@@ -30,6 +30,7 @@ was added 2026-11-04 to track it, not just populate it once.
 | `name` | text | e.g. "Growth", "Filing Cabinet" |
 | `included_in_index` | boolean | `false` for `CRO API Discovery 2026-10-11` and `Blue Skies Unlimited` (scratch/discovery brains); `true` for Growth, Filing Cabinet, Future Life, SW Architecture, MVP 2013, Lifestyle Defined. This is a `cro_index` indexing-scope toggle only — it does not touch TheBrain itself. |
 | `last_synced_at` | timestamptz | when this row was last refreshed against TheBrain's live `/brains` list |
+| `is_private_home` | boolean, default `false` | **Added 2026-11-05.** User-set, not auto-derived — true for exactly one brain (Filing Cabinet, confirmed live as the user's intended home for private content). Drives `node_flags.flag_type = 'misplaced_private'` (see `thebrain_nodes.access_type` and `node_flags` below): a Private Thought outside this brain is flag-worthy, one inside it isn't. |
 
 ## thebrain_types
 
@@ -48,6 +49,7 @@ re-synced — individual `thebrain_nodes` rows just hold a stable FK.
 | `source_brain_id` | text, FK → `brains.id` | Types are per-brain, confirmed live by the brain-scoped endpoint |
 | `name` | text | refreshed on each sync — never treated as permanent |
 | `last_synced_at` | timestamptz | when this row was last refreshed against TheBrain's live Types list |
+| `staleness_threshold_days` | int, nullable | **Added 2026-11-04 (Epic 1 "stale" flag design).** Blank by default — a Type never goes stale until this is explicitly set. Settled live against the user's own Growth brain: Medical/Financial-style content stays blank forever (history, not decay); Software was set to 180 days. A `thebrain_nodes` row with **no Type at all** (`category_type_id` null) is also exempt — most Thoughts currently have no Type, so this also prevents a first-run "everything is stale" flood on a brain that's years old. |
 
 **Cross-phase concern, not just a schema note (per the user's own
 framing, 2026-11-04):** resyncing `brains` and `thebrain_types` against
@@ -77,7 +79,8 @@ in one place instead of being repeated free text.
 | `source_brain_id` | text, FK → `brains.id` | which brain it's in — required because TheBrain's API is brain-scoped (`/thoughts/{brainId}/{thoughtId}`), confirmed live |
 | `title` | text | TheBrain's real `name` field — confirmed live to be a clean, author-written title, unlike OB1's |
 | `category_type_id` | text, FK → `thebrain_types.id`, nullable | **Corrected 2026-11-04 — was a frozen `category` text column, now a live FK.** TheBrain's Types are themselves regular, user-editable Thoughts (confirmed live: 8 exist in Growth right now, via `/thoughts/{brainId}/types`) — freeform, can be renamed, added, or removed at any time. Storing a resolved name as plain text would go stale the moment that happens. The FK points at `thebrain_types`, which is the thing that gets re-synced, not every node that references it. `null` means no type set (confirmed live on "Who Am I"). |
-| `sensitivity_tier_id` | text, FK → `sensitivity_tiers.id`, default `'standard'` | set per-thought by CRO's own classification at index time; never inherited from the brain, never copied from a source field (TheBrain has none) |
+| `sensitivity_tier_id` | text, FK → `sensitivity_tiers.id`, default `'standard'` | **Corrected 2026-11-05 — "TheBrain has none" was wrong.** TheBrain does have a native signal (`access_type`, below) — it's just unreliable on its own, confirmed live: under "Health Records," the sibling "Surgeries" is marked Private while clearly-medical "EDS" and "Research Info" are not. `access_type = 1` is an **input signal** CRO weighs when classifying, never a blind copy — CRO's own judgment still has to catch what the user's manual marking missed. |
+| `access_type` | int, nullable | **Added 2026-11-05.** TheBrain's own `acType` field, raw — `0` confirmed live as normal, `1` confirmed live as the UI's "Private" marker (undocumented by the API itself; found by direct observation on "Val Docs" and its children, all `acType=1`). Other values unconfirmed, stored as-is rather than assumed. Drives both `sensitivity_tier_id` classification above and `node_flags.flag_type = 'misplaced_private'` below. |
 | `updated_at` | timestamptz | TheBrain's `modificationDateTime` |
 
 ## ob1_nodes
@@ -152,12 +155,56 @@ writing, not something the database itself checks.
 | `to_id` | uuid | same rule |
 | `link_type` | text | `'reference'` (general cross-reference, e.g. a Plane work item pointing at a TheBrain thought) \| `'duplicate_candidate'` (CRO-detected, e.g. same title in two brains) \| `'confirmed_same_entity'` (user confirmed) \| `'native'` (a real TheBrain cross-brain link, if one is ever found in active use) |
 | `confirmed_by_user` | boolean, default `false` | distinguishes an automatic CRO guess from something the user has actually verified |
+| `detection_method` | text, nullable | **Added 2026-11-04, extended 2026-11-05.** `'title_match'` \| `'embedding_similarity'` \| `'note_brain_link'` \| `'user_manual'`. Null for a link that isn't a detection result at all. `'note_brain_link'` pairs only with `link_type = 'native'`: a real TheBrain cross-brain link, found 2026-11-05 — confirmed live on "Health Records" (Growth), whose Note body contains a `brain://` URI resolving to "Health History" in Filing Cabinet. **This kind of link lives inside Note Markdown text, not in the `/graph` response at all** (`jumps` was empty for that same Thought) — it can only be found by scanning Note bodies for `brain://` URIs and decoding their base64url-encoded brain/Thought GUIDs, a separate pass from the `edges` walk below. |
+| `similarity_score` | float, nullable | **Added 2026-11-04.** The embedding cosine similarity that produced an `'embedding_similarity'`-detected row — in particular the duplicate-neighborhood-expansion check (below). Null when `detection_method` isn't `'embedding_similarity'`. |
 | `created_at` | timestamptz | |
 
 **Invariant to enforce at write time (not a DB constraint):** every
 `ob1_nodes` row must have at least one `node_links` row pointing at it
 from `'thebrain'` or `'plane'` — an OB1 entry never stands alone. A
 TheBrain or Plane entry may have zero links.
+
+## node_flags
+
+**Added 2026-11-04 (Epic 1 orphan/stale/hub design).** `node_links`
+only models relationships *between two* nodes — orphan, stale, and hub
+are properties of *one* node, so they don't fit there. Same
+polymorphic `type`/`id` pairing as `node_links`, and the same
+`confirmed_by_user`-style review pattern, renamed for this context.
+
+| Column | Type | Notes |
+|---|---|---|
+| `node_type` | text | `'thebrain'` \| `'ob1'` \| `'plane'` |
+| `node_id` | uuid | id in the matching node table |
+| `flag_type` | text | `'orphan'` (zero rows in `node_links` and `edges`, either side) \| `'stale'` (older than its Type's `staleness_threshold_days`; never set if the Type's threshold is blank or the node has no Type) \| `'hub'` (30+ total links/edges on a non-Type node — Type Thoughts, `kind=2`, are never flagged regardless of size, confirmed live against "Rolodex": 100+ children, and "Timeline" — both are Types, not regular Thoughts; confirmed live against two regular, non-Type Thoughts — "Quiver Software Development" at 24 links and "Technologist & ASPInsider" at 15 — that the 30 threshold doesn't over-flag ordinary well-connected content) \| `'catchall_hub'` (deferred — see below) \| `'misplaced_private'` (TheBrain nodes only — `access_type = 1` on a node whose `source_brain_id` isn't the one `brains` row with `is_private_home = true`; confirmed live on "Val Docs" and its 5 children, all `access_type=1`, all in Growth rather than Filing Cabinet) |
+| `detail` | text, nullable | why — e.g. `"42 links"`, `"stale 210d vs Type's 180d threshold"` |
+| `reviewed_by_user` | boolean, default `false` | same pattern as `node_links.confirmed_by_user` — Epic 4 review tracking |
+| `detected_at` | timestamptz | |
+
+**`'catchall_hub'` is a deferred, second-pass flag type (2026-11-04),
+not part of Epic 1's first bootstrap run.** Instead of counting links,
+it walks a node's neighbors up to 3 jumps out (via `edges`/
+`node_links`) and compares their `chunks.embedding` values — if the
+neighbors share no real semantic theme, the node is a "catch-all"
+rather than a coherent hub (confirmed live: "Rolodex"'s 100+ children
+are all people, so it would pass a coherence check even though it
+fails the flat link-count one; a true catch-all would fail both). The
+similarity cutoff for "no real theme" can't be picked by reasoning
+alone — it needs tuning against real embeddings, which don't exist
+until after the first bootstrap populates `chunks`. This flag type is
+therefore designed to be **run as its own pass after Epic 1's raw read
+completes**, re-run as needed, not computed inline during the bootstrap
+read itself. See `docs/phase-1-plan.md`'s Features section.
+
+**Duplicate-neighborhood expansion (2026-11-04) reuses `node_links`,
+not `node_flags`.** Once a `duplicate_candidate` pair exists (the
+"Kittery" case), their neighbors (parent/child/jump, same nodes
+`edges` already tracks) are compared pairwise by embedding — a high-
+similarity neighbor pair gets its own `node_links` row, `link_type =
+'duplicate_candidate'`, `detection_method = 'embedding_similarity'`,
+with the triggering score in `similarity_score`. Same deferred-pass
+reasoning as `'catchall_hub'`: needs real embeddings to tune against,
+so it runs after Epic 1's raw read, not during it.
 
 ## chunks
 
@@ -285,14 +332,14 @@ coarser granularity, not a duplicate of that tracking.
 
 ## Still to settle
 
-- How `node_links` rows get created in general (manual, title-
-  similarity match, graph-edge inference) — still open.
-- **Cross-brain/cross-source duplicate detection** — table exists
-  (`node_links`, `link_type = 'duplicate_candidate'`, above). Still
-  open: how CRO actually decides two rows are the same real thing in
-  the first place (title match? something smarter?). CRO never
-  auto-merges — this only ever creates a flagged candidate for the
-  user to confirm.
+- How `node_links` rows get created for the general `'reference'` case
+  (manual, graph-edge inference) — still open. The `'duplicate_candidate'`
+  case is now settled: title match for the direct case (e.g. two
+  "Kittery" Thoughts), embedding similarity for the deferred
+  neighbor-expansion case — see `node_flags` and the
+  `node_links.detection_method`/`similarity_score` columns above. CRO
+  never auto-merges either way — this only ever creates a flagged
+  candidate for the user to confirm.
 - **The restructure-flow UX** (CRO asking "should this be moved to
   Filing Cabinet?", surfacing "this thought exists in 2 brains") —
   named 2026-11-04 as Phase 4 scope (acting on flags Phase 1 raised).
@@ -331,6 +378,7 @@ erDiagram
         text name
         boolean included_in_index
         timestamptz last_synced_at
+        boolean is_private_home "user-set, true for exactly one brain"
     }
 
     thebrain_types {
@@ -338,6 +386,7 @@ erDiagram
         text source_brain_id FK
         text name "refreshed on each sync"
         timestamptz last_synced_at
+        int staleness_threshold_days "nullable, blank = never stale"
     }
 
     sensitivity_tiers {
@@ -352,6 +401,7 @@ erDiagram
         text title
         text category_type_id FK
         text sensitivity_tier_id FK
+        int access_type "raw TheBrain acType, nullable"
         timestamptz updated_at
     }
 
@@ -386,7 +436,18 @@ erDiagram
         uuid to_id
         text link_type
         boolean confirmed_by_user
+        text detection_method "nullable"
+        float similarity_score "nullable"
         timestamptz created_at
+    }
+
+    node_flags {
+        text node_type "app-enforced, not a real FK"
+        uuid node_id
+        text flag_type "orphan, stale, hub, catchall_hub, misplaced_private"
+        text detail "nullable"
+        boolean reviewed_by_user
+        timestamptz detected_at
     }
 
     chunks {
@@ -425,6 +486,10 @@ erDiagram
     thebrain_nodes ||--o{ node_links : "from/to, app-enforced"
     ob1_nodes ||--o{ node_links : "from/to, app-enforced"
     plane_workitems ||--o{ node_links : "from/to, app-enforced"
+
+    thebrain_nodes ||--o{ node_flags : "flagged, app-enforced"
+    ob1_nodes ||--o{ node_flags : "flagged, app-enforced"
+    plane_workitems ||--o{ node_flags : "flagged, app-enforced"
 
     thebrain_nodes ||--o{ chunks : "has text in, app-enforced"
     ob1_nodes ||--o{ chunks : "has text in, app-enforced"

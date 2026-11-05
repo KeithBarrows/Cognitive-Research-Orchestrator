@@ -683,3 +683,69 @@ display name back to "Phase" would just be a find-and-replace; not
 expected to be needed.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-05 — Epic 1 (Bootstrap) approved, 7 Feature files
+
+**Status:** Active
+
+**Decision:** Epic 1 is approved as planned in `docs/phase-1-plan.md`.
+Broken into 7 Feature files under `docs/Epic 1 - Bootstrap/`:
+Lookup-Table Resync, Bootstrap Data Flow, Duplicate Detection,
+Orphan/Stale/Hub Flagging, Post-Bootstrap Vector Pass (deferred —
+catch-all hub + duplicate-neighborhood expansion, re-run against the
+populated `cro_index` rather than run once at bootstrap time), and two
+found live during this same review: Private-Content Detection and
+Misplaced-Private Flagging, and Note-Embedded Cross-Brain Link
+Detection.
+
+Settled through live verification against the real Growth brain:
+
+- **Orphan** = zero `node_links`/`edges` rows, either side.
+- **Stale** = per-Type `thebrain_types.staleness_threshold_days`,
+  blank by default (opt-in, prevents a first-run flood on a years-old
+  brain); Software set to 180 days, Medical/Financial left blank.
+- **Hub (simple)** = 30+ links on a non-Type node; Type Thoughts
+  (`kind=2`, e.g. "Rolodex," 100+ children) always excluded.
+- **Catch-all hub / duplicate-neighborhood expansion** = embedding-
+  based, deferred until real `cro_index` embeddings exist to tune a
+  similarity cutoff against.
+- **Misplaced-private** = TheBrain's undocumented `acType` field
+  (`thebrain_nodes.access_type`), confirmed live as a real but
+  unreliable "Private" marker (inconsistently applied even by the
+  user, e.g. "Surgeries" marked Private next to unmarked, clearly-
+  medical siblings). An input signal to `sensitivity_tier_id`, never a
+  blind copy. Flags a Private node outside the one `brains` row marked
+  `is_private_home` (Filing Cabinet).
+- **Note-embedded cross-brain links** = confirmed live that TheBrain's
+  `brain://` URIs live inside Note Markdown bodies, not in the
+  `/graph` response at all — need their own scan, separate from the
+  `edges` walk.
+
+**Replaces:** The earlier "orphan/stale/hub not yet designed" gap and
+the "TheBrain has no native sensitivity field" claim in
+`docs/cro-index-schema.md` (both corrected here).
+
+**Reason and evidence:** All of the above verified live against the
+real Growth and Filing Cabinet brains during this session — real
+examples named and checked, not invented ("Rolodex," "Timeline,"
+"Quiver Software Development," "Technologist & ASPInsider," "Val
+Docs," "Health Records").
+
+**Affected unfinished work:** `docs/cro-index-schema.md` (new
+`brains.is_private_home`, `thebrain_nodes.access_type`, `node_flags`
+table, `node_links.detection_method`/`similarity_score` columns),
+`docs/phase-1-plan.md` (Features, schema-touched, acceptance tests),
+`docs/Epic 1 - Bootstrap/` (Features 01-07), `CURRENT.md`,
+`CONTEXT-MAP.md`. Epic 0's installs (`docs/phase-0-plan.md`) are next,
+then Epic 1's actual code.
+
+**Revisit when:** The deferred Feature 05 vector-pass similarity
+cutoffs are set (needs real post-bootstrap embeddings); or Epic 1's
+code surfaces a real case none of these rules predicted.
+
+**Rollback path:** Approval can be revoked and the plan sent back with
+requested changes; nothing downstream (code) exists yet to unwind.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-05 session.

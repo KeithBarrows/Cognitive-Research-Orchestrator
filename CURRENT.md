@@ -2,8 +2,8 @@
 
 ## Outcome now
 
-Epic 1 (Bootstrap) plan still needs approval — see `docs/phase-
-1-plan.md`. Next work once approved: Epic 0's installs
+Epic 1 (Bootstrap) plan is **approved** (2026-11-05) — see
+`docs/phase-1-plan.md`. Next work: Epic 0's installs
 (`docs/phase-0-plan.md`), then Epic 1's bootstrap code.
 
 Settled, not re-narrated here — see `DECISIONS.md`: CRO never reads a
@@ -65,7 +65,11 @@ complete and current (2026-10-22).
   `restricted` = actual medical/financial-grade records, confirmed
   live to live in TheBrain's Filing Cabinet brain. Attribution (whose
   fact something is) is a separate, not-yet-modeled axis from
-  sensitivity (how private it is).
+  sensitivity (how private it is). TheBrain's own `acType` field
+  (confirmed live 2026-11-05) is a related but unreliable native
+  "Private" signal — an input to this classification, never a
+  substitute for it (see `docs/cro-index-schema.md`'s
+  `thebrain_nodes.access_type`).
 
 `cro_index`'s real schema (10 tables, settled through live
 verification) lives in the Epic roadmap section below, not here — the
@@ -97,14 +101,19 @@ was folded into the correct Epic below. See `docs/phase-roadmap.md`'s
    Docker install (resolves the real unverified gap in what Epic 1
    assumed existed), a fresh Plane Docker install, and a manual
    BeyondCompare file sync bringing TheBrain's brains onto the laptop.
-1. **Epic 1 — Bootstrap** (`docs/phase-1-plan.md`, still awaiting
-   approval): a single run, not continuous. Read TheBrain once, create
-   or update matching OB1 + `cro_index` entries — including `chunks`
-   and `edges`, not deferred to Epic 2 (resolved 2026-11-04) — flag
-   (never act on) Thoughts/notes that might need reorg, including
-   duplicate/orphan/stale-node detection folded in from the old plan.
-   TheBrain stays fully read-only this Epic — the earlier "Slice 2"
-   write-support exception was moved out to Epic 4, not kept here.
+1. **Epic 1 — Bootstrap** (`docs/phase-1-plan.md`, approved
+   2026-11-05, 7 Feature files): a single run, not continuous. Read
+   TheBrain once, create or update matching OB1 + `cro_index` entries
+   — including `chunks` and `edges`, not deferred to Epic 2 (resolved
+   2026-11-04) — flag (never act on) Thoughts/notes that might need
+   reorg: duplicate/orphan/stale/hub detection, a deferred
+   embedding-based catch-all-hub and duplicate-neighborhood pass, and
+   two more found live 2026-11-05 — misplaced-private content
+   (TheBrain's own `acType` marker, confirmed unreliable on its own)
+   and Note-embedded cross-brain `brain://` links (invisible to the
+   `/graph` endpoint, need their own Note-body scan). TheBrain stays
+   fully read-only this Epic — the earlier "Slice 2" write-support
+   exception was moved out to Epic 4, not kept here.
 2. **Epic 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
    the actual search/retrieval capability (with provenance and the
    serendipity-cap-2 rule, folded in from the old plan), standing
@@ -145,11 +154,10 @@ Access Naming.md`, one per install+test item in
 Cross-cutting decisions that apply to every phase (language/stack,
 schema, the developer-doc-review task) now live in
 `docs/phase-roadmap.md` rather than being repeated per phase.
-`docs/cro-index-schema.md` has the full current schema: `brains`,
-`sensitivity_tiers`, `thebrain_nodes`, `ob1_nodes`, `plane_workitems`,
-and one generic `node_links` table (replacing the short-lived
-`thebrain_node_links` draft from 2026-11-03, consolidated 2026-11-04
-once Plane made growing a separate table per source pair unworkable).
+`docs/cro-index-schema.md` has the full current schema (11 tables,
+`node_flags` added 2026-11-05) — not re-listed here to avoid this
+file drifting out of sync with it again, the same reason the old
+schema sketch had to be removed from this file once already.
 
 ### OB1 status
 
@@ -394,10 +402,11 @@ criteria below — building it is not in scope until the user approves.
 
 ## Next checkpoint
 
-The user reviews `docs/phase-1-plan.md` and either approves it as the
-Epic 1 (Bootstrap) plan or sends it back with requested changes.
-Epics 2–6 (`docs/phase-roadmap.md`) are broad-stroke only and don't
-need approval yet — each needs its own detailed planning pass first.
+Epic 1 (Bootstrap) is approved (2026-11-05) — next is Epic 0's
+installs (`docs/phase-0-plan.md`), then Epic 1's actual bootstrap
+code, both laptop-only work. Epics 2–6 (`docs/phase-roadmap.md`) are
+broad-stroke only and don't need approval yet — each needs its own
+detailed planning pass first.
 
 ## Approval boundaries
 
@@ -419,6 +428,18 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-05 by Claude Sonnet 5: Epic 1 (Bootstrap) approved — updated
+"Outcome now," the Epic roadmap's Epic 1 entry, and "Next checkpoint"
+to say so. Added two Features found live during the same review
+(misplaced-private content detection via TheBrain's `acType` field;
+Note-embedded cross-brain `brain://` link detection), both now in
+`docs/cro-index-schema.md` (`node_flags`, `thebrain_nodes.access_type`,
+`brains.is_private_home`) and `docs/Epic 1 - Bootstrap/` (Features 06,
+07). Removed this file's stale 6-of-11-table schema list (replaced
+with a pointer to the schema doc, to stop it drifting again) and added
+the `acType`-as-input-signal correction to the sensitivity-tier
+description.
 
 2026-11-04 by Claude Sonnet 5, second pass: fixed a punch-list left
 by a laptop-side session after pulling this branch — removed 3 dead

@@ -4,6 +4,7 @@ erDiagram
         text name
         boolean included_in_index
         timestamptz last_synced_at
+        boolean is_private_home "user-set, true for exactly one brain"
     }
 
     thebrain_types {
@@ -11,6 +12,7 @@ erDiagram
         text source_brain_id FK
         text name "refreshed on each sync"
         timestamptz last_synced_at
+        int staleness_threshold_days "nullable, blank = never stale"
     }
 
     sensitivity_tiers {
@@ -25,6 +27,7 @@ erDiagram
         text title
         text category_type_id FK
         text sensitivity_tier_id FK
+        int access_type "raw TheBrain acType, nullable"
         timestamptz updated_at
     }
 
@@ -59,7 +62,18 @@ erDiagram
         uuid to_id
         text link_type
         boolean confirmed_by_user
+        text detection_method "nullable"
+        float similarity_score "nullable"
         timestamptz created_at
+    }
+
+    node_flags {
+        text node_type "app-enforced, not a real FK"
+        uuid node_id
+        text flag_type "orphan, stale, hub, catchall_hub, misplaced_private"
+        text detail "nullable"
+        boolean reviewed_by_user
+        timestamptz detected_at
     }
 
     chunks {
@@ -98,6 +112,10 @@ erDiagram
     thebrain_nodes ||--o{ node_links : "from/to, app-enforced"
     ob1_nodes ||--o{ node_links : "from/to, app-enforced"
     plane_workitems ||--o{ node_links : "from/to, app-enforced"
+
+    thebrain_nodes ||--o{ node_flags : "flagged, app-enforced"
+    ob1_nodes ||--o{ node_flags : "flagged, app-enforced"
+    plane_workitems ||--o{ node_flags : "flagged, app-enforced"
 
     thebrain_nodes ||--o{ chunks : "has text in, app-enforced"
     ob1_nodes ||--o{ chunks : "has text in, app-enforced"
