@@ -469,3 +469,217 @@ real TheBrain/OB1 APIs).
 restructuring, not a reversible design choice.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-04 — cro_index settled as a 10-table schema on plain Postgres, not Supabase
+
+**Status:** Active
+
+**Decision:** `cro_index`'s real schema — `brains`, `thebrain_types`,
+`sensitivity_tiers`, `thebrain_nodes`, `ob1_nodes`, `plane_workitems`,
+`node_links`, `chunks`, `edges`, `sync_state` — settled through live
+verification against the real TheBrain, OB1, and Plane APIs, in
+`docs/cro-index-schema.md` and its canonical diagram
+`docs/architecture/09-cro-index-schema.mmd`. Separately: `cro_index`
+runs on **plain Postgres + pgvector, not Supabase** — only OB1 needs
+the full Supabase stack (its own code depends on Supabase Edge
+Functions to serve its MCP surface); `cro_index` is accessed directly
+by CRO's own .NET code via Npgsql, with no second client needing
+Supabase's Auth/Realtime/Storage layers.
+
+**Replaces:** The earlier 4-table sketch (`nodes`, `chunks`, `edges`,
+`sync_state`) that had been carried in `CURRENT.md` since before this
+live-verification pass — that sketch assumed a single shared `nodes`
+table across TheBrain and OB1, which turned out to be wrong (a
+TheBrain Thought and an OB1 thought aren't 1:1). Also replaces the
+generic "Local PostgreSQL/Supabase with pgvector" framing — Supabase
+specifically is not used for `cro_index`.
+
+**Reason and evidence:** Live field verification against real
+TheBrain Types/brains endpoints, a real OB1 instance, and a real
+Plane work item, done over the course of this session; confirmed
+Supabase isn't needed by checking what `cro_index`'s actual clients
+are (CRO itself only) versus OB1's (which genuinely needs Supabase
+Edge Functions).
+
+**Affected unfinished work:** Epic 0's Postgres install
+(`docs/Epic 0 - Installs/Feature 02...md`) targets plain Postgres,
+not Supabase. Epic 1's bootstrap code writes to this exact schema.
+
+**Revisit when:** A second client needing Supabase-specific features
+(Auth, Realtime, Storage) for `cro_index` data is identified — not
+expected under the current design.
+
+**Rollback path:** Migrate `cro_index` to Supabase if a future need
+genuinely requires it; the schema itself doesn't change, only the
+hosting layer.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-04 — Local embedding model and chunk-splitting rule settled
+
+**Status:** Active
+
+**Decision:** `ElBruno.LocalEmbeddings` (NuGet), default
+`all-MiniLM-L6-v2` model via ONNX Runtime, 384 dimensions, in-process,
+no network call — built on `Microsoft.Extensions.AI`'s
+`IEmbeddingGenerator` abstraction (interfaces only, no model or
+compute in the namespace itself). Kept on the CPU execution provider.
+Chunk-splitting: logical blocks (Markdown headings) first, then
+paragraph, then sentence if still over the ceiling; a thought/note
+with no logical structure at all falls back to one chunk made from
+its title alone. The real ceiling is **256 WordPiece tokens** — a
+hard model limit (confirmed from the model's own documentation, not
+an estimate; its tokenizer config misleadingly says 512), not a loose
+character count.
+
+**Replaces:** An earlier placeholder of "embedding model/dimension
+not yet chosen."
+
+**Reason and evidence:** Compared `ElBruno.LocalEmbeddings`,
+`OnnxTextEmbeddings.NET`, and `SmartComponents.LocalEmbeddings` on
+maintenance activity, model size, and licensing (web search, current
+as of 2026-11-04); verified the chunk-splitting rule against a real
+21,000-character TheBrain note ("Who Am I") and a real content-free
+bookmark thought (the Flipboard case).
+
+**Affected unfinished work:** Epic 1's bootstrap code must call this
+model when populating `chunks`; the 256-token ceiling must be
+enforced by actual tokenization, not a character-count proxy.
+
+**Revisit when:** Search quality against real queries proves this
+model insufficient — the same package's `EmbeddingGemma` variant
+(768-dim) is a drop-in upgrade path already identified.
+
+**Rollback path:** Swap the embedding generator implementation;
+`chunks.embedding`'s dimension would need a migration if the
+replacement isn't also 384-dim.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-04 — Sensitivity tier is content-based, never person-based
+
+**Status:** Active
+
+**Decision:** `sensitivity_tier` (`standard`/`personal`/`restricted`)
+reflects how private the *content* is, never just whether a specific
+person is named. `restricted` means actual medical/financial-grade
+records (confirmed live to exist in TheBrain's Filing Cabinet brain).
+Attribution — whose fact something is — is a separate, not-yet-
+modeled axis from sensitivity.
+
+**Replaces:** An earlier framing (in `CURRENT.md` and this project's
+original design notes) describing sensitivity as "an attribution tag
+on facts that are specifically Kittery's" — conflated two different
+things. Corrected after live-checking a real TheBrain note ("Who Am
+I") that names "my wife, Kittery" by name in an otherwise ordinary,
+non-sensitive personal-reflection note.
+
+**Reason and evidence:** User correction, verified against the real
+note's content live.
+
+**Affected unfinished work:** Any sensitivity-classification logic
+Epic 1 builds must key off content type, not named-person detection.
+
+**Revisit when:** Attribution modeling is designed — needed before
+`restricted` can be applied correctly to Filing Cabinet content in
+all cases, not just the ones confirmed so far.
+
+**Rollback path:** None needed — this is a correction, not a
+reversible design choice.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-04 — Laptop GPU and hostname decisions refined
+
+**Status:** Active
+
+**Decision:** Two related infrastructure decisions, both refined from
+earlier same-day drafts: (1) only the Surface Book's **tablet-half**
+integrated GPU is off-limits for any CRO workload — the base's
+discrete GPU (GTX 1660 Ti) is allowed if explicitly pinned there,
+since the user's actual prior hardware failure (a Surface Book 2
+battery/display-panel heat problem while gaming on AC power) points
+specifically at the tablet half, not the base; (2) CRO's permanent
+hostname is a subdomain of `sol3.net` (the user's personal domain,
+not the writing/business `quantumfracturecreative.com`), resolved by
+a local DNS resolver (dnsmasq, in Docker, on the laptop) to every
+device on the home LAN via the router's DHCP setting, with Cloudflare
+`1.1.1.1` primary / Quad9 `9.9.9.9` secondary as upstream.
+
+**Replaces:** An initial blanket "no GPU at all" rule (refined to
+tablet-only once the real failure history was examined) and an
+initial wrong guess that `quantumfracturecreative.com` was the right
+domain (corrected to `sol3.net`).
+
+**Reason and evidence:** User-provided hardware history and domain
+ownership facts, both corrected same-day.
+
+**Affected unfinished work:** Epic 0's DNS resolver and embedding
+model installs (`docs/Epic 0 - Installs/Feature 08...md`,
+`Feature 09...md`) depend on both of these.
+
+**Revisit when:** Not expected to change absent new hardware or
+domain facts.
+
+**Rollback path:** None needed — these are corrections to same-day
+drafts, not reversals of settled, long-standing decisions.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.
+
+---
+
+## 2026-11-04 — Phases renamed to Epics; old §15 delivery plan reconciled; Epic 6 added
+
+**Status:** Active
+
+**Decision:** Every "Phase N" renamed to "Epic — Title" (file names
+unchanged, `phase-N-plan.md`, for stable history) — the user is
+organizing this project's planning as Epics breaking down into
+Features and eventually User Stories/PBIs, mirrored in new
+`docs/Epic N - Title/` folders (Epic 0 fully broken into Feature
+files). A new Epic 6 — Skill Hooks and Controlled Writes was added.
+Separately: `docs/README.md` §15's older, separate 0-5 delivery plan
+(written 2026-10-11, numbers collided with this Epic list) was marked
+superseded, not deleted — its real content was folded into the
+correct Epic (duplicate/stale detection into Epic 1; context-recall
+provenance/serendipity and standing resurfacing directives into
+Epic 2; nearly all of "general capture" into Epic 3; restructure
+suggestions into Epic 4; the entire skill-hooks phase into the new
+Epic 6).
+
+**Replaces:** The single-phase "Phase 1 plan" framing, the 5-phase
+roadmap from earlier the same day, and `docs/README.md` §15's
+0-5 delivery plan as the active planning document (kept as historical
+record).
+
+**Reason and evidence:** User direction to organize planning as
+Epics/Features/User-Stories, matching how the Plane project (Epic 0)
+will actually hold this work (parent/child work items tagged
+EPIC/FEATURE/USER STORY or PBI, since Plane has no native type field
+for this). The old §15 plan was found while checking whether an
+"older Phase 0" the user remembered actually existed — it did, and
+its content didn't contradict anything decided since, so it was
+reconciled rather than discarded.
+
+**Affected unfinished work:** `CURRENT.md`, `CONTEXT-MAP.md`, and
+every `docs/phase-N-plan.md` updated to match. Phases 2-6 (now broad-
+stroke Epics) still need their own detailed, live-verified planning
+pass the way Epic 0/1 got.
+
+**Revisit when:** Each Epic's Feature breakdown is extended (only
+Epic 0 has one so far) or a User Story/PBI layer is actually built
+inside a Feature.
+
+**Rollback path:** The file names never changed, so reverting the
+display name back to "Phase" would just be a find-and-replace; not
+expected to be needed.
+
+**Recorded by:** Claude Sonnet 5, from the 2026-11-04 session.

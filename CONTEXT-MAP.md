@@ -5,7 +5,7 @@
 | Current design addendum | `CRO-DESIGN-ADDENDUM-2026-10-11.md` | Canonical for architecture decisions made after the handoff | 2026-10-11 | Any architecture, security, storage, retrieval, or scope decision | Active |
 | Original design handoff | `CRO-DESIGN-HANDOFF-2026-10-11.md` | Canonical unless superseded by the addendum or verified capability findings | 2026-10-11 | Need original rationale, examples, or feature intent | On demand |
 | Technical architecture | `docs/README.md` | Canonical consolidated architecture | Updated 2026-10-11 | Planning or reviewing CRO behavior and delivery phases | Active |
-| Capability matrix | `docs/capability-matrix.md` | Canonical for verified TheBrain, OB1, and repository-adapter behavior | Verified 2026-10-11 | Designing an adapter, fallback, failure path, or acceptance test | Active |
+| Capability matrix | `docs/capability-matrix.md` | Canonical for verified TheBrain and OB1 behavior; its Repository-adapter section is kept as skill-author reference only (relabeled 2026-10-22 — CRO itself never reads a repository) | Verified 2026-10-11 | Designing an adapter, fallback, failure path, or acceptance test | Active |
 | Storage-boundary ADR | `docs/adr/0001-data-ownership-and-storage-boundaries.md` | Canonical for ownership and persistence boundaries | Accepted 2026-10-11 | Any storage, indexing, capture, or persistence decision | Active |
 | Architecture diagrams | `docs/architecture/*.mmd` | Supporting visual representation | Updated 2026-10-11 | Reviewing flows, boundaries, or component relationships | On demand |
 | Repository overview | `README.md` | Canonical concise project orientation | Updated 2026-10-11 | Session orientation or external project summary | Active |
@@ -18,7 +18,7 @@
 | OB1 integration survey | `docs/ob1-integration-survey.md` | Reference catalog of OB1's extensions/recipes/schemas; not itself a design decision | Written 2026-10-16 | Checking whether an OB1 capability already exists before designing one | On demand |
 | Scouting notes | `docs/research/*.md` | Raw tool/API scouting notes, not a design decision; rescued 2026-10-20 from a stale duplicate folder | Dated individually, pre-2026-10-20 | Designing the future health-device ingestion item, or checking whether a scouted tool was already looked at | On demand |
 | Shared startup contract | `D:\Repos\.ai-config\startup.md` | Canonical cross-repository startup procedure | Verified 2026-10-11 | Every new session after bootstrap migration | Active |
-| Repository bootstrap variables | `bootstrap.variables.md` | Canonical project scope after approval | Proposed 2026-10-11 | Every new session after creation | Pending approval |
+| Repository bootstrap variables | `bootstrap.variables.md` | Canonical project scope | Active (`status: active`, confirmed 2026-11-04 — this row previously said "Pending approval," already stale) | Every new session | Active |
 | Git working state | Git status and diffs | Canonical for uncommitted repository state | Live | Before edits, tests, cleanup, or commits | Active |
 | Project journal | `.journal/journal.md` | Curated project history | Updated 2026-10-11 | A journal retrieval trigger fires | On demand |
 | Writing-program document | `docs/Writing Program and Author HQ Living Doc.md` | Supporting domain material, not CRO core architecture | Existing document | A writing integration specifically requires it | Excluded by default |
@@ -62,7 +62,7 @@ Stop and ask if this precedence does not resolve a conflict.
 | Future public capture implementation | Architecture only; outside MVP | User explicitly starts that project after local ingestion is secure |
 | Dashboards, backup automation, and local AI | Future platform direction | User explicitly brings one into scope |
 | Home Assistant (home-assistant.io) | Reconsidered and brought into scope 2026-10-16; parked for a dedicated future pass, not designed | Already reconsidered — remove this row once a design pass starts |
-| Repository write support | Initial MVP is read-only | Read-only retrieval succeeds and a separate write contract is approved |
+| Repository access of any kind | CRO never reads or writes a repository — cancelled entirely 2026-10-22, not a deferred MVP boundary (this row previously said "initial MVP is read-only," which was already stale) | A future, separately-approved project explicitly gives CRO its own repository access — not expected under the current design |
 | Arbitrary binary parsing | Requires restricted format-specific extractors | A supported format and safety policy are approved |
 | Legacy `.ai` startup files | Superseded after shared-startup migration, but not yet safe to delete | New root bootstrap is verified and user approves archival |
 | Full Git history | Unnecessary for routine context | A decision, regression, or provenance question requires it |
@@ -77,7 +77,8 @@ Stop and ask if this precedence does not resolve a conflict.
   current Codex session.
 - The legacy `.ai` files have uncommitted changes and require a separate
   cleanup decision after migration verification.
-- Live TheBrain API check (2026-10-15) against the user's real Brain
-  confirmed Note-body search is unreliable, consistent with
-  `docs/capability-matrix.md` — no capability-matrix change needed, but
-  this is now confirmed against real data, not just test data.
+- (Removed 2026-11-04: a gap claiming the 2026-10-15 live check found
+  TheBrain Note-body search unreliable — superseded by the 2026-10-22
+  re-test, which confirmed it now works. Left in this file uncorrected
+  for over two weeks; see `CURRENT.md`'s "TheBrain Note-search
+  re-test" section for the real finding.)

@@ -47,11 +47,13 @@ complete and current (2026-10-22).
   up (broader parent subject); serendipity capped at 1-2 secondary
   results.
 - Verified against the user's real TheBrain ("Growth") and real OB1
-  data: TheBrain Note-body search is unreliable; OB1 type
-  classification skews heavily to "observation" and shouldn't drive
-  routing; OB1 doesn't deduplicate person/topic facets; OB1 relevance
-  scores are soft, not a cutoff; getting a stable ID and ranked text
-  from OB1 requires two separate calls.
+  data: TheBrain Note-body search now works (confirmed 2026-10-22 —
+  see "TheBrain Note-search re-test" below; the original 2026-10-11
+  finding that it was unreliable is outdated); OB1 type classification
+  skews heavily to "observation" and shouldn't drive routing; OB1
+  doesn't deduplicate person/topic facets; OB1 relevance scores are
+  soft, not a cutoff; getting a stable ID and ranked text from OB1
+  requires two separate calls.
 - Sensitivity tiers (`standard`/`personal`/`restricted`) gate what's
   returned, based on how private the *content* is — **not** on
   whether a specific person is named (corrected 2026-11-04; the real
@@ -129,6 +131,13 @@ was folded into the correct Epic below. See `docs/phase-roadmap.md`'s
    decision back — CRO never auto-receives a skill's write.
 
 Epics 0–3 together are the usable MVP. Epics 4–6 extend it.
+
+Each Epic has a matching `docs/Epic N - Title/` folder (added
+2026-11-04). Epic 0's is fully broken out into Feature files
+(`Feature 01 - Docker Desktop.md` through `Feature 09 - Travel-
+Access Naming.md`, one per install+test item in
+`docs/phase-0-plan.md`); the other Epics have just a placeholder
+`README.md` pointing back to their `phase-N-plan.md` for now.
 
 (Repo-grounded retrieval is **not** an Epic — cancelled entirely
 2026-10-22, see `docs/README.md` Section 3.1.)
@@ -284,12 +293,13 @@ criteria below — building it is not in scope until the user approves.
   from OB1-owned storage.
 - Retrieval combines exact text, semantic similarity, metadata, and
   relationship-aware expansion.
-- Candidate repository and TheBrain records are hydrated from their
-  canonical owners before final use.
-- Repository writes are outside the initial read-only MVP.
+- Candidate TheBrain/OB1/Plane records are re-read live from their
+  canonical owner before final use — never served from `cro_index`
+  alone (corrected 2026-11-04: dropped "repository" from this rule —
+  CRO never reads a repository at all, see the 2026-10-22 decision in
+  `DECISIONS.md`).
 - Serendipity is limited to one or two secondary results.
 - TheBrain Thought titles use an approximately 80-character soft limit.
-- TheBrain Note bodies require explicit fetching and indexing.
 - Normal capture completion is represented by absence of `Incomplete`;
   there is no `Complete` tag.
 
@@ -345,10 +355,12 @@ criteria below — building it is not in scope until the user approves.
   Windows' per-app Graphics preference setting, or the equivalent for
   a Docker container — to the base's GPU specifically, never left on a
   default that could pick the tablet's. The local embedding model
-  (see "Current state" below) stays CPU-only anyway, not because the
-  base GPU is forbidden, but because a model this small gains nothing
-  from one — the pinning rule is for any future dependency that
-  *would* actually benefit from a GPU.
+  (settled in `docs/cro-index-schema.md`'s `chunks` table, corrected
+  2026-11-04 — this used to point at a "Current state" section in
+  this file, but that detail lives in the schema doc instead) stays
+  CPU-only anyway, not because the base GPU is forbidden, but because
+  a model this small gains nothing from one — the pinning rule is for
+  any future dependency that *would* actually benefit from a GPU.
 - CRO must not become a user-knowledge store.
 - Sensitive content, derived text, and embeddings remain inside the
   trusted home environment.
@@ -368,7 +380,6 @@ criteria below — building it is not in scope until the user approves.
 ## Open questions
 
 - What is the final validation schema for skill `cro_context` blocks?
-- Which repository artifact types enter the first indexing allowlist?
 - How should standing resurfacing directives be stored? (trigger
   mechanism is settled — see Current state; storage/data model is
   not; now homed in Epic 2, see `docs/phase-2-plan.md`'s Features)
@@ -408,6 +419,20 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-04 by Claude Sonnet 5, second pass: fixed a punch-list left
+by a laptop-side session after pulling this branch — removed 3 dead
+Active-decisions lines (CRO reading repos, repo writes, Note-body
+fetching, all contradicted by later decisions), corrected the
+Retrieval-model line claiming Note-body search is unreliable (fixed
+2026-10-22, this just never got updated), removed a dead open
+question about a repository indexing allowlist (no repo adapter
+exists), fixed a dangling "see Current state below" reference, and
+added the `docs/Epic N - Title/` folders to the roadmap summary.
+**Not changed:** a `D:\Repos` path hardcoded in the OB1 fork line —
+confirmed with the user that `D:\Repos` is the correct, intended
+convention for every machine including the laptop, not something to
+rewrite per-machine.
 
 2026-11-04 by Claude Sonnet 5 (working-context-2-shape): removed the
 `cro_index` schema sketch that had gone factually wrong (it still
