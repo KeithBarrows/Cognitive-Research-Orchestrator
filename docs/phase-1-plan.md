@@ -150,7 +150,8 @@ Diagrammed in `docs/architecture/08-bootstrap-flow.mmd`. This flow
 Bootstrap sub-steps, made explicit on approval (2026-10-20):
 
 - The local OB1 Docker install is Epic 0's job (`docs/Epic 0 -
-  Installs/Feature 03 - OB1 Fresh Docker Install.md`), not this
+  Installs/Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1
+  Fresh Docker Install.md`), not this
   Epic's — corrected 2026-11-05. The old `ob1-local` Supabase
   instance is not reusable as-is (crashed Edge Runtime, shared
   Postgres with the weather-station project — see `CURRENT.md`'s OB1
@@ -183,7 +184,7 @@ but isn't populated until Epic 2. Full detail:
 **Resolved 2026-11-04: `chunks`/`edges` are populated in this phase,
 not Epic 2.** Epic 2 only *searches* what this phase populates —
 it doesn't do any indexing itself. This means the local embedding
-model (`ElBruno.LocalEmbeddings`, settled 2026-11-04) is needed as
+model (`nomic-embed-text` via local Ollama, changed 2026-11-05) is needed as
 part of this phase's own code, not deferred.
 
 **Added step (2026-11-04):** before reading any Thought content,
@@ -200,13 +201,13 @@ has to happen again before Epic 3 and Epic 4 run too.
 **0. The bootstrap data flow itself, proven first.** TheBrain feeds
 `cro_index` and the new local OB1, one direction, TheBrain never
 written to. Success: content that exists only in TheBrain has a
-`thebrain_nodes` row, at least one `chunks` row with a real 384-dim
+`thebrain_nodes` row, at least one `chunks` row with a real 768-dim
 embedding, and (where applicable) `edges` rows, each correctly linked
 back to its real TheBrain Thought ID — checked by querying `cro_index`
 directly, not through a search feature (that's Epic 2; it doesn't
 exist yet). Success also requires: the local OB1 Docker container is
 running and reachable. Every TheBrain Thought read has a
-`thebrain_nodes` row, at least one `chunks` row with a real 384-dim
+`thebrain_nodes` row, at least one `chunks` row with a real 768-dim
 embedding, and at least one `node_links` row to an `ob1_nodes` row
 (OB1 universal coverage). Every OB1 thought read has an `ob1_nodes`
 row and `chunks`. OB1 thoughts with no TheBrain or Plane link are

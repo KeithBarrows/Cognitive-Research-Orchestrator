@@ -225,7 +225,7 @@ instead of three separate chunk tables.
 | `node_id` | uuid | id in the matching node table |
 | `chunk_index` | integer | position within the node's text (0-based) |
 | `text` | text | the chunk's raw text |
-| `embedding` | vector(384) | **Settled 2026-11-04.** `ElBruno.LocalEmbeddings` (NuGet), default `sentence-transformers/all-MiniLM-L6-v2` model via ONNX Runtime, 384 dimensions. Runs in-process inside CRO itself — no separate server, no network call, nothing leaves the laptop. Built on `Microsoft.Extensions.AI`'s `IEmbeddingGenerator` abstraction, which is interfaces only and contains no model or compute itself. **Kept on the CPU execution provider** — not because either GPU is forbidden (the base's GTX 1660 Ti is allowed, if explicitly pinned there — see `CURRENT.md`'s non-negotiables), but because a model this small (~22-87MB depending on precision) gains nothing from one. The tablet half's integrated GPU stays off-limits regardless, per the user's actual Surface Book 2 history. Upgrade path if quality ever falls short: the same package's EmbeddingGemma variant (768-dim) — if that ever genuinely needs GPU acceleration, it must be pinned to the base's dGPU explicitly, never left on a default. |
+| `embedding` | vector(768) | **Changed 2026-11-05** (was `vector(384)` with `all-MiniLM-L6-v2`, settled 2026-11-04). Model `nomic-embed-text`, 768 dimensions, served by the local Ollama container (`http://localhost:11434`, CPU only; Epic 0 Feature 03). CRO calls it over HTTP, not in-process, so CRO needs that container up to embed anything. Nothing leaves the laptop. Measured 2026-11-05 on this laptop's CPU: about 0.05 s for a short text, about 0.38 s for about 1000 characters, 1.7 to 2.1 s for about 4000 characters (Epic 0 Feature 03, User Story 06). Applied by migration `V004__chunks_embedding_768.sql`. GPU rule unchanged: only the tablet half's integrated GPU is off-limits; the base's GTX 1660 Ti is allowed if explicitly pinned there. Rollback: a new migration back to the old dimension (the table must be empty or re-embedded). |
 | `created_at` | timestamptz | |
 
 **No `sensitivity_tier_id` on `chunks` — corrected 2026-11-04.**
@@ -244,6 +244,13 @@ meaningful sections). Within a block:
 - If a thought/note has **no logical blocks at all** (no headings, no
   Note body) — confirmed live as a real case (the Flipboard bookmark
   thought) — fall back to one chunk made from the title alone.
+
+**Superseded in part (2026-11-05):** the 256-WordPiece-token ceiling
+below is `all-MiniLM-L6-v2`'s hard limit and no longer applies as
+written now that `cro_index` uses `nomic-embed-text`. That model's
+real token limit, its tokenizer, and whether it needs the text
+prefixes its model card describes are not yet verified. Until they
+are, keep the conservative ~1000-character chunk target below.
 
 **The ceiling itself (settled 2026-11-04):** the real limit is
 **256 WordPiece tokens** — a hard model limit for `all-MiniLM-L6-v2`,
@@ -333,6 +340,15 @@ Those two tables already have their own `last_synced_at` per brain/
 per type (added earlier for the same freeform-growth reason). This
 table tracks the bootstrap pass as a whole, per source — a different,
 coarser granularity, not a duplicate of that tracking.
+
+## flyway_schema_history (tooling table, not part of the schema)
+
+Flyway creates this table itself, in the same `cro_index` database, to
+record which migrations have run. It is bookkeeping, not CRO data: no
+CRO code reads or writes it, and it is not drawn in the diagram below.
+Schema changes go in numbered files under
+`src\Infra\02-cro-index-postgres\migrations\` (see Epic 0 Feature 02,
+User Story 07).
 
 ## Still to settle
 
@@ -460,7 +476,7 @@ erDiagram
         uuid node_id
         integer chunk_index
         text text
-        vector_384 embedding "MiniLM via ElBruno.LocalEmbeddings, CPU-pinned"
+        vector_768 embedding "nomic-embed-text via local Ollama, CPU"
         timestamptz created_at
     }
 

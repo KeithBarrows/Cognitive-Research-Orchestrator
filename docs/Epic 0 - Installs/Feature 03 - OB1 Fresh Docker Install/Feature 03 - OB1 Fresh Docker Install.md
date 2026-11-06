@@ -1,6 +1,6 @@
 # Feature 03 — OB1 Fresh Docker Install
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install
@@ -10,7 +10,7 @@ first reviewed: the exact Docker image/compose setup and the local
 instance's actual REST API surface are both unverified. This is where
 that gets resolved. **Not reusing** the existing `ob1-local` Supabase
 instance — it's not reusable as-is (crashed Edge Runtime, shared
-Postgres with the weather-station project — see `../../CURRENT.md`'s
+Postgres with the weather-station project — see `../../../CURRENT.md`'s
 OB1 status note); this is a fresh install, not a repair.
 
 ## Test
@@ -28,7 +28,8 @@ OB1 status note); this is a fresh install, not a repair.
 Source: `github.com/NateBJones-Projects/OB1`, `main`. The newest
 commit visible in the cached pages was 2026-09-10, so later changes
 may be missing. Re-check before installing. The old fork at
-`D:\Repos\KeithBarrows\OB1` is out of date; do not trust it.
+`D:\Repos\KeithBarrows\OB1` was checked on 2026-11-05 and is current
+(HEAD `238df6c`, 2026-09-10).
 
 Hard rule (user, 2026-11-05): OB1 runs in Docker on the laptop and
 is never given cloud access for anyone. Nothing, including
@@ -68,3 +69,14 @@ embeddings, may call OpenRouter or any other cloud service.
 3. Confirm update and delete work, and whether delete is hard.
 4. Pick the embedding model and dimension BEFORE first capture.
 5. Confirm OB1 uses its own Postgres, not shared with `cro_index`.
+
+## Result
+
+**Done 2026-11-05.** All 12 User Stories in this folder are done.
+Setup lives in `src\Infra\03a-ob1-local-brain` (the upstream
+`local-brain-no-mcp` recipe with our changes, listed in
+`UPSTREAM.txt`), started by `src\Infra\up.cmd`. Data is in
+`D:\Data\CRO\ob1-db` and `D:\Data\CRO\ollama`. All services publish on
+127.0.0.1 only. OB1 update and delete come from our own `update` and
+`delete` Edge Functions (upstream `rest-api` was ruled out). The
+planned `03b` folder was not needed.

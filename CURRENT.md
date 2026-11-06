@@ -14,6 +14,17 @@ contents were not checked). A ping-only ASP.NET Core scaffold
 guide (`docs/developer-before-you-code.md`) exist; build and runtime
 are not verified.
 
+Epic 0 Feature 01 (Docker Desktop) and Feature 02 (dedicated Postgres
++ pgvector, 11-table `cro_index` schema applied by Flyway migrations)
+are done and verified (2026-11-05). Setups live in numbered folders
+under `src\Infra\`; data lives under `D:\Data\CRO`.
+
+Epic 0 Feature 03 (OB1 local: Supabase stack plus Ollama, published on
+127.0.0.1 only, with our own `update` and `delete` functions) is done
+and verified (2026-11-05). `cro_index` now embeds with
+`nomic-embed-text` (768-dim, migration V004) through that Ollama
+container; see `DECISIONS.md` (2026-11-05).
+
 Settled, not re-narrated here — see `DECISIONS.md`: CRO never reads a
 repository directly (2026-10-22); the developer-facing architecture
 review package (`docs/developer-architecture-overview.md`) is
@@ -171,11 +182,14 @@ schema sketch had to be removed from this file once already.
 
 ### OB1 status
 
-- Fork at `D:\Repos\KeithBarrows\OB1` is out of date (user,
-  2026-11-05); read upstream (`NateBJones-Projects/OB1`) directly.
-  Capability survey from the 2026-10-16 fork review:
-  `docs/ob1-integration-survey.md`. Live-checked upstream findings:
-  `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker Install.md`.
+- Fork at `D:\Repos\KeithBarrows\OB1` is current with upstream
+  (checked 2026-11-05: HEAD `238df6c`, 2026-09-10, same as the
+  fork's `main` on GitHub). Its `origin` still points at upstream
+  (`NateBJones-Projects/OB1`), not the user's fork. Capability survey
+  from the 2026-10-16 fork review: `docs/ob1-integration-survey.md`.
+  Live-checked upstream findings:
+  `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker Install/Feature
+  03 - OB1 Fresh Docker Install.md`.
 - Currently in use: a cloud-hosted instance, confirmed temporary, with
   very few of the available extensions/recipes enabled.
 - `enhanced-mcp` (13 tools vs. the 4-6 tested; server-side sensitivity
@@ -364,6 +378,15 @@ boundaries below.
   desktop. This also gives each vertical slice a real, fixed endpoint
   to test against from the desktop (or anywhere else on the LAN),
   instead of a local-only dev server.
+- **All setup and code live under `\src`, following the standard
+  .NET repository layout (added 2026-11-05).** That includes
+  infrastructure: Docker Compose files and the scripts that start them
+  live in `src\Infra\`, one numbered subfolder per setup
+  (`02-cro-index-postgres`, matching its Epic 0 Feature number), with
+  `src\Infra\up.cmd` bringing them all up in order. Secrets use .NET
+  User Secrets on `src\CRO` (key `CRO:DbPassword`), never a `.env`
+  file or `.secrets\` folder. Do not create top-level `infra\` or
+  similar folders.
 - **Permanent hostname — resolved 2026-11-04, corrected 2026-11-04.**
   Not a per-machine `hosts`-file edit (doesn't scale once more
   subdomains exist — see below). Instead: a subdomain of `sol3.net` —
@@ -473,6 +496,11 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-05 by Claude Sonnet 5.5: recorded the `\src`-only layout rule
+and the User Secrets decision while starting Epic 0. Feature 01
+(Docker Desktop) is done; Feature 02's Postgres container runs from
+`src\Infra\02-cro-index-postgres`.
 
 2026-11-05 by Claude Sonnet 5.5 (working-context-2-shape, after the
 Epic 1 plan review): corrected the OB1 facts (it can update and

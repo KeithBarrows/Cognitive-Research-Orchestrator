@@ -155,8 +155,8 @@ install/test detail.
 | Install item above | Feature file |
 |---|---|
 | Docker Desktop | `Feature 01 - Docker Desktop.md` |
-| Postgres + pgvector, dedicated to `cro_index` | `Feature 02 - Dedicated Postgres with pgvector for cro_index.md` |
-| OB1, fresh Docker install | `Feature 03 - OB1 Fresh Docker Install.md` |
+| Postgres + pgvector, dedicated to `cro_index` | `Feature 02 - Dedicated Postgres with pgvector for cro_index/Feature 02 - Dedicated Postgres with pgvector for cro_index.md` (plus a `User Story NN` file per step, in the same folder) |
+| OB1, fresh Docker install | `Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1 Fresh Docker Install.md` (plus a `User Story NN` file per step, in the same folder) |
 | Plane, fresh Docker install | `Feature 04 - Plane Fresh Docker Install.md` |
 | TheBrain file sync | `Feature 05 - TheBrain File Sync.md` |
 | New Plane MCP connection | `Feature 06 - Plane MCP Connection.md` |

@@ -19,7 +19,8 @@ The core read, one direction only — diagrammed in
   time — the cloud instance exposes list_thoughts/search_thoughts/
   capture_thought; the local one may differ.
 - The local OB1 Docker install is **Epic 0's job** (`../Epic 0 -
-  Installs/Feature 03 - OB1 Fresh Docker Install.md`), not this
+  Installs/Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1
+  Fresh Docker Install.md`), not this
   Feature's — corrected 2026-11-05. This Feature only writes to the
   already-running instance. The old `ob1-local` Supabase instance is
   not reusable (crashed Edge Runtime, shared Postgres with the
@@ -34,8 +35,8 @@ does not install it.
 
 ## Schema touched
 
-`thebrain_nodes`, `ob1_nodes`, `chunks` (with real 384-dim embeddings,
-`ElBruno.LocalEmbeddings`, CPU-pinned), `edges` (walked from each
+`thebrain_nodes`, `ob1_nodes`, `chunks` (with real 768-dim embeddings,
+`nomic-embed-text` via local Ollama), `edges` (walked from each
 Thought's `/graph` response), `sync_state`.
 
 ## Dependency
@@ -47,7 +48,7 @@ against.
 ## Acceptance test
 
 Content that exists only in TheBrain has a `thebrain_nodes` row, at
-least one `chunks` row with a real 384-dim embedding, and (where
+least one `chunks` row with a real 768-dim embedding, and (where
 applicable) `edges` rows, each correctly linked back to its real
 TheBrain Thought ID — checked by querying `cro_index` directly, not
 through a search feature (Epic 2 doesn't exist yet). The local OB1

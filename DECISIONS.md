@@ -504,7 +504,8 @@ are (CRO itself only) versus OB1's (which genuinely needs Supabase
 Edge Functions).
 
 **Affected unfinished work:** Epic 0's Postgres install
-(`docs/Epic 0 - Installs/Feature 02...md`) targets plain Postgres,
+(`docs/Epic 0 - Installs/Feature 02 - Dedicated Postgres with pgvector
+for cro_index/`) targets plain Postgres,
 not Supabase. Epic 1's bootstrap code writes to this exact schema.
 
 **Revisit when:** A second client needing Supabase-specific features
@@ -521,7 +522,8 @@ hosting layer.
 
 ## 2026-11-04 — Local embedding model and chunk-splitting rule settled
 
-**Status:** Active
+**Status:** Superseded 2026-11-05 (model and dimension only; the
+chunk-splitting order still applies, see the 2026-11-05 entry)
 
 **Decision:** `ElBruno.LocalEmbeddings` (NuGet), default
 `all-MiniLM-L6-v2` model via ONNX Runtime, 384 dimensions, in-process,
@@ -858,3 +860,44 @@ code surfaces a real case none of these rules predicted.
 requested changes; nothing downstream (code) exists yet to unwind.
 
 **Recorded by:** Claude Sonnet 5, from the 2026-11-05 session.
+
+---
+
+## 2026-11-05 — cro_index embeddings switch to nomic-embed-text (768)
+
+**Status:** Active
+
+**Decision:** `cro_index` embeds with `nomic-embed-text` (768
+dimensions), served by the local Ollama container from Epic 0 Feature
+03 over HTTP, CPU only. `chunks.embedding` is `vector(768)`, applied
+by migration `V004__chunks_embedding_768.sql`. CRO no longer embeds
+in-process with `ElBruno.LocalEmbeddings`.
+
+**Replaces:** the 2026-11-04 model choice (`all-MiniLM-L6-v2`, 384
+dimensions, in-process). The chunk-splitting order (headings, then
+paragraph, then sentence, then title-only) still applies.
+
+**Reason and evidence:** the user wanted the larger model if it ran
+fast enough. Measured 2026-11-05 on this laptop's CPU through Ollama:
+about 0.05 s for a short text, about 0.38 s for about 1000 characters,
+1.7 to 2.1 s for about 4000 characters (Epic 0 Feature 03, User Story
+06). One model also serves OB1 and CRO. The table was empty, so the
+change was one `ALTER TABLE`. Verified: a 768-dimension insert and
+similarity query work and a 384-dimension insert is rejected.
+
+**Affected unfinished work:** Epic 1's bootstrap code must call Ollama
+over HTTP, so CRO depends on that container being up to embed. The
+256-WordPiece-token ceiling belonged to MiniLM and no longer applies
+as written; the new model's real token limit, its tokenizer, and
+whether it needs the text prefixes its model card describes are not
+yet verified. Keep the conservative chunk target (about 1000
+characters) until they are.
+
+**Revisit when:** search quality against real queries is poor, the
+model degrades, or timing becomes a problem (Epic 0 Feature 03, User
+Story 12 records this).
+
+**Rollback path:** a new migration back to the old dimension (the
+table must be empty or re-embedded), and an in-process generator.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-05 session.

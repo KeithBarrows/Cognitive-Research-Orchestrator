@@ -104,20 +104,15 @@ requirement.
   existing weather-station project's logs or a second dedicated Seq
   instance if the user prefers not to mix them.
 - **Data access:** Npgsql for Postgres + pgvector.
-- **Local embeddings (settled 2026-11-04, refined 2026-11-04):**
-  `ElBruno.LocalEmbeddings` (NuGet), default `all-MiniLM-L6-v2` model
-  via ONNX Runtime, 384 dimensions, in-process, no network call. Built
-  on `Microsoft.Extensions.AI`'s `IEmbeddingGenerator` abstraction,
-  which is interfaces only — no model or compute in the namespace
-  itself. Kept on the CPU execution provider — not a GPU ban, just
-  unneeded for a model this small. **Only the tablet half's integrated
-  GPU is off-limits** (per the user's actual Surface Book 2 history —
-  a battery/display-panel heat problem while gaming on AC power, not
-  a general "GPU load" issue); the base's GTX 1660 Ti is allowed for
-  anything that would genuinely benefit from it, if explicitly pinned
-  there (via Windows' per-app Graphics preference, or the container
-  equivalent) — see `CURRENT.md`'s non-negotiables. Full detail:
-  `docs/cro-index-schema.md`'s `chunks` table.
+- **Local embeddings (changed 2026-11-05; was `ElBruno.LocalEmbeddings`
+  / `all-MiniLM-L6-v2`, 384 dimensions, settled 2026-11-04):**
+  `nomic-embed-text` (768 dimensions) served by the local Ollama
+  container from Epic 0 Feature 03, called over HTTP from CRO, CPU
+  only. CRO now depends on that container being up. See `DECISIONS.md`
+  (2026-11-05) and `docs/cro-index-schema.md`'s `chunks` table. GPU
+  rule unchanged: only the tablet half's integrated GPU is off-limits;
+  the base's GTX 1660 Ti is allowed if explicitly pinned there (see
+  `CURRENT.md`'s non-negotiables).
 
 ### Schema
 
