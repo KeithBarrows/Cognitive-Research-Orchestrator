@@ -1,0 +1,16 @@
+Copied from D:\Repos\KeithBarrows\OB1\recipes\local-brain-no-mcp
+upstream commit 238df6c (2026-09-10), checked 2026-11-05.
+Skipped: README.md, metadata.json.
+
+Our changes (2026-11-05). Everything else is unmodified upstream.
+- docker-compose.yml:
+  * ollama models and supabase db data moved to ${CRO_DATA} bind mounts
+  * db: passes EMBED_DIM and mounts the two init scripts at the top
+    level as zz-01-... and zz-02-... (upstream's db never ran them)
+  * gateway (api-gw), pooler (supavisor) and ollama ports published on
+    127.0.0.1 only (upstream publishes on every interface)
+- volumes/db/init/*.sh: converted CRLF to LF in place (the clone checks
+  out CRLF; bash in the Linux container fails on it)
+- functions/update and functions/delete: new, ours (upstream has no
+  update or delete in this recipe). Mounted into the functions service
+  by docker-compose.yml (setup.sh does not copy them).

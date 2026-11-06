@@ -1,0 +1,31 @@
+services:
+  cro-index-db:
+    image: pgvector/pgvector:pg17
+    container_name: cro-index-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cro
+      POSTGRES_PASSWORD: ${CRO_DB_PASSWORD}
+      POSTGRES_DB: cro_index
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - ${CRO_DATA}/cro-index-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cro -d cro_index"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    image: flyway/flyway:11
+    depends_on:
+      cro-index-db:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL: jdbc:postgresql://cro-index-db:5432/cro_index
+      FLYWAY_USER: cro
+      FLYWAY_PASSWORD: ${CRO_DB_PASSWORD}
+      FLYWAY_LOCATIONS: filesystem:/flyway/migrations
+    volumes:
+      - ./migrations:/flyway/migrations:ro
+    command: migrate

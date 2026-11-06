@@ -31,3 +31,5 @@ bin/
 obj/
 
 .secrets/
+# OB1 local brain: generated Supabase clone and keys
+src/Infra/03a-ob1-local-brain/supabase-docker/

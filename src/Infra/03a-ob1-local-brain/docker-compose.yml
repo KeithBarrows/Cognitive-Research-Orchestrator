@@ -1,0 +1,73 @@
+# local-brain-no-mcp -- docker compose overlay
+#
+# This file merges the official supabase/supabase docker-compose stack with
+# our additions (Ollama + EMBED_* env vars). Run from this directory:
+#
+#     ./setup.sh             # one-time
+#     docker compose up -d   # bring up the brain
+#
+# `include:` resolves paths relative to the parent compose file, so
+# supabase-docker/ must be a sibling directory (setup.sh handles this).
+# Requires Docker Compose v2.20 or newer.
+
+include:
+  - path: supabase-docker/docker/docker-compose.yml
+    env_file: supabase-docker/docker/.env
+
+services:
+  ollama:
+    image: ollama/ollama:0.6.5
+    container_name: ob1-ollama
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ${CRO_DATA}/ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Extend supabase's Edge Functions service so our handlers can find Ollama
+  # and know which model/dim to use. The functions volume mount comes from
+  # supabase's compose (./volumes/functions) -- setup.sh symlinks our handler
+  # dirs into there.
+  functions:
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      EMBED_MODEL: ${EMBED_MODEL:-nomic-embed-text}
+      EMBED_DIM: ${EMBED_DIM:-768}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    # CRO change 2026-11-05 (not in upstream): our update/delete functions.
+    volumes:
+      - ./functions/update:/home/deno/functions/update:ro
+      - ./functions/delete:/home/deno/functions/delete:ro
+
+  # CRO change 2026-11-05 (not in upstream): supabase's db service never
+  # mounts volumes/db/init and never receives EMBED_DIM, so the thoughts
+  # schema would not be created. Also moves the data to ${CRO_DATA}.
+  db:
+    environment:
+      EMBED_DIM: ${EMBED_DIM:-768}
+    volumes:
+      - ${CRO_DATA}/ob1-db:/var/lib/postgresql/data:Z
+      - ./volumes/db/init/01-thoughts-schema.sh:/docker-entrypoint-initdb.d/zz-01-thoughts-schema.sh:Z
+      - ./volumes/db/init/02-match-thoughts-fn.sh:/docker-entrypoint-initdb.d/zz-02-match-thoughts-fn.sh:Z
+
+  # CRO change 2026-11-05 (not in upstream): publish on this laptop only.
+  # Upstream binds the gateway and the pooler on every interface.
+  # Literal ports: the supabase .env values are not visible to this file.
+  api-gw:
+    ports: !override
+      - "127.0.0.1:8000:8000/tcp"
+
+  supavisor:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6543:6543"
