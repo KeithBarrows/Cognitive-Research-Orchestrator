@@ -28,3 +28,13 @@ the real brains are actually there to read.
 - Whether this sync is a one-time copy or needs to stay a repeatable
   step (e.g. if the desktop's brains keep changing before the laptop
   becomes the sole working copy).
+
+## Result
+
+**Done 2026-11-06** for Epic 0's purpose: Stories 01 to 03 are done and
+Story 04 (one-time or repeatable sync) is marked Later. All 8 brains
+are in `D:\Data\Brains\U01` (the live TheBrain 15 store). The Local API
+answers on `http://localhost:11522` with a Bearer token, `GET
+/api/brains` lists all 8 brains, and each brain's home Thought was read
+by `GET /api/thoughts/{brainId}/{thoughtId}`. The token belongs in User
+Secrets (suggested key `TheBrain:ApiToken`), not in the repo.
