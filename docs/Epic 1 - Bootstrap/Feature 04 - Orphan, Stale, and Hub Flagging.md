@@ -43,10 +43,14 @@ stale).
 
 ## Acceptance test
 
-The known hub case ("Rolodex," a Type Thought with 100+ children)
-produces **no** `node_flags` row — proves the Type-exclusion rule
-actually holds, not just the count rule. A regular Thought with 30+
-links (if one exists in real data) does produce a `hub` row.
+Hub flagging. No `hub` row exists for any Type Thought (`kind=2`), at
+any size — proves the Type-exclusion rule holds regardless of child
+count. A regular Thought with 30+ links (if one exists in real data)
+does produce a `hub` row. (Gap 3, 2026-11-05: no ordinary Thought with
+30+ links is confirmed. After Epic 0 Feature 05 (TheBrain file sync),
+search all six indexed brains for one. If none exists, decide then
+whether to build a synthetic fixture in a scratch brain. Until then
+the positive case is unproven.)
 
 ## Not yet designed
 

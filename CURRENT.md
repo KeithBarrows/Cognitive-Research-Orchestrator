@@ -71,7 +71,7 @@ complete and current (2026-10-22).
   substitute for it (see `docs/cro-index-schema.md`'s
   `thebrain_nodes.access_type`).
 
-`cro_index`'s real schema (10 tables, settled through live
+`cro_index`'s real schema (11 tables, settled through live
 verification) lives in the Epic roadmap section below, not here — the
 schema used to be sketched in this section too, but that sketch
 (`nodes`, `chunks`, `edges`, `sync_state`) is now wrong and fully
@@ -179,11 +179,24 @@ schema sketch had to be removed from this file once already.
   `docs/ob1-integration-survey.md`). First confirmed example: the
   household/CRM extension, already rescoped to attribution-tagging,
   not access-separation (see `DECISIONS.md` 2026-10-16).
-- Correction (2026-10-22): `enhanced-mcp`'s 13-tool list does include
-  `update_thought` (real, working). `delete_thought` is intentionally
-  left out of that build — the maintainer wants a mark-and-restore
-  approach first, not a hard delete. OB1 cannot delete a thought
-  today, in any build, stock or enhanced.
+- Correction (2026-11-05, supersedes the 2026-10-22 note): OB1 CAN
+  update and delete. `update_thought` exists in `enhanced-mcp`, in
+  `integrations/update-thought-mcp`, and as `PUT /thought/:id` in
+  `integrations/rest-api`. Delete exists as
+  `integrations/delete-thought-mcp` (hard delete) and `DELETE
+  /thought/:id` in `rest-api`. `enhanced-mcp` alone leaves delete out,
+  waiting for a `deleted_at` column and `restore_thought`. The old
+  claim "no delete in any build" was wrong. Full findings and
+  sources: `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker
+  Install.md`.
+- Hard rule (user, 2026-11-05): OB1 runs in Docker on the laptop and
+  is never given cloud access for anyone, including cloud embedding
+  calls. A local fully-offline recipe exists upstream
+  (`recipes/local-brain-no-mcp`, Supabase compose + Ollama).
+- Trusted boundary (user, 2026-11-05): every data store CRO installs
+  (OB1, Plane, `cro_index`, TheBrain files) sits inside the trusted
+  environment: the laptop, with LAN-only access to the future
+  API/MCP. Being "in OB1" is not itself a reason to withhold content.
 
 ### TheBrain Note-search re-test (2026-10-22)
 

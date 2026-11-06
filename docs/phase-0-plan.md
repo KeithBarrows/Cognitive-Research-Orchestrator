@@ -178,8 +178,9 @@ code exists.
 ## 3. Not yet designed
 
 - The exact OB1 Docker image/compose file to use, and its real REST
-  API shape once running — genuinely unknown until this phase
-  actually happens.
+  API shape once running — candidates found 2026-11-05, to be tried
+  and chosen in this Epic; see `Epic 0 - Installs/Feature 03 - OB1
+  Fresh Docker Install.md`.
 - Whether the BeyondCompare TheBrain sync is a one-time copy or needs
   to stay a repeatable step (e.g. if the desktop's brains keep
   changing before the laptop becomes the sole working copy).

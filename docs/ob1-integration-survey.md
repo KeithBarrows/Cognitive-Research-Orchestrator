@@ -5,6 +5,10 @@
 `main` the same day. This is a survey of what exists, not a design document —
 nothing here is approved for CRO implementation.
 
+**Update 2026-11-05:** this fork is out of date; see `docs/Epic 0 -
+Installs/Feature 03 - OB1 Fresh Docker Install.md` for live-checked
+upstream findings.
+
 **Scope:** OB1 ships far more than the 4-6 MCP tools `docs/capability-matrix.md`
 tested directly. This document catalogs the extensions, primitives, schemas,
 integrations, recipes, and skills reviewed, so that catalog isn't lost. See

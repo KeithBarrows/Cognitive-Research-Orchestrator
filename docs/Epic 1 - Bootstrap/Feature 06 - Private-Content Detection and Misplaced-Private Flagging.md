@@ -42,9 +42,11 @@ flag anything.
 
 ## Acceptance test
 
-The known case ("Val Docs" and its 5 children, all `access_type=1`,
-all in Growth) produces 6 `misplaced_private` rows; a Private node
-already in Filing Cabinet does not.
+Misplaced-private flagging. Independently list every Thought with
+`access_type = 1` outside the brain marked `is_private_home`. The set
+of `misplaced_private` `node_flags` rows must equal that set. A
+Private node already in the private home brain has no row. No count
+is hard-coded.
 
 ## Not yet designed
 

@@ -24,7 +24,8 @@ Concretely:
 - TheBrain is read once and feeds both `cro_index` and a new local OB1
   instance — one direction only, TheBrain is never written back to in
   this phase.
-- The existing cloud OB1's thoughts are read once and transferred into
+- **Deferred 2026-11-05.** The existing cloud OB1's thoughts are read
+  once and transferred into
   the new local OB1 (OB1-to-OB1, no TheBrain involved).
 - Flagging: CRO records a `node_links` row with `link_type =
   'duplicate_candidate'` (see `docs/cro-index-schema.md`) wherever it
@@ -35,6 +36,12 @@ Concretely:
   phase — that's Epic 4.
 - Searching/looking things up is explicitly **not** part of this
   phase — that's Epic 2.
+- OB1 content (decided 2026-11-05): every node's full text is
+  written to OB1, `restricted` Filing Cabinet content included.
+  OB1 is local-only and inside the trusted boundary, so there is no
+  pointer-only exception. `sensitivity_tier_id` still gates what
+  CRO returns at search time (Epic 2); it does not gate what is
+  stored in OB1.
 
 ## Features
 
@@ -115,6 +122,25 @@ Concretely:
   body for `brain://` URIs, decode their base64url-encoded brain/
   Thought GUIDs, and record a `node_links` row (`link_type =
   'native'`, `detection_method = 'note_brain_link'`).
+- **Rebuild-safe user decisions — new 2026-11-05.** `cro_index` is
+  disposable, but some of its values are the user's own decisions
+  and exist nowhere else, so a rebuild would silently lose them.
+  Before any delete or rebuild, CRO exports them to a file; after the
+  rebuild it re-applies them. This keeps `cro_index` disposable
+  without losing the user's work. The set:
+  - `brains.is_private_home` and `brains.included_in_index`
+  - `thebrain_types.staleness_threshold_days`
+  - `node_links.confirmed_by_user`, and every `node_links` row
+    the user created (`detection_method = 'user_manual'`,
+    `link_type = 'confirmed_same_entity'`), since CRO cannot
+    recompute those
+  - `node_flags.reviewed_by_user`
+  Re-apply matches rows by natural keys (brain id, Type id, and the
+  source ids of both sides of a link or flag), never by CRO's own
+  uuids. A decision whose target no longer exists after the rebuild
+  is not dropped silently: it is listed in the run report.
+  The export file lives inside the trusted environment like every
+  other store, outside `cro_index` itself.
 
 ## 2. Dependency: the bootstrap data flow
 
@@ -123,11 +149,14 @@ Diagrammed in `docs/architecture/08-bootstrap-flow.mmd`. This flow
 
 Bootstrap sub-steps, made explicit on approval (2026-10-20):
 
-- Install OB1 local via Docker. The existing `ob1-local` Supabase
+- The local OB1 Docker install is Epic 0's job (`docs/Epic 0 -
+  Installs/Feature 03 - OB1 Fresh Docker Install.md`), not this
+  Epic's — corrected 2026-11-05. The old `ob1-local` Supabase
   instance is not reusable as-is (crashed Edge Runtime, shared
   Postgres with the weather-station project — see `CURRENT.md`'s OB1
-  status note); this is a fresh install, not a repair.
-- Transfer cloud OB1's thoughts into the new local OB1 by reading each
+  status note).
+- **Deferred 2026-11-05 (user: ignore the cloud OB1 for now).**
+  Transfer cloud OB1's thoughts into the new local OB1 by reading each
   thought from the cloud instance and writing it to the local instance
   (get-thoughts / save-thoughts calls). Exact tool names to confirm
   against the local instance's enhanced-mcp surface at implementation
@@ -176,40 +205,60 @@ embedding, and (where applicable) `edges` rows, each correctly linked
 back to its real TheBrain Thought ID — checked by querying `cro_index`
 directly, not through a search feature (that's Epic 2; it doesn't
 exist yet). Success also requires: the local OB1 Docker container is
-running and reachable, and the thought count in local OB1 matches the
-cloud source after transfer. Nothing else is validated until this
-holds.
+running and reachable. Every TheBrain Thought read has a
+`thebrain_nodes` row, at least one `chunks` row with a real 384-dim
+embedding, and at least one `node_links` row to an `ob1_nodes` row
+(OB1 universal coverage). Every OB1 thought read has an `ob1_nodes`
+row and `chunks`. OB1 thoughts with no TheBrain or Plane link are
+expected (OB1 holds some business-process information that exists
+nowhere else) and are not errors. No count match between sources is
+required or tested (changed 2026-11-05; the earlier cloud-to-local
+count-match clause is dropped). Checked by querying `cro_index`
+directly. Nothing else is validated until this holds.
 
-1. `cro_index` can be deleted and rebuilt from TheBrain + OB1 with zero
-   data loss — proves the "disposable index" rule actually holds.
-2. The known duplicate case (two "Kittery" Thoughts, Growth and Filing
-   Cabinet) produces a `duplicate_candidate` row in `node_links` —
-   proves the flagging behavior works on a real, confirmed example,
-   not just a hypothetical.
+1. Rebuild safety. Delete `cro_index` and rebuild it from TheBrain
+   and OB1. Every derived row comes back equivalent: `thebrain_nodes`,
+   `ob1_nodes`, `chunks`, `edges`, and the detected `node_links` and
+   `node_flags` rows. Compare by source ids (TheBrain GUID, OB1 id),
+   not by CRO's own uuids, which are regenerated. All user-set values
+   (see "Rebuild-safe user decisions") are re-applied and match what
+   was exported before the delete. Zero loss of either kind.
+2. Title-match flagging. Independently list every title that appears
+   in two or more indexed brains. The set of `duplicate_candidate`
+   rows (`detection_method = 'title_match'`) must equal that set.
+   Every such row has `confirmed_by_user = false`, and no Thought
+   is merged or changed. (The "Kittery" pair is one instance, not
+   the test. A candidate is only a flag; whether the pair is truly
+   the same thing is the user's call in Epic 4.)
 3. Running the bootstrap a second time against unchanged source data
    produces no duplicate `cro_index` rows and no duplicate OB1
    thoughts — proves it's safe to use as "the base for a future
    resync," not a one-shot script that breaks on a second run.
-4. The known hub case ("Rolodex," a Type Thought with 100+ children)
-   produces **no** `node_flags` row — proves the Type-exclusion rule
-   actually holds, not just the count rule. A regular Thought with 30+
+4. Hub flagging. No `hub` row exists for any Type Thought
+   (`kind=2`), at any size — proves the Type-exclusion rule holds
+   regardless of child count. A regular Thought with 30+
    links (if one exists in real data) does produce a `hub` row.
+   *(Gap 3, 2026-11-05: no ordinary Thought with 30+ links is
+   confirmed. After Epic 0 Feature 05 (TheBrain file sync), search
+   all six indexed brains for one. If none exists, decide then
+   whether to build a synthetic fixture in a scratch brain. Until
+   then test 4's positive case is unproven.)*
 5. The post-bootstrap vector pass (catch-all hub + duplicate-
    neighborhood expansion) can be run against the already-populated
    `cro_index` from test 0-3 and completes without needing a fresh
    TheBrain/OB1 read — proves it's genuinely a second, independent
    pass over the index, not hidden bootstrap-time work.
-6. The known private-but-misplaced case ("Val Docs" and its 5
-   children, all `access_type=1`, all in Growth) produces 6
-   `misplaced_private` `node_flags` rows; a Private node already in
-   Filing Cabinet does not.
-7. The known Note-embedded cross-brain link ("Health Records" →
-   "Health History" in Filing Cabinet, via a `brain://` URI in the
-   Note body) produces a `node_links` row (`link_type = 'native'`,
-   `detection_method = 'note_brain_link'`) pointing at the correct
-   Filing Cabinet Thought — proves this is actually caught by a
-   Note-body scan, not just assumed to be covered by the `edges` walk
-   (which this same Thought's empty `/graph` `jumps` array disproves).
+6. Misplaced-private flagging. Independently list every Thought
+   with `access_type = 1` outside the brain marked
+   `is_private_home`. The set of `misplaced_private` `node_flags`
+   rows must equal that set. A Private node already in the private
+   home brain has no row. No count is hard-coded.
+7. Note-embedded cross-brain links. Independently scan every Note
+   body for `brain://` URIs and decode their GUID pairs. The set of
+   `node_links` rows with `link_type = 'native'` and
+   `detection_method = 'note_brain_link'` must equal that set, each
+   pointing at the correct target Thought. ("Health Records" to
+   "Health History" is one instance, not the test.)
 
 *(Tests about search quality — multi-source results, serendipity,
 sensitivity gating, live re-read at answer time — moved to Epic 2;

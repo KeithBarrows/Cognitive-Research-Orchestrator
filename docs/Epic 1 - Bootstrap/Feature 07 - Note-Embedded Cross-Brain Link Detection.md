@@ -34,10 +34,12 @@ populated (both sides of the link need to resolve to a real row).
 
 ## Acceptance test
 
-The known case ("Health Records" → "Health History" in Filing
-Cabinet) produces a `node_links` row (`link_type = 'native'`,
-`detection_method = 'note_brain_link'`) pointing at the correct
-Filing Cabinet Thought.
+Note-embedded cross-brain links. Independently scan every Note body
+for `brain://` URIs and decode their GUID pairs. The set of
+`node_links` rows with `link_type = 'native'` and `detection_method =
+'note_brain_link'` must equal that set, each pointing at the correct
+target Thought. ("Health Records" to "Health History" is one
+instance, not the test.)
 
 ## Not yet designed
 

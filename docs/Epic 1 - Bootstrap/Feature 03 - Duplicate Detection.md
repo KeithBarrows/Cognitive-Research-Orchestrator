@@ -32,10 +32,13 @@ from both brains already populated to compare.
 
 ## Acceptance test
 
-The known duplicate case (two "Kittery" Thoughts, Growth and Filing
-Cabinet) produces a `duplicate_candidate` row in `node_links` — proves
-the flagging behavior works on a real, confirmed example, not just a
-hypothetical.
+Title-match flagging. Independently list every title that appears in
+two or more indexed brains. The set of `duplicate_candidate` rows
+(`detection_method = 'title_match'`) must equal that set. Every such
+row has `confirmed_by_user = false`, and no Thought is merged or
+changed. (The "Kittery" pair is one instance, not the test. A
+candidate is only a flag; whether the pair is truly the same thing is
+the user's call in Epic 4.)
 
 ## Not yet designed
 

@@ -686,6 +686,85 @@ expected to be needed.
 
 ---
 
+## 2026-11-05 — OB1 can update and delete; OB1 is local-only
+
+**Status:** Active
+
+**Decision:** OB1 is installed in Docker on the laptop and is never
+given cloud access, for anyone. Every CRO data store is inside the
+trusted environment (laptop, LAN-only API/MCP).
+
+**Replaces:** The 2026-10-22 claim that OB1 cannot delete a thought
+in any build, and the reason given there for rejecting OB1 as the
+fuzzy-search/sync home ("no delete tool"). That reason no longer
+holds. The 2026-10-22 decision itself (keep `cro_index`) is not
+reversed here.
+
+**Reason and evidence:** User correction, verified against the
+upstream repo 2026-11-05: delete-thought-mcp (hard delete),
+rest-api DELETE /thought/:id, update-thought-mcp, enhanced-mcp
+update_thought. Local route: recipes/local-brain-no-mcp.
+
+**Affected unfinished work:** Epic 0 Feature 03. The REST-vs-MCP
+question and the cloud-embedding question are open there. Gap 1 of
+the Epic 1 review (what bootstrap writes to OB1 for restricted
+nodes) is re-opened with the corrected facts.
+
+**Revisit when:** Feature 03's trial shows rest-api cannot run
+offline, or enhanced-mcp ships delete plus restore.
+
+**Rollback path:** None needed; this corrects facts.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-05 session.
+
+---
+
+## 2026-11-05 — OB1-only thoughts are normal; full text to OB1; Epic 1 test 0 reworked
+
+**Status:** Active
+
+**Decision:** Three linked changes to the Epic 1 plan:
+1. OB1 holds some business-process information that exists nowhere
+   else. The invariant is now: every `thebrain_nodes` and
+   `plane_workitems` row links to at least one `ob1_nodes` row (OB1
+   universal coverage). An `ob1_nodes` row may have zero links.
+2. Bootstrap writes every node's full text to OB1, `restricted`
+   content included. OB1 is local-only inside the trusted boundary.
+   `sensitivity_tier_id` gates search-time return (Epic 2), not
+   storage.
+3. Acceptance test 0 no longer compares thought counts between
+   sources. It checks `cro_index` rows and links directly. The
+   cloud-to-local OB1 transfer is deferred.
+
+**Replaces:** The `node_links` rule "an OB1 entry never stands alone"
+in `docs/cro-index-schema.md`; the Epic 1 test 0 clause "thought
+count in local OB1 matches the cloud source"; the 2026-11-05 gap 1
+question of a pointer-only exception for `restricted` nodes.
+
+**Reason and evidence:** User direction in the 2026-11-05 Epic 1
+review. The schema itself says OB1 and TheBrain are not 1:1, so the
+old invariant and the count test contradicted it.
+
+**Affected unfinished work:** `docs/phase-1-plan.md` and
+`docs/cro-index-schema.md` (both updated 2026-11-05). Bootstrap code
+must write links in the direction above and must not flag OB1-only
+rows as errors.
+
+**Revisit when:** The cloud OB1 transfer is brought back in scope,
+or an OB1-only row proves to need a link after all.
+
+**Rollback path:** Restore the earlier invariant text and test 0
+clause from git history; no canonical data is affected.
+
+**Note:** The 2026-11-04 schema entry's "10-table" count predates
+`node_flags`, which was added later that same day (Epic 1
+orphan/stale/hub design). `cro_index` now has 11 tables. That entry
+is left as written, since it records what was true when it was made.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-05 session.
+
+---
+
 ## 2026-11-05 — Epic 1 (Bootstrap) approved, 7 Feature files
 
 **Status:** Active

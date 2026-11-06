@@ -159,10 +159,14 @@ writing, not something the database itself checks.
 | `similarity_score` | float, nullable | **Added 2026-11-04.** The embedding cosine similarity that produced an `'embedding_similarity'`-detected row — in particular the duplicate-neighborhood-expansion check (below). Null when `detection_method` isn't `'embedding_similarity'`. |
 | `created_at` | timestamptz | |
 
-**Invariant to enforce at write time (not a DB constraint):** every
-`ob1_nodes` row must have at least one `node_links` row pointing at it
-from `'thebrain'` or `'plane'` — an OB1 entry never stands alone. A
-TheBrain or Plane entry may have zero links.
+**Invariant to enforce at write time (not a DB constraint), corrected
+2026-11-05:** every `thebrain_nodes` and `plane_workitems` row must
+have at least one `node_links` row to an `ob1_nodes` row (OB1
+universal coverage, DECISIONS 2026-10-18). The reverse does NOT hold:
+an `ob1_nodes` row may have zero links. OB1 deliberately holds some
+business-process information that exists nowhere else (user,
+2026-11-05), so OB1-only thoughts are normal, not errors. This
+replaces the earlier rule "an OB1 entry never stands alone".
 
 ## node_flags
 
