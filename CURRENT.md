@@ -2,28 +2,47 @@
 
 ## Outcome now
 
-Epic 1 (Bootstrap) plan is **approved** (2026-11-05) and was tightened
-the same day — see `docs/phase-1-plan.md` (8 Feature files). Epic 0
-(installs, no CRO code; `docs/phase-0-plan.md`) comes first; its OB1
-install has candidate setups to try (`docs/Epic 0 - Installs/Feature
-03 - OB1 Fresh Docker Install.md`). The user states TheBrain's brains
-are now synced onto the laptop (Epic 0 Feature 05; stated 2026-11-05;
-TheBrain's local API answers on the laptop but needs a key, so brain
-contents were not checked). A ping-only ASP.NET Core scaffold
-(`src/CRO/`, user-approved, committed 2026-11-05) and its direction
-guide (`docs/developer-before-you-code.md`) exist; build and runtime
-are not verified.
+**Where we are (2026-11-06).** Epic 0 (Installs, no CRO code;
+`docs/phase-0-plan.md`) is in progress, one Feature at a time. Epic 1
+(Bootstrap, `docs/phase-1-plan.md`, 8 Feature files) is approved and
+waits for Epic 0.
 
-Epic 0 Feature 01 (Docker Desktop) and Feature 02 (dedicated Postgres
-+ pgvector, 11-table `cro_index` schema applied by Flyway migrations)
-are done and verified (2026-11-05). Setups live in numbered folders
-under `src\Infra\`; data lives under `D:\Data\CRO`.
+**Done and verified:** Feature 01 Docker Desktop; 02 dedicated
+Postgres + pgvector (`cro_index`, 11 tables via Flyway migrations
+V001-V004, `vector(768)`); 03 OB1 local (Supabase stack + Ollama, our
+own `update` and `delete` functions); 04 Plane (v1.4.3, workspace slug
+`cro`, project `CRO`, empty); 05 TheBrain file sync (all 8 brains in
+`D:\Data\Brains\U01`; the Local API at `http://localhost:11522` lists
+all 8 and returns each home Thought; TheBrain's "Start hidden when you
+log in" is on). `cro_index` embeds with `nomic-embed-text` through the
+local Ollama container (`DECISIONS.md`, 2026-11-05).
 
-Epic 0 Feature 03 (OB1 local: Supabase stack plus Ollama, published on
-127.0.0.1 only, with our own `update` and `delete` functions) is done
-and verified (2026-11-05). `cro_index` now embeds with
-`nomic-embed-text` (768-dim, migration V004) through that Ollama
-container; see `DECISIONS.md` (2026-11-05).
+**Where things live:** setups in `src\Infra\NN-name\` (`02-cro-index-
+postgres`, `03a-ob1-local-brain`, `04-plane`; the folder names stay as
+they are, Keith's call 2026-11-06), started by `src\Infra\up.cmd`.
+Data under `D:\Data\CRO`. Secrets in .NET User Secrets on `src\CRO`
+(`CRO:DbPassword`, the `Plane:*` keys including `Plane:ApiToken`, and
+`TheBrain:ApiToken`). Published ports are on `127.0.0.1` only: OB1
+8000, Plane 8090, `cro_index` 5433, Ollama 11434. Keith's own findings
+that are not plans yet: `docs/Notes and Findings.md`.
+
+**Next:** Epic 0 Features 06 (Plane MCP), 07 (`cro_index` MCP), 08
+(local DNS) and 09 (travel naming), each with User Stories in its
+folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
+committed 2026-11-05) and its direction guide
+(`docs/developer-before-you-code.md`) exist; build and runtime are not
+verified.
+
+**Resume after a reboot:** start Docker Desktop, run
+`src\Infra\up.cmd`, then check `docker ps` and
+`curl http://localhost:8090/api/instances/`. TheBrain should start
+hidden at login; check `GET http://localhost:11522/api/brains` with
+the `TheBrain:ApiToken` secret. That is the first real test of the
+start-hidden setting (Feature 05, Story 02). All work through this
+context refresh is committed, logged in `.journal/2026-11.md` and
+pushed (2026-11-06); run `git status` to confirm. The curated
+`.journal/journal.md` stops at the week of 2026-10-26; the next entry
+is planned for the end of this week (Features 01-05 and later).
 
 Settled, not re-narrated here — see `DECISIONS.md`: CRO never reads a
 repository directly (2026-10-22); the developer-facing architecture
@@ -191,23 +210,20 @@ schema sketch had to be removed from this file once already.
   Live-checked upstream findings:
   `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker Install/Feature
   03 - OB1 Fresh Docker Install.md`.
-- Currently in use: a cloud-hosted instance, confirmed temporary, with
-  very few of the available extensions/recipes enabled.
-- `enhanced-mcp` (13 tools vs. the 4-6 tested; server-side sensitivity
-  tiers; SHA-256 dedup; `related_thoughts`) is one candidate for the
-  local install, not the choice. It is MCP-only, a Supabase Edge
-  Function needing an LLM key, with open upstream bugs. See Epic 0
-  Feature 03.
-- The local `ob1-local` Supabase instance exists but isn't a usable
-  base yet: its Edge Runtime (the piece serving the MCP server)
-  crashed 2 months ago and hasn't restarted; no add-on schemas are
-  installed; it shares its Postgres database with an unrelated
-  weather-station project's tables.
-- When installing OB1 local via Docker, also enable upstream extensions
-  that fit real use, not just the stock 4-6 tools (full catalog in
-  `docs/ob1-integration-survey.md`). First confirmed example: the
-  household/CRM extension, already rescoped to attribution-tagging,
-  not access-separation (see `DECISIONS.md` 2026-10-16).
+- Currently in use by other tools (inference, carried from older notes,
+  not checked 2026-11-06): a cloud-hosted instance, confirmed
+  temporary, with very few of the available extensions/recipes
+  enabled.
+- The local OB1 install from Epic 0 Feature 03 is the real local
+  instance. The old `ob1-local` Supabase instance (crashed Edge
+  Runtime, Postgres shared with a weather-station project) is
+  superseded and not used.
+- Update and delete come from our own `update` and `delete` Edge
+  Functions, not `enhanced-mcp` or upstream `rest-api` (both ruled
+  out). Extensions worth enabling later, such as the household/CRM one
+  already rescoped to attribution-tagging, not access-separation (see
+  `DECISIONS.md` 2026-10-16), are catalogued in
+  `docs/ob1-integration-survey.md`.
 - Correction (2026-11-05, supersedes the 2026-10-22 note): OB1 CAN
   update and delete. `update_thought` exists in `enhanced-mcp`, in
   `integrations/update-thought-mcp`, and as `PUT /thought/:id` in
@@ -217,7 +233,7 @@ schema sketch had to be removed from this file once already.
   waiting for a `deleted_at` column and `restore_thought`. The old
   claim "no delete in any build" was wrong. Full findings and
   sources: `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker
-  Install.md`.
+  Install/Feature 03 - OB1 Fresh Docker Install.md`.
 - Hard rule (user, 2026-11-05): OB1 runs in Docker on the laptop and
   is never given cloud access for anyone, including cloud embedding
   calls. A local fully-offline recipe exists upstream
@@ -501,6 +517,15 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-06 by Claude Sonnet 5.5 (working-context-2-shape, before a
+machine restart): replaced "Outcome now" with where we are, what is
+done (Epic 0 Features 01-05), where things live, what is next, and
+how to resume after a reboot; replaced the stale "OB1 status" bullets
+(old `ob1-local` superseded, `enhanced-mcp` not used, own update and
+delete functions); fixed a stale Feature 03 path. Recorded earlier
+today: ports 80 and 443 reserved, Features 01 and 05-09 moved into
+Feature folders with 28 User Stories, Keith's findings file.
 
 2026-11-05 by Claude Sonnet 5.5: recorded the `\src`-only layout rule
 and the User Secrets decision while starting Epic 0. Feature 01
