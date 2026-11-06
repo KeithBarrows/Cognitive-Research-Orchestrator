@@ -387,6 +387,10 @@ boundaries below.
   User Secrets on `src\CRO` (key `CRO:DbPassword`), never a `.env`
   file or `.secrets\` folder. Do not create top-level `infra\` or
   similar folders.
+- **Ports 80 and 443 are reserved (2026-11-06).** No CRO setup may
+  publish them; they are kept for future projects. Every CRO service
+  publishes on `127.0.0.1` at a higher port: OB1 gateway 8000, Plane
+  8090, `cro_index` Postgres 5433. See `DECISIONS.md`.
 - **Permanent hostname — resolved 2026-11-04, corrected 2026-11-04.**
   Not a per-machine `hosts`-file edit (doesn't scale once more
   subdomains exist — see below). Instead: a subdomain of `sol3.net` —

@@ -901,3 +901,32 @@ Story 12 records this).
 table must be empty or re-embedded), and an in-process generator.
 
 **Recorded by:** Claude Sonnet 5.5, from the 2026-11-05 session.
+
+---
+
+## 2026-11-06 — Ports 80 and 443 are reserved; CRO services use high localhost ports
+
+**Status:** Active
+
+**Decision:** No CRO setup may publish host ports 80 or 443. They are
+reserved for future projects. Every CRO service publishes on
+`127.0.0.1` at a higher port: OB1 gateway 8000, Plane 8090,
+`cro_index` Postgres 5433.
+
+**Replaces:** nothing. Plane's upstream compose publishes 80 and 443 on
+every interface; Epic 0 Feature 04 changed that.
+
+**Reason and evidence:** the user's rule, 2026-11-06. Feature 08 (local
+DNS) may later want a friendly name, which can be done with a proxy on
+80 or 443 in front of these services without moving them.
+
+**Affected unfinished work:** every future `src\Infra\NN-name` setup
+must override its ports the same way. Check the compose file for 80 or
+443 before first start.
+
+**Revisit when:** a future project needs a different port plan.
+
+**Rollback path:** change the `ports` lines in the affected compose
+files.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.

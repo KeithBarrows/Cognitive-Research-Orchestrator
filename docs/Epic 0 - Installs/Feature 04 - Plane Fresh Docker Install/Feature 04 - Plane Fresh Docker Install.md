@@ -1,6 +1,6 @@
 # Feature 04 — Plane Fresh Docker Install
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install
@@ -26,3 +26,16 @@ Quantum Fracture Press — no CRO project there). One project named
 - The 2-3 hand-added Work Items and the actual indexing of them into
   `cro_index` are **Epic 2's** job, not this Feature's — this Feature
   just gets Plane running and reachable with an empty "CRO" project.
+
+## Result
+
+**Done 2026-11-06.** All 9 User Stories in this folder are done.
+Setup lives in `src\Infra\04-plane` (upstream `makeplane/plane` v1.4.3
+compose, kept unmodified in `docker-compose.upstream.yml`, with our
+changes in `docker-compose.yml` and `plane.env`, listed in
+`UPSTREAM.txt`), started by `src\Infra\up.cmd`. Data is in
+`D:\Data\CRO\plane`. Only `127.0.0.1:8090` is published; ports 80 and
+443 stay reserved. Secrets are User Secrets keys `Plane:*`, including
+`Plane:ApiToken`. Workspace slug `cro`, project `CRO`, no work items
+yet. First start takes about 5 minutes (schema migrations on the D
+drive); later starts take about 1 minute.
