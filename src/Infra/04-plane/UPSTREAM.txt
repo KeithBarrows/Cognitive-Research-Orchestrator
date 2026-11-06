@@ -1,0 +1,16 @@
+Copied from github.com/makeplane/plane, tag v1.4.3 (2026-10-28),
+commit 37a15d99231042b3ff5a4401fed479fdbec9effe.
+File: deployments/cli/community/docker-compose.yml, saved as
+docker-compose.upstream.yml with CRLF line endings stripped. Unmodified.
+Checked 2026-11-06. Skipped: install.sh, variables.env, restore scripts.
+
+Our changes (2026-11-06), all in docker-compose.yml and plane.env:
+- proxy: ports replaced with 127.0.0.1:8090:80 only (upstream publishes
+  80 and 443 on every interface). Ports 80/443 stay reserved.
+- proxy, plane-db, plane-redis, plane-mq, plane-minio: data moved from
+  named volumes to ${CRO_DATA}/plane/... bind mounts.
+- plane.env: pins APP_RELEASE=v1.4.3 and sets the localhost:8090 URLs.
+- Secrets (DB, RabbitMQ, MinIO, SECRET_KEY, LIVE_SERVER_SECRET_KEY) are
+  set by ..\up.cmd from .NET User Secrets (keys Plane:*), replacing
+  upstream's plane/plane and change-this-key defaults.
+- The log volumes (logs_api, etc.) stay as Docker named volumes.

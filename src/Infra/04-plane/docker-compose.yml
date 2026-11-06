@@ -1,0 +1,32 @@
+# Plane Community Edition, fresh install (Epic 0, Feature 04).
+# Upstream compose is kept unmodified in docker-compose.upstream.yml;
+# this file only changes what we need (see UPSTREAM.txt).
+# Run through ..\up.cmd (it sets CRO_DATA and the secrets).
+include:
+  - docker-compose.upstream.yml
+
+services:
+  # Only the proxy is published, on localhost only. Ports 80 and 443 are
+  # reserved for future projects.
+  proxy:
+    ports: !override
+      - "127.0.0.1:8090:80"
+    volumes:
+      - ${CRO_DATA}/plane/proxy-config:/config
+      - ${CRO_DATA}/plane/proxy-data:/data
+
+  plane-db:
+    volumes:
+      - ${CRO_DATA}/plane/pgdata:/var/lib/postgresql/data
+
+  plane-redis:
+    volumes:
+      - ${CRO_DATA}/plane/redis:/data
+
+  plane-mq:
+    volumes:
+      - ${CRO_DATA}/plane/mq:/var/lib/rabbitmq
+
+  plane-minio:
+    volumes:
+      - ${CRO_DATA}/plane/uploads:/export
