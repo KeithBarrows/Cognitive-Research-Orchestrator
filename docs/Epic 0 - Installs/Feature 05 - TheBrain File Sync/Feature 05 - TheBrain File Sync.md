@@ -1,6 +1,6 @@
 # Feature 05 — TheBrain File Sync
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install

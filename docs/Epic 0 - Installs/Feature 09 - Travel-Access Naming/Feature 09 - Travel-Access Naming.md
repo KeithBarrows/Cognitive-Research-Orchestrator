@@ -1,12 +1,12 @@
 # Feature 09 — Travel-Access Naming
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install
 
 Test **both** real candidates for reaching CRO while traveling
-(laptop-only, no other device involved — see `../../CURRENT.md`),
+(laptop-only, no other device involved — see `../../../CURRENT.md`),
 commit to one — decided 2026-11-04:
 
 1. **Two names, zero infrastructure:** `cro.home.sol3.net` at home

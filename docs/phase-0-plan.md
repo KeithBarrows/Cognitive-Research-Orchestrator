@@ -33,7 +33,7 @@ install/test detail.
 
 - **Docker Desktop** — confirm it's already installed and running on
   the laptop; install it if not. Everything else in this phase runs
-  inside it. (`Epic 0 - Installs/Feature 01 - Docker Desktop.md`)
+  inside it. (`Epic 0 - Installs/Feature 01 - Docker Desktop/Feature 01 - Docker Desktop.md`)
 - **Postgres with the pgvector extension** — a container **dedicated
   to `cro_index`**, not shared with anything else. This matters
   specifically because the *old* local OB1 instance failed partly
@@ -154,15 +154,15 @@ install/test detail.
 
 | Install item above | Feature file |
 |---|---|
-| Docker Desktop | `Feature 01 - Docker Desktop.md` |
+| Docker Desktop | `Feature 01 - Docker Desktop/Feature 01 - Docker Desktop.md` (plus a `User Story NN` file per step, in the same folder) |
 | Postgres + pgvector, dedicated to `cro_index` | `Feature 02 - Dedicated Postgres with pgvector for cro_index/Feature 02 - Dedicated Postgres with pgvector for cro_index.md` (plus a `User Story NN` file per step, in the same folder) |
 | OB1, fresh Docker install | `Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1 Fresh Docker Install.md` (plus a `User Story NN` file per step, in the same folder) |
 | Plane, fresh Docker install | `Feature 04 - Plane Fresh Docker Install/Feature 04 - Plane Fresh Docker Install.md` (plus a `User Story NN` file per step, in the same folder) |
-| TheBrain file sync | `Feature 05 - TheBrain File Sync.md` |
-| New Plane MCP connection | `Feature 06 - Plane MCP Connection.md` |
-| `cro_index` Postgres MCP (trial both) | `Feature 07 - cro_index Postgres MCP Connection.md` |
-| Local DNS resolver | `Feature 08 - Local DNS Resolver.md` |
-| Travel-access naming | `Feature 09 - Travel-Access Naming.md` |
+| TheBrain file sync | `Feature 05 - TheBrain File Sync/Feature 05 - TheBrain File Sync.md` (plus a `User Story NN` file per step, in the same folder) |
+| New Plane MCP connection | `Feature 06 - Plane MCP Connection/Feature 06 - Plane MCP Connection.md` (plus a `User Story NN` file per step, in the same folder) |
+| `cro_index` Postgres MCP (trial both) | `Feature 07 - cro_index Postgres MCP Connection/Feature 07 - cro_index Postgres MCP Connection.md` (plus a `User Story NN` file per step, in the same folder) |
+| Local DNS resolver | `Feature 08 - Local DNS Resolver/Feature 08 - Local DNS Resolver.md` (plus a `User Story NN` file per step, in the same folder) |
+| Travel-access naming | `Feature 09 - Travel-Access Naming/Feature 09 - Travel-Access Naming.md` (plus a `User Story NN` file per step, in the same folder) |
 
 ## 2b. Why this matters for testing (added 2026-11-04)
 

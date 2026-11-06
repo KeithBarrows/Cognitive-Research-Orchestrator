@@ -1,6 +1,6 @@
 # Feature 06 — Plane MCP Connection
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install

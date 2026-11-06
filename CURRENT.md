@@ -164,8 +164,9 @@ Epics 0–3 together are the usable MVP. Epics 4–6 extend it.
 
 Each Epic has a matching `docs/Epic N - Title/` folder (added
 2026-11-04). Epic 0's is fully broken out into Feature files
-(`Feature 01 - Docker Desktop.md` through `Feature 09 - Travel-
-Access Naming.md`, one per install+test item in
+(one folder per Feature, `Feature 01 - Docker Desktop\` through
+`Feature 09 - Travel-Access Naming\`, each holding the Feature file
+plus its `User Story NN` files; one Feature per install+test item in
 `docs/phase-0-plan.md`); the other Epics have just a placeholder
 `README.md` pointing back to their `phase-N-plan.md` for now.
 

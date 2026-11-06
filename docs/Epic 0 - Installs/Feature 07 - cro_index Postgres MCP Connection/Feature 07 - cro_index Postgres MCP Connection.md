@@ -1,6 +1,6 @@
 # Feature 07 — cro_index Postgres MCP Connection
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install
@@ -21,8 +21,8 @@ containers against the same `cro_index` database (Feature 02).
 
 ## Test
 
-For each candidate: schema creation against `cro_index` (the 8
-designed tables), a real insert, and a vector similarity query — all
+For each candidate: listing the schema of `cro_index` (the 11
+tables created by migration V002), a real insert, and a vector similarity query — all
 working end to end. Keep whichever actually works; kill the other.
 No need to commit to one on paper first.
 

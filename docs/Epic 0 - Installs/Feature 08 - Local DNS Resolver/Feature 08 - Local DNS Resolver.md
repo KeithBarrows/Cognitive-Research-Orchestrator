@@ -1,12 +1,12 @@
 # Feature 08 — Local DNS Resolver
 
-*(Part of Epic 0 — Installs. See `../phase-0-plan.md` for the full
+*(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
 ## Install
 
 A local DNS resolver, in Docker, on the laptop — resolves
-`../../CURRENT.md`'s hostname non-negotiable. dnsmasq (or Pi-hole,
+`../../../CURRENT.md`'s hostname non-negotiable. dnsmasq (or Pi-hole,
 which uses dnsmasq underneath — but Pi-hole's own local-DNS UI
 doesn't support wildcards, so use dnsmasq directly if a wildcard is
 ever wanted), holding local override records that resolve subdomains
