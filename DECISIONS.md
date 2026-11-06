@@ -765,6 +765,36 @@ is left as written, since it records what was true when it was made.
 
 ---
 
+## 2026-11-05 — CRO application shape: modular monolith, vertical slices
+
+**Status:** Active
+
+**Decision:** One deployable ASP.NET Core minimal-API app, project and
+namespace `CRO` (`src/CRO.slnx`, `src/CRO/CRO.csproj`). Code is grouped
+by capability then use case. REST endpoints and MCP tools are adapters
+over the same handlers. No mediator package; typed handlers are
+injected directly. Event sourcing only for a named workflow that
+justifies it.
+
+**Replaces:** The roadmap's open choice of a mediator package per
+slice.
+
+**Reason and evidence:** Developer discussion 2026-11-05, recorded in
+`docs/developer-before-you-code.md` (intended design, not
+implemented). The user approved the `src/CRO` scaffold.
+
+**Affected unfinished work:** Every slice's structure; identity
+provider, token issuance and module boundaries remain undecided.
+
+**Revisit when:** A concrete need justifies a mediator package or
+event sourcing.
+
+**Rollback path:** The scaffold is one endpoint; restructure freely.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-05 session.
+
+---
+
 ## 2026-11-05 — Epic 1 (Bootstrap) approved, 7 Feature files
 
 **Status:** Active

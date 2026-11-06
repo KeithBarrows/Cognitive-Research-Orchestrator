@@ -2,9 +2,17 @@
 
 ## Outcome now
 
-Epic 1 (Bootstrap) plan is **approved** (2026-11-05) — see
-`docs/phase-1-plan.md`. Next work: Epic 0's installs
-(`docs/phase-0-plan.md`), then Epic 1's bootstrap code.
+Epic 1 (Bootstrap) plan is **approved** (2026-11-05) and was tightened
+the same day — see `docs/phase-1-plan.md` (8 Feature files). Epic 0
+(installs, no CRO code; `docs/phase-0-plan.md`) comes first; its OB1
+install has candidate setups to try (`docs/Epic 0 - Installs/Feature
+03 - OB1 Fresh Docker Install.md`). The user states TheBrain's brains
+are now synced onto the laptop (Epic 0 Feature 05; stated 2026-11-05;
+TheBrain's local API answers on the laptop but needs a key, so brain
+contents were not checked). A ping-only ASP.NET Core scaffold
+(`src/CRO/`, user-approved, committed 2026-11-05) and its direction
+guide (`docs/developer-before-you-code.md`) exist; build and runtime
+are not verified.
 
 Settled, not re-narrated here — see `DECISIONS.md`: CRO never reads a
 repository directly (2026-10-22); the developer-facing architecture
@@ -102,7 +110,8 @@ was folded into the correct Epic below. See `docs/phase-roadmap.md`'s
    assumed existed), a fresh Plane Docker install, and a manual
    BeyondCompare file sync bringing TheBrain's brains onto the laptop.
 1. **Epic 1 — Bootstrap** (`docs/phase-1-plan.md`, approved
-   2026-11-05, 7 Feature files): a single run, not continuous. Read
+   2026-11-05, 8 Feature files, incl. 08 rebuild-safe user decisions):
+   a single run, not continuous. Read
    TheBrain once, create or update matching OB1 + `cro_index` entries
    — including `chunks` and `edges`, not deferred to Epic 2 (resolved
    2026-11-04) — flag (never act on) Thoughts/notes that might need
@@ -113,7 +122,8 @@ was folded into the correct Epic below. See `docs/phase-roadmap.md`'s
    and Note-embedded cross-brain `brain://` links (invisible to the
    `/graph` endpoint, need their own Note-body scan). TheBrain stays
    fully read-only this Epic — the earlier "Slice 2" write-support
-   exception was moved out to Epic 4, not kept here.
+   exception was moved out to Epic 4, not kept here. The cloud OB1
+   transfer is deferred (2026-11-05).
 2. **Epic 2 — Lookup + Plane** (`docs/phase-2-plan.md`, broad-stroke):
    the actual search/retrieval capability (with provenance and the
    serendipity-cap-2 rule, folded in from the old plan), standing
@@ -161,20 +171,24 @@ schema sketch had to be removed from this file once already.
 
 ### OB1 status
 
-- Fork at `D:\Repos\KeithBarrows\OB1`, synced to upstream
-  (`NateBJones-Projects/OB1`) 2026-10-16. Full capability survey in
-  `docs/ob1-integration-survey.md`.
+- Fork at `D:\Repos\KeithBarrows\OB1` is out of date (user,
+  2026-11-05); read upstream (`NateBJones-Projects/OB1`) directly.
+  Capability survey from the 2026-10-16 fork review:
+  `docs/ob1-integration-survey.md`. Live-checked upstream findings:
+  `docs/Epic 0 - Installs/Feature 03 - OB1 Fresh Docker Install.md`.
 - Currently in use: a cloud-hosted instance, confirmed temporary, with
   very few of the available extensions/recipes enabled.
 - `enhanced-mcp` (13 tools vs. the 4-6 tested; server-side sensitivity
-  tiers; SHA-256 dedup; `related_thoughts`) is built but targeted at
-  the future local install, not the current cloud instance.
+  tiers; SHA-256 dedup; `related_thoughts`) is one candidate for the
+  local install, not the choice. It is MCP-only, a Supabase Edge
+  Function needing an LLM key, with open upstream bugs. See Epic 0
+  Feature 03.
 - The local `ob1-local` Supabase instance exists but isn't a usable
   base yet: its Edge Runtime (the piece serving the MCP server)
   crashed 2 months ago and hasn't restarted; no add-on schemas are
   installed; it shares its Postgres database with an unrelated
   weather-station project's tables.
-- When installing OB1 local via Docker, also enable fork extensions
+- When installing OB1 local via Docker, also enable upstream extensions
   that fit real use, not just the stock 4-6 tools (full catalog in
   `docs/ob1-integration-survey.md`). First confirmed example: the
   household/CRM extension, already rescoped to attribution-tagging,
@@ -224,9 +238,10 @@ schema sketch had to be removed from this file once already.
   (semantic) search and for combining TheBrain + OB1 results in one
   search, until TheBrain adds its own fuzzy/semantic search.
 - OB1 was considered as the home for this fuzzy-search/sync job
-  instead of `cro_index` — rejected for now: OB1 has no delete tool in
-  any build (see the `enhanced-mcp` correction above), so it cannot
-  safely stay in sync with TheBrain edits and deletions on its own.
+  instead of `cro_index` — rejected 2026-10-22 on the grounds that OB1
+  had no delete tool. That reason no longer holds (2026-11-05: OB1 can
+  update and delete — see the correction under "OB1 status" and
+  `DECISIONS.md`). The decision to keep `cro_index` is unchanged.
 
 ### Plane
 
@@ -281,7 +296,8 @@ CRO-routed classification.
 ### Deferred / parked
 
 - Public ingest site's OIDC login + account allowlist — undesigned.
-- OB1 cloud-to-local migration — unscheduled.
+- OB1 cloud-to-local migration — deferred 2026-11-05 (user: ignore
+  the cloud OB1 for now).
 - Laptop-sync — resolved 2026-11-03: not needed. CRO runs on the
   laptop only (see Non-negotiables), so there is nothing to clone or
   sync from desktop to laptop.
@@ -300,9 +316,9 @@ CRO-routed classification.
 ### Working mode
 
 Business Analyst mode for CRO requirements/relationship-mapping
-continues. Drafting the Epic roadmap (language, schema, tests) was in
-scope because it directly answers the standing "Next checkpoint"
-criteria below — building it is not in scope until the user approves.
+continues. Code scaffolding in `src/CRO/` is user-approved
+(2026-11-05); every further slice still follows the Approval
+boundaries below.
 
 ## Active decisions
 
@@ -323,6 +339,13 @@ criteria below — building it is not in scope until the user approves.
 - TheBrain Thought titles use an approximately 80-character soft limit.
 - Normal capture completion is represented by absence of `Incomplete`;
   there is no `Complete` tag.
+- OB1-only thoughts are normal (OB1 holds some business-process
+  information that exists nowhere else). The invariant is that every
+  TheBrain/Plane node links to an OB1 node, not the reverse (decided
+  2026-11-05).
+- Bootstrap writes every node's full text to OB1, `restricted`
+  included — OB1 is local-only inside the trusted boundary (decided
+  2026-11-05).
 
 ## Non-negotiables
 
@@ -407,19 +430,28 @@ criteria below — building it is not in scope until the user approves.
 - What OIDC provider and account-allowlist mechanism should gate the
   public ingest site?
 - What is the migration plan for moving OB1 from cloud to
-  internal-only hosting?
+  internal-only hosting? (Deferred 2026-11-05.)
 - Does Plane content also flow into TheBrain, or stay a separate lane?
 - What UI direction fits the dashboard at scale — is a local-graph
   view (one item + direct connections) the answer to the open doubt
   about list/grid UIs past a few hundred/thousand items?
+- Which OB1 setup wins in Epic 0 Feature 03, and does upstream
+  `rest-api` run on the local `local-brain-no-mcp` stack with Ollama
+  embeddings (no cloud)? Unverified.
+- Where does the Epic 1 rebuild-safe user-decisions export file live
+  (path and format)?
+- After the TheBrain sync: search the six indexed brains for an
+  ordinary Thought with 30+ links (Epic 1 test 4's positive case).
+  Rolodex's child count is "100+" in the docs but about 94 by the
+  user's recollection (2026-11-05) — unverified either way.
 
 ## Next checkpoint
 
-Epic 1 (Bootstrap) is approved (2026-11-05) — next is Epic 0's
-installs (`docs/phase-0-plan.md`), then Epic 1's actual bootstrap
-code, both laptop-only work. Epics 2–6 (`docs/phase-roadmap.md`) are
-broad-stroke only and don't need approval yet — each needs its own
-detailed planning pass first.
+Epic 0's installs (`docs/phase-0-plan.md`; Feature 03's OB1
+trials first), then Epic 1's actual bootstrap code (approved
+2026-11-05), both laptop-only work. Epics 2–6
+(`docs/phase-roadmap.md`) are broad-stroke only and don't need
+approval yet — each needs its own detailed planning pass first.
 
 ## Approval boundaries
 
@@ -441,6 +473,16 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-05 by Claude Sonnet 5.5 (working-context-2-shape, after the
+Epic 1 plan review): corrected the OB1 facts (it can update and
+delete; fork is out of date; local-only, no cloud), marked the cloud
+OB1 transfer deferred, recorded OB1-only thoughts and full-text-to-OB1
+as active decisions, updated Epic 1 to 8 Features, replaced the stale
+"building is not in scope" Working mode, and added the open items
+from the review (Feature 03 trials, export-file location, the 30+
+link search, the Rolodex count). Recorded the `src/CRO` scaffold and
+the application-shape decision in DECISIONS.md.
 
 2026-11-05 by Claude Sonnet 5: Epic 1 (Bootstrap) approved — updated
 "Outcome now," the Epic roadmap's Epic 1 entry, and "Next checkpoint"
