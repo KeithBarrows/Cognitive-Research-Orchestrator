@@ -10,7 +10,7 @@
 | Architecture diagrams | `docs/architecture/*.mmd` | Supporting visual representation | Updated 2026-10-11 | Reviewing flows, boundaries, or component relationships | On demand |
 | Repository overview | `README.md` | Canonical concise project orientation | Updated 2026-10-11 | Session orientation or external project summary | Active |
 | Epic roadmap | `docs/phase-roadmap.md` | Overview of all 7 Epics (0-6; renamed from "phases" 2026-11-04) plus cross-cutting decisions (language, schema, doc-review task, Plane tagging convention) | Updated 2026-11-04 | Orienting across Epics, or needing the language/schema/doc-review decisions that apply project-wide | Active |
-| Epic 0 plan | `docs/phase-0-plan.md` | Epic 0 (Installs) plan — infrastructure only, no CRO code | Added 2026-11-04 | Reviewing what needs installing (Docker, Postgres+pgvector, OB1, Plane, TheBrain file sync) before Epic 1 can run; Features 01-05 done 2026-11-06, each Feature has its own folder with User Stories | Active |
+| Epic 0 plan | `docs/phase-0-plan.md` | Epic 0 (Installs) plan — infrastructure only, no CRO code | Added 2026-11-04 | Reviewing what needs installing (Docker, Postgres+pgvector, OB1, Plane, TheBrain file sync) before Epic 1 can run; Features 01-06 done 2026-11-06, each Feature has its own folder with User Stories | Active |
 | Epic 1 plan | `docs/phase-1-plan.md` and `docs/Epic 1 - Bootstrap/Feature 01-08....md` | Epic 1 (Bootstrap) plan — **approved 2026-11-05**, 8 Feature files (reviewed and tightened 2026-11-05) | Live-verified against the real Growth brain throughout (orphan/stale/hub/catchall-hub 2026-11-04; misplaced-private/`acType` and Note-embedded `brain://` links 2026-11-05) | Reviewing the Epic 1 bootstrap slice, its schema touch, tests, or exclusions | Active, approved |
 | Epic 2-6 plans | `docs/phase-2-plan.md` .. `docs/phase-6-plan.md` | Broad-stroke only, not yet detailed | Named 2026-11-04 (Epic 6 added 2026-11-04) | Reviewing Lookup+Plane, ongoing capture, reorg, external-gather, or skill-hooks scope | Broad-stroke |
 | `cro_index` schema | `docs/cro-index-schema.md` (canonical copy of the diagram: `docs/architecture/09-cro-index-schema.mmd`) | Canonical for the 11-table `cro_index` schema — settled through live verification against TheBrain, OB1, and Plane | Settled 2026-11-04 | Any `cro_index` table, column, embedding, or chunking question | Active |
@@ -77,9 +77,10 @@ Stop and ask if this precedence does not resolve a conflict.
   see `docs/cro-index-schema.md`); **ranking** across the three
   sources at query time is still not finalized — that's Epic 2's job.
 - Skill `cro_context` validation rules are not finalized.
-- The Plane MCP tools available in sessions point at the wrong
-  workspace (the writing/CreativeOS one); a new connection to the local
-  Plane install is Epic 0 Feature 06.
+- Plane MCP resolved 2026-11-06 (`plane-cro`). The cloud `plane` and
+  `claude.ai Plane` connections still point at CreativeOS, by design.
+  The local OB1 has no MCP or client connection yet. Its C# REST
+  client is Epic 1 Feature 02.
 - The legacy `.ai` files have uncommitted changes and require a separate
   cleanup decision after migration verification.
 - (Removed 2026-11-04: a gap claiming the 2026-10-15 live check found

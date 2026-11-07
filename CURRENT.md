@@ -14,7 +14,9 @@ own `update` and `delete` functions); 04 Plane (v1.4.3, workspace slug
 `cro`, project `CRO`, empty); 05 TheBrain file sync (all 8 brains in
 `D:\Data\Brains\U01`; the Local API at `http://localhost:11522` lists
 all 8 and returns each home Thought; TheBrain's "Start hidden when you
-log in" is on). `cro_index` embeds with `nomic-embed-text` through the
+log in" is on); 06 Plane MCP connection (`plane-cro` reaches the local
+Plane and lists only CRO; a test work item was created, read back and
+deleted, 2026-11-06). `cro_index` embeds with `nomic-embed-text` through the
 local Ollama container (`DECISIONS.md`, 2026-11-05).
 
 **Where things live:** setups in `src\Infra\NN-name\` (`02-cro-index-
@@ -26,8 +28,22 @@ Data under `D:\Data\CRO`. Secrets in .NET User Secrets on `src\CRO`
 8000, Plane 8090, `cro_index` 5433, Ollama 11434. Keith's own findings
 that are not plans yet: `docs/Notes and Findings.md`.
 
-**Next:** Epic 0 Features 06 (Plane MCP), 07 (`cro_index` MCP), 08
-(local DNS) and 09 (travel naming), each with User Stories in its
+**Connections (verified 2026-11-06 by project list and thought
+count):**
+
+| Connection | Points at | Note |
+| --- | --- | --- |
+| `plane-cro` | Local Plane, `localhost:8090`, workspace `cro` | One project, CRO |
+| `plane`, `claude.ai Plane` | Cloud CreativeOS workspace | AUTHOROPS, JTKAELEN, INFRA, QFP |
+| `open-brain` | Cloud OB1 | 93 thoughts, 2026-08-23 to 2026-10-20 |
+| Local OB1 | `127.0.0.1:8000`, REST functions | No MCP connection. The C# client is Epic 1 Feature 02 |
+
+The cloud `plane` entry stays until its work items are pulled into the
+local Plane. That needs the local OB1 connection first (Keith,
+2026-11-06).
+
+**Next:** Epic 0 Features 07 (`cro_index` MCP), 08 (local DNS) and 09
+(travel naming), each with User Stories in its
 folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
 committed 2026-11-05) and its direction guide
 (`docs/developer-before-you-code.md`) exist; build and runtime are not
@@ -517,6 +533,12 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 06): recorded
+Feature 06 as done, replaced the Next list, and added the connections
+table (which Plane and OB1 connection points where, and that the local
+OB1 has REST only). Epic 1 Feature 02 now names the C# REST client for
+the local OB1.
 
 2026-11-06 by Claude Sonnet 5.5 (working-context-2-shape, before a
 machine restart): replaced "Outcome now" with where we are, what is

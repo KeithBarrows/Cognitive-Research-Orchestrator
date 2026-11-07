@@ -13,11 +13,10 @@ The core read, one direction only — diagrammed in
   instance. TheBrain is never written back to in this phase.
 - **Deferred 2026-11-05 (user: ignore the cloud OB1 for now).** The
   existing cloud OB1's thoughts are read once and transferred into
-  the new local OB1 (OB1-to-OB1, no TheBrain involved) via
-  get-thoughts/save-thoughts calls. Exact tool names to confirm
-  against the local instance's enhanced-mcp surface at implementation
-  time — the cloud instance exposes list_thoughts/search_thoughts/
-  capture_thought; the local one may differ.
+  the new local OB1 (OB1-to-OB1, no TheBrain involved). The write side
+  is the local REST API below. How the cloud thoughts are read is not
+  designed: the cloud instance exposes MCP tools (list_thoughts,
+  search_thoughts, capture_thought), not the local REST surface.
 - The local OB1 Docker install is **Epic 0's job** (`../Epic 0 -
   Installs/Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1
   Fresh Docker Install.md`), not this
@@ -25,6 +24,19 @@ The core read, one direction only — diagrammed in
   already-running instance. The old `ob1-local` Supabase instance is
   not reusable (crashed Edge Runtime, shared Postgres with the
   weather-station project).
+- **How this Feature talks to the local OB1 (added 2026-11-06).**
+  Through our own REST functions at
+  `http://127.0.0.1:8000/functions/v1/`: `capture` (POST), `search`
+  (POST), `list` (GET), `update` (PUT) and `delete` (DELETE
+  `?id=<uuid>`). Epic 0 Feature 03 Stories 07 and 11 tested all five.
+  Auth is the generated `ANON_KEY` sent as the `apikey` and
+  `Authorization: Bearer` headers, read from User Secrets, never from
+  a repo file. The C# REST client that makes these calls is part of
+  this Feature's scope, because Epic 0 is installs only and holds no
+  CRO code. `capture` takes caller-supplied metadata and does no LLM
+  extraction. The local OB1 has no MCP connection; whether to add a
+  thin MCP wrapper for Claude Code is optional and is decided after
+  the C# client exists.
 - Update the architecture documents/diagrams once the Docker install
   and transfer mechanism are actually implemented, so they match what
   runs rather than the planned version.
@@ -67,6 +79,10 @@ duplicate `cro_index` rows and no duplicate OB1 thoughts (upsert-by-
 
 ## Not yet designed
 
-The exact local-OB1 enhanced-mcp tool names (confirm at implementation
-time against the live local instance, not assumed from the cloud
-instance's surface).
+- How the cloud OB1's thoughts are read for the deferred transfer
+  (the cloud side is MCP only).
+- Whether Claude Code also gets a local OB1 MCP wrapper over the REST
+  functions. Optional, decided after the C# client exists.
+- The exact request and response shapes the C# client relies on are
+  recorded in Epic 0 Feature 03 Story 07. Confirm them against the
+  live local instance at implementation time.
