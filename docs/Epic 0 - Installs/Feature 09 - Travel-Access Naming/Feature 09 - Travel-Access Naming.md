@@ -3,6 +3,11 @@
 *(Part of Epic 0 — Installs. See `../../phase-0-plan.md` for the full
 Epic.)*
 
+**Changed 2026-11-06:** CRO is one address with paths (`/api`, `/mcp`,
+`/admin`), so option 2 (the public wildcard record) is not needed. The
+travel name is `cro.localhost` (option 1). See `DECISIONS.md`,
+2026-11-06.
+
 ## Install
 
 Test **both** real candidates for reaching CRO while traveling
@@ -31,5 +36,5 @@ uses, not something to assume from a single test.
 
 ## Not yet designed
 
-Which approach actually works — genuinely unknown until tested
-against real networks.
+Option 1 is chosen on paper (2026-11-06). Story 01 tests it. Stories
+03 and 04 wait for real travel.

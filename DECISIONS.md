@@ -1004,3 +1004,40 @@ tablet needs it by name, or the laptop moves to Ethernet.
 laptop's Wi-Fi network back to automatic (DHCP).
 
 **Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.
+
+---
+
+## 2026-11-06 — CRO is one address with paths; travel name is cro.localhost
+
+**Status:** Active
+
+**Decision:** CRO is one root address. The app routes by path (`/api`,
+`/mcp`, `/admin`), not by subdomain. The name while traveling is
+`cro.localhost`. No public wildcard DNS record is published.
+
+**Replaces:** the 2026-11-04 plan in Epic 0 Feature 09 to test two
+naming options, including a public `*.home.sol3.net` record pointing at
+`127.0.0.1`, and keep one.
+
+**Reason and evidence:** Keith's rule, 2026-11-06: the app handles its
+own paths, so one address needs no subdomains and runs the same in
+Visual Studio and on a server. Kestrel does not route by hostname. A
+single name needs no wildcard record, and publishing a DNS record is
+outward-facing. `cro.localhost` needs no DNS: curl resolved it to
+`127.0.0.1` on 2026-11-06 (HTTP 200 from Plane). Windows itself and
+`ping` do not resolve it; browsers and curl do. Details are in
+`docs/Notes and Findings.md`, 2026-11-06.
+
+**Affected unfinished work:** Feature 09 Story 02 is not needed.
+Stories 03 and 04 stay Later. Epic 1 needs a Feature for publishing
+the CRO app (port, listening, firewall); listening is set per app when
+it is published.
+
+**Revisit when:** a phone or tablet needs a name, you want one name to
+work both at home and away, or `cro.localhost` fails in a browser on a
+foreign network.
+
+**Rollback path:** none needed; nothing was published. To reverse,
+reopen Story 02 and publish the record in the sol3.net Azure DNS zone.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.
