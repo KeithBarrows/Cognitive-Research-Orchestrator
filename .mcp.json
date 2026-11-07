@@ -18,6 +18,10 @@
     "vision-board-builder": {
       "type": "http",
       "url": "https://qvlkzrrgmghzoaobwwvi.supabase.co/functions/v1/mcp"
+    },
+    "plane-cro": {
+      "type": "stdio",
+      "command": "D:\\Repos\\KeithBarrows\\Cognitive Research Orchestrator\\src\\Infra\\plane-mcp.cmd"
     }
   }
 }
