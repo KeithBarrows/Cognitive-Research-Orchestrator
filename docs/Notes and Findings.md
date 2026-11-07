@@ -4,8 +4,103 @@ Keith's own findings, kept so they are not lost. These are NOT part of
 any plan yet. Nothing here is decided. When a finding becomes real work,
 move it into a Feature or User Story and leave a link here.
 
+**Planned (Keith, 2026-11-07):** this file will eventually become a
+scrum/kanban-style backlog of user stories. Entries here are the raw
+material. Keep each idea in its own numbered part, with its status and
+open questions, so it can be split into stories later.
+
 Format: newest first. Each entry has a date, a source, and a status
 (Unverified / Verified / Planned).
+
+## 2026-11-07 — Categories, capture, outside-LLM boundary, and two capture pages (ideas)
+
+**Source:** Keith, in a Q&A on 2026-11-07.
+**Status:** Ideas and open questions. Nothing decided, nothing built.
+Epic 3 (capture) has no screen yet; none of this is in a plan.
+
+**1. How OB1 gets its category (checked).**
+- The cloud OB1 asks a language model at save time for a small JSON
+  block with a `type` (observation, task, reference, idea,
+  person_note). That is the category. Its source is not in this repo;
+  the model and prompt are unverified.
+- The local OB1 has no such step. Its `capture` function only embeds the
+  text and stores the `metadata` the caller sends. Without metadata
+  there is no category.
+
+**2. Categories are two questions.**
+- **Kind of thing** (person, event, place, idea, task): a short, fixed
+  list in CRO. Decided by rules from TheBrain (Type name, parent's
+  Type), then embeddings compared to a short description per category,
+  then an outside LLM for `standard` content only, else "unknown" and a
+  flag for Keith.
+- **Where it sits in the knowledge tree** (Animals > Mammals > Cats,
+  ages, sciences): huge and growing, so no category table. The category
+  is the ancestor path from `edges` (a recursive query), stored as text
+  in OB1 `metadata`. A Thought with several parents has several paths;
+  store the shortest and keep the rest in `edges`. Paths are built after
+  Pass 1 has loaded all edges.
+- Package options noted: ML.NET (needs labelled examples), FuzzySharp or
+  F23.StringSimilarity (string matching only). Not recommended.
+
+**3. "Save this URL" flow (Epic 3).**
+1. Check whether the URL already exists (TheBrain looks attachments up
+   by location). 2. Fetch the page and make a short summary and title.
+3. Embed it and search `chunks` and OB1 for nearest Thoughts. 4. Attach
+   to a close Thought's Note, or create a new Thought under a parent
+   chosen from the neighbours' paths. 5. Always write to OB1.
+- CRO proposes with the reason; Keith approves before anything is
+  written to TheBrain. Auto-accept for high-confidence cases only later.
+- Open: the "close enough" cutoff (needs real data); one parent or two
+  when a Thought has several good homes.
+
+**4. Outside LLM boundary (draft).** OpenRouter will be needed; the
+laptop cannot run a model good enough locally (Keith, 2026-11-07).
+- Nothing leaves the laptop unless CRO decided, locally, it is safe. The
+  check cannot itself be an outside call.
+- Signals: TheBrain's Private marker (`access_type = 1`) and whether the
+  Thought is outside the private-home brain; local keyword rules; the
+  embedding comparison; the existing tiers. Only `standard` may go out.
+  `personal` and `restricted` never do.
+- Default deny: if unsure, it stays home.
+- Send the least that works (title and short excerpt for
+  categorizing). Log what was sent, to which model, and when. Early
+  versions show a preview first.
+- Keith picks the model (a "use model" option).
+- To check before any real content goes out: OpenRouter's current policy
+  on provider data retention and training (believed to be restrictable;
+  unverified).
+- The 2026-11-05 decision allows `restricted` text in local OB1 because
+  OB1 is inside the trusted boundary. OpenRouter crosses that boundary,
+  so it needs its own decision.
+- A public endpoint is a separate lock: listen on `127.0.0.1` only,
+  every route (`/api`, `/mcp`, `/admin`) needs a key, no anonymous
+  search or fetch, the key in User Secrets, nothing published to the
+  internet. Opening a LAN port stays its own decision under the
+  2026-10-17 home-network-only boundary.
+
+**5. Capture page, filing wizard (idea).** A page under `/admin` where
+Keith drops a file (example: next year's property tax report), picks
+sensitivity (Private), the brain (Filing Cabinet) and types a
+description, sees a review of what is saved where and what, if anything,
+leaves the laptop, then confirms. CRO attaches the file in TheBrain,
+writes the description to OB1 and indexes it. His choices beat any
+guess: Private means no outside model ever sees it. Open: TheBrain's
+file upload does not return the new attachment's id, so CRO re-reads the
+Thought to find it; scanned PDFs and images need OCR or a vision model
+(not designed).
+
+**6. Capture page, quick parse (idea).** Drop a file or paste a large
+text block and click [Send to LLM]. A local check runs first; a preview
+shows size, estimated cost and the chosen model. The result goes to a
+review screen (title, summary, kind, key facts, suggested home), never
+straight into TheBrain; Keith saves, edits or discards. If the local
+check flags the content, the button is blocked by default; Keith can
+override per item with a deliberate extra click, and the override is
+logged. There is no local-model option. Over-long text gets a "too big,
+split it?" message, not a silent send. PDF text is extracted locally.
+
+**When this becomes real work:** Epic 3 (new Features for the two pages
+and the outside-LLM boundary), after Epic 1's publish Feature.
 
 ## 2026-11-07 — What TheBrain's /graph really returns (read-only check)
 
