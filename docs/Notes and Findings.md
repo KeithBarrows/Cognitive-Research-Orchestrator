@@ -7,6 +7,39 @@ move it into a Feature or User Story and leave a link here.
 Format: newest first. Each entry has a date, a source, and a status
 (Unverified / Verified / Planned).
 
+## 2026-11-06 — How the CRO app is reached: one address, paths, and what "listening" means
+
+**Source:** Keith, plus a pasted Kestrel and Docker answer and checks on
+this laptop.
+**Status:** Partly verified (marked below). Nothing built yet.
+
+- **One address, paths not subdomains.** CRO is one root address. The
+  app routes by path: `/api`, `/mcp`, `/admin`. It runs the same in
+  Visual Studio and on a server. Kestrel does not route by hostname;
+  YARP or another proxy would be needed for that, and is not planned.
+- **Hosts file.** It maps a name to an IP only. It has no ports and no
+  wildcards. The port always goes in the URL. The desktop reaches the
+  laptop as `cro.home.sol3.net` (hosts line, `192.168.9.250`).
+- **`*.localhost`.** Browsers and curl resolve it to loopback
+  themselves; Windows does not. Verified 2026-11-06: `ping
+  cro.localhost` and .NET `Dns.GetHostAddresses` failed on this laptop;
+  curl returned HTTP 200 from `127.0.0.1`. Keith states it works in
+  .NET (not tested here). A `.localhost` address is loopback only:
+  other computers cannot reach it.
+- **Listening is set when the app is published.** Kestrel inside Docker
+  listens on all container addresses (for example
+  `ASPNETCORE_HTTP_PORTS=8080`). The compose `ports:` line decides who
+  outside can reach it: `127.0.0.1:PORT:8080` is the laptop only;
+  `PORT:8080` is every network the laptop joins, hotel Wi-Fi included.
+  Pair the second with a Windows Firewall rule limited to the home
+  subnet. Do not bind to `192.168.9.250`: it does not exist when
+  traveling. Unverified: this comes from a pasted AI answer, not a test.
+- **Host port is open.** `5000` was only an example. Port 8000 is OB1's;
+  80 and 443 are reserved.
+
+**When this becomes real work:** Epic 1 needs a Feature for publishing
+the CRO app (port, listening, firewall). Move this entry there then.
+
 ## 2026-11-06 — CRO needs an in-depth health check and a health API endpoint
 
 **Source:** Keith, after the first full reboot check.
