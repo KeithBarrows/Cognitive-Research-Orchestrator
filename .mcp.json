@@ -23,10 +23,6 @@
       "type": "stdio",
       "command": "D:\\Repos\\KeithBarrows\\Cognitive Research Orchestrator\\src\\Infra\\plane-mcp.cmd"
     },
-    "pgvector-cro": {
-      "type": "stdio",
-      "command": "D:\\Repos\\KeithBarrows\\Cognitive Research Orchestrator\\src\\Infra\\pgvector-mcp.cmd"
-    },
     "postgres-cro": {
       "type": "stdio",
       "command": "D:\\Repos\\KeithBarrows\\Cognitive Research Orchestrator\\src\\Infra\\postgres-mcp.cmd"

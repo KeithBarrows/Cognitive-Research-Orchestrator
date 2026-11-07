@@ -16,19 +16,18 @@ own `update` and `delete` functions); 04 Plane (v1.4.3, workspace slug
 all 8 and returns each home Thought; TheBrain's "Start hidden when you
 log in" is on); 06 Plane MCP connection (`plane-cro` reaches the local
 Plane and lists only CRO; a test work item was created, read back and
-deleted, 2026-11-06); 07 `cro_index` MCP connection, Stories 01-04
-(`pgvector-cro` and `postgres-cro` both connect, list the schema, and
-insert, query and delete a 768-dimension vector; 10 baseline tests
-pass, recorded in `docs/Epic 0 - Installs/Feature 07 - cro_index
-Postgres MCP Connection/Baseline MCP Tests.md`; Story 05, picking one
-winner, is not started, 2026-11-06). `cro_index` embeds with `nomic-embed-text` through the
+deleted, 2026-11-06); 07 `cro_index` MCP connection (both candidates
+passed the 10 baseline tests in `docs/Epic 0 - Installs/Feature 07 -
+cro_index Postgres MCP Connection/Baseline MCP Tests.md`; Keith kept
+`postgres-cro` and removed `pgvector-cro`, 2026-11-06, `DECISIONS.md`;
+Story 06, a read-only role, is Later). `cro_index` embeds with `nomic-embed-text` through the
 local Ollama container (`DECISIONS.md`, 2026-11-05).
 
 **Where things live:** setups in `src\Infra\NN-name\` (`02-cro-index-
 postgres`, `03a-ob1-local-brain`, `04-plane`; the folder names stay as
 they are, Keith's call 2026-11-06), started by `src\Infra\up.cmd`.
-The two MCP launchers are `src\Infra\pgvector-mcp.cmd` and
-`src\Infra\postgres-mcp.cmd`; Claude Code starts them from `.mcp.json`.
+The MCP launchers (`plane-mcp.cmd`, `postgres-mcp.cmd`) are in
+`src\Infra`; Claude Code starts them from `.mcp.json`.
 Data under `D:\Data\CRO`. Secrets in .NET User Secrets on `src\CRO`
 (`CRO:DbPassword`, the `Plane:*` keys including `Plane:ApiToken`, and
 `TheBrain:ApiToken`). Published ports are on `127.0.0.1` only: OB1
@@ -41,7 +40,6 @@ count):**
 | Connection | Points at | Note |
 | --- | --- | --- |
 | `plane-cro` | Local Plane, `localhost:8090`, workspace `cro` | One project, CRO |
-| `pgvector-cro` | `cro_index`, `127.0.0.1:5433` | Does not embed text; the 768-number vector must be passed in. No delete tool |
 | `postgres-cro` | `cro_index`, over the Docker network | `--tool-filter codemode`, one tool: `pg_execute_code` |
 | `plane`, `claude.ai Plane` | Cloud CreativeOS workspace | AUTHOROPS, JTKAELEN, INFRA, QFP |
 | `open-brain` | Cloud OB1 | 93 thoughts, 2026-08-23 to 2026-10-20 |
@@ -51,10 +49,8 @@ The cloud `plane` entry stays until its work items are pulled into the
 local Plane. That needs the local OB1 connection first (Keith,
 2026-11-06).
 
-**Next:** Epic 0 Feature 07 Story 05 (pick the winning `cro_index` MCP
-server and remove the other, Keith's call), then Features 08 (local
-DNS) and 09 (travel naming), each with User Stories in its
-folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
+**Next:** Epic 0 Features 08 (local DNS) and 09 (travel naming), each
+with User Stories in its folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
 committed 2026-11-05) and its direction guide
 (`docs/developer-before-you-code.md`) exist; build and runtime are not
 verified.
@@ -543,6 +539,12 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 07 Story 05):
+Keith kept `postgres-cro` and removed `pgvector-cro`. Dropped it from
+the connections table and launcher paths, marked Feature 07 done, and
+moved "Next" to Features 08 and 09. Reason and rollback are in
+`DECISIONS.md`.
 
 2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 07 Stories
 01-04): recorded that `pgvector-cro` and `postgres-cro` both pass the

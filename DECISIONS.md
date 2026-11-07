@@ -930,3 +930,41 @@ must override its ports the same way. Check the compose file for 80 or
 files.
 
 **Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.
+
+---
+
+## 2026-11-06 — Keep postgres-cro, remove pgvector-cro
+
+**Status:** Active
+
+**Decision:** `postgres-cro` (writenotenow/postgres-mcp v3.1.0,
+`--tool-filter codemode`) is the one MCP server for `cro_index`.
+`pgvector-cro` (mcp-server-pgvector 0.1.0) is removed: its `.mcp.json`
+entry and `src\Infra\pgvector-mcp.cmd`.
+
+**Replaces:** the Epic 0 Feature 07 plan to trial both and keep one
+(2026-11-04).
+
+**Reason and evidence:** Both passed the 10 baseline tests on
+2026-11-06 (`docs/Epic 0 - Installs/Feature 07 - cro_index Postgres
+MCP Connection/Baseline MCP Tests.md`). `postgres-cro` covers schema,
+insert, vector query, delete and the vector helpers in one server and
+can build a vector inside the database. `pgvector-cro` has no delete
+tool, needs the 768-number vector passed in as a literal list, is a
+single-release unvetted package, and needed a pin to `mcp<2` to start.
+Chosen by Keith.
+
+**Affected unfinished work:** Tests 2-5 and 7-9 in the baseline are
+history; tests 1, 6 and 10 are the live baseline. Epic 1's C# client
+passes vectors in code, so the literal-list limit does not carry over.
+Story 06 (read-only role) still applies to `postgres-cro`.
+
+**Revisit when:** `postgres-cro`'s codemode filter or its single
+`pg_execute_code` tool stops being enough, or a CRO need appears that
+only a pgvector-specific tool covers.
+
+**Rollback path:** restore `src\Infra\pgvector-mcp.cmd` and the
+`pgvector-cro` entry in `.mcp.json` from commit `2194973`, then restart
+Claude Code.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.

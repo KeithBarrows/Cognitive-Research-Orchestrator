@@ -22,3 +22,5 @@ smoke test.
 Verified 2026-11-06: through pgvector-cro, list_vector_tables found
 chunks.embedding (768 dimensions) and describe_vector_table read
 chunks. It connects to cro_index.
+Removed 2026-11-06 after Story 05; see `DECISIONS.md`. Kept here as
+the record of the trial.

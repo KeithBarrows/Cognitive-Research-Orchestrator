@@ -4,6 +4,10 @@ Recorded 2026-11-06 (Feature 07, Stories 01-04). These are the first
 tests of how Claude Code reaches `cro_index` through two MCP servers.
 They are the starting point for the CRO test suite. All 10 passed.
 
+**Update 2026-11-06:** `pgvector-cro` was removed (Story 05,
+`DECISIONS.md`). Tests 2-5 and 7-9 are history. Tests 1, 6 and 10
+(`postgres-cro`) are the live baseline.
+
 ## Setup
 
 - Servers: `pgvector-cro` (mcp-server-pgvector 0.1.0, run with
