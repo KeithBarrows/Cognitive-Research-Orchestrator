@@ -16,7 +16,9 @@ own `update` and `delete` functions); 04 Plane (v1.4.3, workspace slug
 all 8 and returns each home Thought; TheBrain's "Start hidden when you
 log in" is on); 06 Plane MCP connection (`plane-cro` reaches the local
 Plane and lists only CRO; a test work item was created, read back and
-deleted, 2026-11-06); 07 `cro_index` MCP connection (both candidates
+deleted, 2026-11-06); 08 local name (a static laptop address `192.168.9.250` and a
+hosts-file line on each desktop, no resolver; `DECISIONS.md`
+2026-11-06); 07 `cro_index` MCP connection (both candidates
 passed the 10 baseline tests in `docs/Epic 0 - Installs/Feature 07 -
 cro_index Postgres MCP Connection/Baseline MCP Tests.md`; Keith kept
 `postgres-cro` and removed `pgvector-cro`, 2026-11-06, `DECISIONS.md`;
@@ -49,8 +51,8 @@ The cloud `plane` entry stays until its work items are pulled into the
 local Plane. That needs the local OB1 connection first (Keith,
 2026-11-06).
 
-**Next:** Epic 0 Features 08 (local DNS) and 09 (travel naming), each
-with User Stories in its folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
+**Next:** Epic 0 Feature 09 (travel naming), with User Stories in its
+folder. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
 committed 2026-11-05) and its direction guide
 (`docs/developer-before-you-code.md`) exist; build and runtime are not
 verified.
@@ -448,9 +450,9 @@ boundaries below.
   out — those can leak lookups to the public DNS root and
   occasionally collide with something real. Future web sites get the
   same subdomain treatment, not a one-off special case for CRO. Added
-  to `docs/phase-0-plan.md` as an explicit install step. Not yet
-  implemented — this is the chosen approach, not confirmation it's
-  running.
+  to `docs/phase-0-plan.md` as an explicit install step. Changed
+  2026-11-06: no resolver; a static laptop address and a hosts-file
+  line on each desktop. See `DECISIONS.md`.
 - **The tablet half's integrated GPU is off-limits for any CRO
   workload. The base's discrete GPU (GTX 1660 Ti, 6GB) is allowed, but
   only if explicitly pinned there (added 2026-11-04, refined
@@ -539,6 +541,12 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 08): the local
+name now works through a static laptop address (`192.168.9.250`) and a
+hosts-file line on each desktop; no dnsmasq. Marked Feature 08 done,
+replaced the hostname bullet's "not yet implemented", and moved "Next"
+to Feature 09. Reason and rollback are in `DECISIONS.md`.
 
 2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 07 Story 05):
 Keith kept `postgres-cro` and removed `pgvector-cro`. Dropped it from

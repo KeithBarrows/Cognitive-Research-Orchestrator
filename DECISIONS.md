@@ -968,3 +968,39 @@ only a pgvector-specific tool covers.
 Claude Code.
 
 **Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.
+
+---
+
+## 2026-11-06 — Local name through a fixed IP and a hosts file, no DNS resolver
+
+**Status:** Active
+
+**Decision:** `cro.home.sol3.net` is reached through a static laptop
+address (`192.168.9.250`, outside the router's DHCP range) and a
+hosts-file line on each desktop. There is no dnsmasq container and no
+change to the router's DNS.
+
+**Replaces:** the 2026-11-04 plan for a dnsmasq resolver in Docker,
+pushed to every device through the router's DHCP DNS setting.
+
+**Reason and evidence:** Checked 2026-11-06. Windows Internet
+Connection Sharing holds port 53 on the laptop. The Gryphon router
+and mesh can be changed only through the mobile app. A router DNS
+change reaches every device in the house, and with the laptop off or
+away devices either lose DNS or skip the local name. Only one or two
+desktops need the name. Tested: the laptop keeps `192.168.9.250/24`
+with working internet, and from the desktop `ping 192.168.9.250` and
+`ping cro.home.sol3.net` both answer. Chosen by Keith.
+
+**Affected unfinished work:** Feature 08 Stories 02, 04, 05, 06 and 07
+are not needed. Feature 09 is unchanged (`cro.localhost` while
+traveling). Phones and tablets use the address directly until a public
+record or a resolver is added. No service listens on the LAN yet.
+
+**Revisit when:** more than a few devices need the name, a phone or
+tablet needs it by name, or the laptop moves to Ethernet.
+
+**Rollback path:** delete the hosts line on each desktop, and set the
+laptop's Wi-Fi network back to automatic (DHCP).
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.

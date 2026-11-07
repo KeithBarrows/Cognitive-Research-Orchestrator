@@ -124,6 +124,8 @@ install/test detail.
   DNS via its internal DHCP — that gets replaced by the laptop's
   dnsmasq address once it exists, not pointed at 1.1.1.1/9.9.9.9
   directly (those are dnsmasq's own upstreams, one layer further in).
+  **Changed 2026-11-06:** no resolver; a static laptop address and a
+  hosts-file line instead. See Feature 08 and `DECISIONS.md`.
 - **Travel-access naming: test both real candidates, commit to one —
   added 2026-11-04.** Two approaches exist for reaching CRO while
   traveling (laptop-only, no other device involved — see
