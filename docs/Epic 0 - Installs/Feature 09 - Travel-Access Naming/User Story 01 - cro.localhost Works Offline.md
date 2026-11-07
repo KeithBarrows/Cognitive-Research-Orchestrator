@@ -1,6 +1,6 @@
 # User Story 01 — cro.localhost Works Offline
 
-**Status:** In progress
+**Status:** Done
 
 **Story:** As the CRO developer, I want `cro.localhost` to reach CRO with no network, so traveling needs no DNS at all.
 
@@ -14,4 +14,7 @@
 - .NET: Keith states it works. Not tested here.
 - `ping cro.localhost` and .NET `Dns.GetHostAddresses` do not resolve
   it on Windows. Browsers and curl resolve `*.localhost` themselves.
-- Browser and Wi-Fi-off checks: not yet done.
+- Browser: Keith reports `http://cro.localhost:8090` loads Plane
+  (2026-11-06). Whether Wi-Fi was off for this check was not stated.
+- curl with Wi-Fi off: Keith reports it works (2026-11-06).
+- These last two results are Keith's reports, not run by Claude.

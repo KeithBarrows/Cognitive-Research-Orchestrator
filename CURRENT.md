@@ -51,8 +51,9 @@ The cloud `plane` entry stays until its work items are pulled into the
 local Plane. That needs the local OB1 connection first (Keith,
 2026-11-06).
 
-**Next:** Epic 0 Feature 09 Story 01 (browser and Wi-Fi-off checks);
-Stories 03 and 04 wait for travel. Then Epic 1. A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
+**Next:** Epic 0 is done except Feature 09 Stories 03 and 04, which wait
+for travel. Then Epic 1 (Bootstrap), which needs a new Feature for
+publishing the CRO app (`docs/Notes and Findings.md`, 2026-11-06). A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
 committed 2026-11-05) and its direction guide
 (`docs/developer-before-you-code.md`) exist; build and runtime are not
 verified.
@@ -541,6 +542,10 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 09 Story 01):
+Story 01 is Done (curl, browser and Wi-Fi-off results recorded). Epic 0
+now waits only on Stories 03 and 04, which need travel.
 
 2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 09 planning):
 recorded one address with paths and `cro.localhost` as the travel name;
