@@ -77,6 +77,18 @@ test 1 and Feature 08. Running the bootstrap a second time against unchanged sou
 duplicate `cro_index` rows and no duplicate OB1 thoughts (upsert-by-
 `source_id`, not blind insert).
 
+## Chunking rule (added 2026-11-07)
+
+The embedding model reads at most 2,048 tokens and silently drops the
+rest (tested 2026-11-07; see `../../Notes and Findings.md`). So Pass 2
+cuts each Note and file list into chunks of about 1,000-1,500
+characters at natural breaks, writes one `chunks` row per piece with
+its own vector, and starts every chunk with the Thought's name. OB1
+still gets one entry per Thought with the full text (the 2026-11-05
+rule); its vector covers only the opening. Pass 2 logs any text over
+the safe length instead of letting it be cut silently. The exact chunk
+size is confirmed at implementation time against real Notes.
+
 ## Not yet designed
 
 - How the cloud OB1's thoughts are read for the deferred transfer

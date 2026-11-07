@@ -7,6 +7,41 @@ move it into a Feature or User Story and leave a link here.
 Format: newest first. Each entry has a date, a source, and a status
 (Unverified / Verified / Planned).
 
+## 2026-11-07 — The embedding model reads only 2,048 tokens; long Notes must be chunked
+
+**Source:** Keith (large TheBrain Notes were discussed earlier), plus a
+test on this laptop.
+**Status:** Verified for the limit. Chunk size is a proposal.
+
+- **Test (2026-11-07).** Ollama `nomic-embed-text` via `/api/embed`.
+  Texts of 200, 1,000 and 1,500 words: the vector changed when a
+  different paragraph was appended. Texts of 3,000, 4,000, 6,000 and
+  10,000 words: tokens read stopped at 2,048 and the vector was
+  identical with or without the appended paragraph (cosine 1.000). The
+  model silently drops everything after 2,048 tokens. No error.
+- **OB1 effect.** The local OB1 `capture` function sends the whole
+  content in one call and has no length check. The full text is stored,
+  but the vector covers only the first ~2,048 tokens. A search for
+  something near the end of a long entry will not find it.
+- **Limit of the test.** The test words were simple, 1 word = 1 token.
+  Real prose is about 1.3 tokens per word, so the real cap is probably
+  1,200-1,500 words. Chunk well under it anyway.
+- **Proposed rules for bootstrap Pass 2** (Epic 1 Feature 02):
+  1. Cut each Note and each file list into chunks of about 1,000-1,500
+     characters, at natural breaks (paragraph, list item, file entry),
+     not mid-sentence.
+  2. One `chunks` row per piece, each with its own 768-dim vector.
+  3. Start every chunk with the Thought's name, so a piece makes sense
+     alone.
+  4. OB1 keeps one entry per Thought with the full text (existing rule).
+     Its vector is a broad match on the opening; `chunks` gives the
+     precise match.
+  5. Guard: if any text sent to OB1 or `chunks` is over the safe length,
+     log it so nothing is cut silently.
+- **Files** are not stored in OB1. Only their text descriptions are.
+
+**When this becomes real work:** Feature 02, Pass 2 stories.
+
 ## 2026-11-06 — How the CRO app is reached: one address, paths, and what "listening" means
 
 **Source:** Keith, plus a pasted Kestrel and Docker answer and checks on
