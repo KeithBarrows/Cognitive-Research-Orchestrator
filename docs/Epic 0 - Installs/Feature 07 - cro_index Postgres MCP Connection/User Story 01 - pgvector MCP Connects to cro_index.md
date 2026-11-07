@@ -4,6 +4,18 @@
 
 **Story:** As the CRO developer, I want `mcp-server-pgvector` running against `cro_index`, so I can try the pgvector-specific candidate.
 
-**Done when:** A compose folder `src/Infra/07a-mcp-pgvector` starts it, it connects to `cro_index` on port 5433, the password comes from User Secrets, and any published port is on `127.0.0.1` only.
+**Done when:** `src\Infra\pgvector-mcp.cmd` starts `mcp-server-pgvector`
+(PyPI, pinned to 0.1.0) as a stdio process, connects to `cro_index` on
+`127.0.0.1:5433`, reads the password from User Secrets for that
+process only, and is listed in `.mcp.json` as `pgvector-cro`. It
+publishes no port.
 
-**Notes:** Never use ports 80 or 443. Connection string is built in `up.cmd`-style from User Secrets, not stored in the repo.
+**Notes:** Changed 2026-11-06 from a compose folder: it is a Python
+package that Claude Code launches, not a service. Author Praveen
+Mittal (`mittalpk`), one release (2026-07-21), so it is pinned and
+unvetted. Never use ports 80 or 443. It appears not to embed text, so
+a query vector may have to be passed in; confirm in Story 04. The
+launcher also pins `mcp<2` (`--with "mcp<2"`): 0.1.0 declares
+`mcp>=1.12.0` with no upper bound, and on `mcp` 2.x it crashes at
+startup (`mcp.server.fastmcp` was renamed). Found at the 2026-11-06
+smoke test.

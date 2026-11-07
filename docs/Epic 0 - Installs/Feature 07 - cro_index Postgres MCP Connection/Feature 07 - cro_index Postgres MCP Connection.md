@@ -16,8 +16,10 @@ current options take a plain connection string instead:
 2. `postgres-mcp` (writenotenow) — broader: schema introspection,
    migration tracking, pgvector among other extensions.
 
-Since this is all disposable Docker, run **both** as separate
-containers against the same `cro_index` database (Feature 02).
+Run both against the same `cro_index` database (Feature 02), each
+started by a launcher script like `plane-cro`'s. Claude Code starts an
+MCP server itself, so neither needs an always-on compose container
+(changed 2026-11-06).
 
 ## Test
 
