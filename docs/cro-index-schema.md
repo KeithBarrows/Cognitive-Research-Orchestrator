@@ -293,6 +293,11 @@ identity/reference. Different purpose, same shape.
 | `relationship` | text | e.g. `'parent'` \| `'child'` \| `'jump'` (TheBrain-native) or `'shared_topic'` \| `'shared_person'` (OB1-native) — source-dependent, not a fixed enum across sources |
 | `source` | text | which system's native relationship this mirrors — `'thebrain'` \| `'ob1'` |
 | `created_at` | timestamptz | |
+| `link_name` | text, nullable | **Added 2026-11-07 (V005).** TheBrain's optional link `name`, as given. Empty for edges CRO makes itself. |
+| `link_meaning` | smallint, nullable | **Added 2026-11-07 (V005).** TheBrain's link `meaning`, raw. Values 1, 2 and 5 seen live; undocumented, stored as given. |
+| `link_direction` | smallint, nullable | **Added 2026-11-07 (V005).** TheBrain's link `direction`, raw. Values -1 and 1 seen live; undocumented, stored as given. |
+
+Index `edges_to_idx` on `(to_type, to_id)` (V005, 2026-11-07) serves "what points at this node?" and the dangling-edge check after Pass 1. Known limit: the primary key is still (from, to, relationship), so two TheBrain links between the same pair with the same relation but a different `meaning` would collide. Not seen in a 120-Thought sample; change the key if the real crawl shows it.
 
 **No separate column for *which* topic/person two OB1 nodes
 share — resolved 2026-11-04, user's own observation.** Storing the
@@ -488,6 +493,9 @@ erDiagram
         text relationship
         text source
         timestamptz created_at
+        text link_name "nullable"
+        smallint link_meaning "nullable"
+        smallint link_direction "nullable"
     }
 
     sync_state {

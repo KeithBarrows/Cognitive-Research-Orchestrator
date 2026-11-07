@@ -7,6 +7,36 @@ move it into a Feature or User Story and leave a link here.
 Format: newest first. Each entry has a date, a source, and a status
 (Unverified / Verified / Planned).
 
+## 2026-11-07 — What TheBrain's /graph really returns (read-only check)
+
+**Source:** a read-only check against the local TheBrain API
+(`localhost:11522`) on this laptop: the Growth home Thought, then 120
+Thoughts reached by walking outward.
+**Status:** Verified for Growth, 120 Thoughts. Other brains not checked.
+
+- **Shape.** Top level: `activeThought`, `parents`, `children`,
+  `jumps`, `siblings`, `tags`, `type`, `links`, `attachments`. The
+  neighbour lists hold full Thought objects, each with its own
+  `brainId`. Link items hold `thoughtIdA`, `thoughtIdB`, `relation`,
+  `meaning`, `direction`, `name`, `color`, `thickness`, `brainId`.
+- **`relation`:** 1 is parent/child, 3 is jump. The 185 jumps seen match
+  the 185 relation-3 links.
+- **`meaning`** values seen: 1, 2, 5. **`direction`** values seen: -1, 1.
+  Both undocumented; stored raw (`edges.link_meaning`,
+  `edges.link_direction`, V005).
+- **No cross-brain items.** All neighbours were in the same brain as
+  their Thought. This fits Keith's idea that a jump to another brain is
+  in the Note text as a `brain://` link, not in `/graph`. A strong hint
+  from one brain, not proof.
+- **Siblings are large:** 655 against 358 children. They can be worked
+  out from parents and children, so the crawl should use
+  `includeSiblings=false`.
+- **Tags** are Thoughts of kind 4. One was seen.
+- **Not checked:** the other 7 brains and Thoughts with very large
+  graphs.
+
+**When this becomes real work:** Epic 1 Feature 02, Pass 1.
+
 ## 2026-11-07 — The embedding model reads only 2,048 tokens; long Notes must be chunked
 
 **Source:** Keith (large TheBrain Notes were discussed earlier), plus a
