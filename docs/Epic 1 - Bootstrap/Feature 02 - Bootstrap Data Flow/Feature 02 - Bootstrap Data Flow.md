@@ -1,13 +1,13 @@
 # Feature 02 — Bootstrap Data Flow
 
-*(Part of Epic 1 — Bootstrap. See `../phase-1-plan.md` for the full
-Epic; see `../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
+*(Part of Epic 1 — Bootstrap. See `../../phase-1-plan.md` for the full
+Epic; see `../../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
 tagging convention this file is meant to seed.)*
 
 ## Scope
 
 The core read, one direction only — diagrammed in
-`../architecture/08-bootstrap-flow.mmd`:
+`../../architecture/08-bootstrap-flow.mmd`:
 
 - TheBrain is read once and feeds both `cro_index` and a new local OB1
   instance. TheBrain is never written back to in this phase.
@@ -17,7 +17,7 @@ The core read, one direction only — diagrammed in
   is the local REST API below. How the cloud thoughts are read is not
   designed: the cloud instance exposes MCP tools (list_thoughts,
   search_thoughts, capture_thought), not the local REST surface.
-- The local OB1 Docker install is **Epic 0's job** (`../Epic 0 -
+- The local OB1 Docker install is **Epic 0's job** (`../../Epic 0 -
   Installs/Feature 03 - OB1 Fresh Docker Install/Feature 03 - OB1
   Fresh Docker Install.md`), not this
   Feature's — corrected 2026-11-05. This Feature only writes to the
@@ -72,7 +72,7 @@ some business-process information that exists nowhere else) and are
 not errors. No count match between sources is required or tested
 (changed 2026-11-05). Every node's full text is written to OB1,
 `restricted` content included (decided 2026-11-05; OB1 is local-only
-inside the trusted boundary). Rebuild safety is `../phase-1-plan.md`
+inside the trusted boundary). Rebuild safety is `../../phase-1-plan.md`
 test 1 and Feature 08. Running the bootstrap a second time against unchanged source data produces no
 duplicate `cro_index` rows and no duplicate OB1 thoughts (upsert-by-
 `source_id`, not blind insert).

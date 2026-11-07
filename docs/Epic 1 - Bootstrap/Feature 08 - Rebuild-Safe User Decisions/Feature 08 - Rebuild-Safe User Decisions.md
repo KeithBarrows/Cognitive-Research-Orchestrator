@@ -1,7 +1,7 @@
 # Feature 08 — Rebuild-Safe User Decisions
 
-*(Part of Epic 1 — Bootstrap. See `../phase-1-plan.md` for the full
-Epic; see `../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
+*(Part of Epic 1 — Bootstrap. See `../../phase-1-plan.md` for the full
+Epic; see `../../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
 tagging convention this file is meant to seed.)*
 
 ## Scope
@@ -37,7 +37,7 @@ Needs Features 01–07 to have produced the rows being exported.
 
 ## Acceptance test
 
-`../phase-1-plan.md` test 1 (Rebuild safety): delete `cro_index` and
+`../../phase-1-plan.md` test 1 (Rebuild safety): delete `cro_index` and
 rebuild it from TheBrain and OB1. Every derived row comes back
 equivalent, compared by source ids, and every user-set value is
 re-applied and matches what was exported before the delete.

@@ -1,13 +1,13 @@
 # Feature 03 — Duplicate Detection
 
-*(Part of Epic 1 — Bootstrap. See `../phase-1-plan.md` for the full
-Epic; see `../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
+*(Part of Epic 1 — Bootstrap. See `../../phase-1-plan.md` for the full
+Epic; see `../../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
 tagging convention this file is meant to seed.)*
 
 ## Scope
 
 Folded in 2026-11-04 from the old plan's "Recovery and graph hygiene"
-phase (`../README.md` §15, now superseded). That old phase bundled
+phase (`../../README.md` §15, now superseded). That old phase bundled
 *detecting* anomalies with *resolving* them; this Feature keeps only
 detection — resolution is Epic 4 (Reorg).
 

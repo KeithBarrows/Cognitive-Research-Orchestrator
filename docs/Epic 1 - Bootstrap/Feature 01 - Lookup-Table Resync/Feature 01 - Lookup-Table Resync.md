@@ -1,7 +1,7 @@
 # Feature 01 — Lookup-Table Resync
 
-*(Part of Epic 1 — Bootstrap. See `../phase-1-plan.md` for the full
-Epic; see `../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
+*(Part of Epic 1 — Bootstrap. See `../../phase-1-plan.md` for the full
+Epic; see `../../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
 tagging convention this file is meant to seed.)*
 
 ## Scope

@@ -1,13 +1,13 @@
 # Feature 04 — Orphan, Stale, and Hub Flagging
 
-*(Part of Epic 1 — Bootstrap. See `../phase-1-plan.md` for the full
-Epic; see `../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
+*(Part of Epic 1 — Bootstrap. See `../../phase-1-plan.md` for the full
+Epic; see `../../phase-roadmap.md` for the Plane EPIC/FEATURE/USER STORY
 tagging convention this file is meant to seed.)*
 
 ## Scope
 
 Fully designed 2026-11-04, all three settled through live verification
-against the real Growth brain (see `../cro-index-schema.md`'s
+against the real Growth brain (see `../../cro-index-schema.md`'s
 `node_flags` table):
 
 - **Orphan** — zero rows in `node_links` and `edges`, either side.
