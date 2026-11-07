@@ -1041,3 +1041,104 @@ foreign network.
 reopen Story 02 and publish the record in the sol3.net Azure DNS zone.
 
 **Recorded by:** Claude Sonnet 5.5, from the 2026-11-06 session.
+
+---
+
+## 2026-11-07 — Vanished brains and Types are kept and flagged `deleted`
+
+**Status:** Active
+
+**Decision:** When a brain or Type disappears from TheBrain, the resync
+keeps its row in `cro_index` and OB1. Every node that pointed at it gets
+a `node_flags` row with `flag_type = 'deleted'`, with what vanished and
+the date in `detail`. Nothing is deleted. If it returns, the flag is
+cleared.
+
+**Replaces:** nothing; the delete-or-keep question was open in Epic 1
+Feature 01.
+
+**Reason and evidence:** Keith's choice, 2026-11-07: keep, do not
+delete. `sensitivity_tiers` answers how private content is, and a
+`deleted` value there would hide a node's real tier. `thebrain_types`
+mirrors TheBrain and each row needs a real TheBrain id. `node_flags`
+holds CRO's own labels and `flag_type` is free text, so no schema change
+was needed.
+
+**Affected unfinished work:** Feature 01 Story 05. A vanished Thought is
+a different case, found when Thoughts are re-read (Epic 1 Features 02
+and 04).
+
+**Revisit when:** flagged rows pile up and need a clean-up step.
+
+**Rollback path:** stop writing the flag. Existing `deleted` flags can be
+removed with a plain delete on `node_flags`.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-07 session.
+
+---
+
+## 2026-11-07 — V005: link details on `edges` and an index on the target
+
+**Status:** Active
+
+**Decision:** `edges` gets three nullable columns, `link_name` (text),
+`link_meaning` (smallint) and `link_direction` (smallint), stored raw
+from TheBrain's `/graph` links, plus index `edges_to_idx` on
+`(to_type, to_id)`. Applied to `cro_index` by Flyway on 2026-11-07
+(V005, `success = true`).
+
+**Replaces:** the 2026-11-04 `edges` shape with no link details and no
+target index.
+
+**Reason and evidence:** A read-only `/graph` check on Growth (120
+Thoughts, 2026-11-07) showed each link carries `meaning` (1, 2, 5 seen),
+`direction` (-1, 1 seen) and an optional `name`, none of which `edges`
+could hold. `meaning` and `direction` are undocumented, so they are kept
+as given. The index serves "what points at this node?" and the
+dangling-edge check after Pass 1. Keith asked for all three columns.
+
+**Affected unfinished work:** Epic 1 Feature 02 Pass 1 fills the
+columns. Known limit: the primary key ignores `meaning`, so two links
+between the same pair with the same relation but a different `meaning`
+would collide; change the key if the real crawl shows it.
+
+**Revisit when:** the real crawl shows key collisions, or `meaning` and
+`direction` are decoded.
+
+**Rollback path:** a new migration (V006) that drops the three columns
+and the index. No data is lost because the table is empty today.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-07 session.
+
+---
+
+## 2026-11-07 — Long text is chunked; the embedding model reads 2,048 tokens
+
+**Status:** Active
+
+**Decision:** Epic 1 Pass 2 cuts each Note and file list into chunks of
+about 1,000-1,500 characters at natural breaks, one `chunks` row and
+one vector each, starting every chunk with the Thought's name. OB1 keeps
+one entry per Thought with the full text (the 2026-11-05 rule); its
+vector covers only the opening. Pass 2 logs any text over the safe
+length.
+
+**Replaces:** nothing; no chunking rule existed.
+
+**Reason and evidence:** Tested 2026-11-07 against local Ollama
+`nomic-embed-text`: past 2,048 tokens the model stops reading with no
+error, and the vector no longer changes when the end changes (cosine
+1.000). The local OB1 `capture` function has no length check. The test
+used simple words (1 word = 1 token); real prose is about 1.3 tokens per
+word, so the exact chunk size is confirmed against real Notes.
+
+**Affected unfinished work:** Epic 1 Feature 02 (a "Chunking rule"
+section was added) and its Pass 2 stories.
+
+**Revisit when:** real Notes show a better chunk size, or the embedding
+model changes.
+
+**Rollback path:** none needed; nothing was built. Chunk size is a
+setting, not a schema change.
+
+**Recorded by:** Claude Sonnet 5.5, from the 2026-11-07 session.

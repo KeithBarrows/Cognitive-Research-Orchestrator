@@ -2,14 +2,17 @@
 
 ## Outcome now
 
-**Where we are (2026-11-06).** Epic 0 (Installs, no CRO code;
-`docs/phase-0-plan.md`) is in progress, one Feature at a time. Epic 1
-(Bootstrap, `docs/phase-1-plan.md`, 8 Feature files) is approved and
-waits for Epic 0.
+**Where we are (2026-11-07).** Epic 0 (Installs, no CRO code;
+`docs/phase-0-plan.md`) is done except Feature 09 Stories 03 and 04,
+which wait for travel. Epic 1 (Bootstrap, `docs/phase-1-plan.md`, 8
+Features) is approved and in planning: each Feature has its own folder
+under `docs/Epic 1 - Bootstrap/`, and Feature 01's 7 User Stories are
+written (all Not started).
 
 **Done and verified:** Feature 01 Docker Desktop; 02 dedicated
 Postgres + pgvector (`cro_index`, 11 tables via Flyway migrations
-V001-V004, `vector(768)`); 03 OB1 local (Supabase stack + Ollama, our
+V001-V005, `vector(768)`; V005 added link name, meaning and
+direction to `edges` plus an index on its target); 03 OB1 local (Supabase stack + Ollama, our
 own `update` and `delete` functions); 04 Plane (v1.4.3, workspace slug
 `cro`, project `CRO`, empty); 05 TheBrain file sync (all 8 brains in
 `D:\Data\Brains\U01`; the Local API at `http://localhost:11522` lists
@@ -51,8 +54,10 @@ The cloud `plane` entry stays until its work items are pulled into the
 local Plane. That needs the local OB1 connection first (Keith,
 2026-11-06).
 
-**Next:** Epic 0 is done except Feature 09 Stories 03 and 04, which wait
-for travel. Then Epic 1 (Bootstrap), which needs a new Feature for
+**Next:** draft Epic 1 Feature 02's User Stories (split by pass: Pass 1
+nodes, `/graph` edges and titles; Pass 2 Notes, chunks and `brain://`
+links; the dangling-edge check; the C# OB1 and TheBrain clients), then
+Features 03-08 one at a time. Epic 1 also needs a new Feature for
 publishing the CRO app (`docs/Notes and Findings.md`, 2026-11-06). A ping-only ASP.NET Core scaffold (`src/CRO/`, user-approved,
 committed 2026-11-05) and its direction guide
 (`docs/developer-before-you-code.md`) exist; build and runtime are not
@@ -63,9 +68,9 @@ verified.
 `curl http://localhost:8090/api/instances/`. TheBrain should start
 hidden at login; check `GET http://localhost:11522/api/brains` with
 the `TheBrain:ApiToken` secret. That is the first real test of the
-start-hidden setting (Feature 05, Story 02). All work through this
-context refresh is committed, logged in `.journal/2026-11.md` and
-pushed (2026-11-06); run `git status` to confirm. The curated
+start-hidden setting (Feature 05, Story 02). All work through
+2026-11-07 is committed and pushed; run `git status` to confirm. The
+`.journal/2026-11.md` log was last confirmed current on 2026-11-06. The curated
 `.journal/journal.md` stops at the week of 2026-10-26; the next entry
 is planned for the end of this week (Features 01-05 and later).
 
@@ -333,6 +338,9 @@ schema sketch had to be removed from this file once already.
   OB1's own `smart-ingest` recipe is close to a working prototype of
   this scan+dedup flow, but writes straight into OB1 today and isn't
   CRO-aware yet.
+- Ideas from 2026-11-07 (a "save this URL" flow, an outside-LLM boundary
+  for OpenRouter, a filing-wizard page and a quick-parse page) are
+  recorded in `docs/Notes and Findings.md`. They are not decided.
 - Local document ingestion (files, not just text/links): scan first,
   then save as a TheBrain file attachment (not an OB1 thought), via
   TheBrain's own attachment API — CRO cannot drop a file into an
@@ -402,6 +410,13 @@ boundaries below.
 - Bootstrap writes every node's full text to OB1, `restricted`
   included — OB1 is local-only inside the trusted boundary (decided
   2026-11-05).
+- A brain or Type that vanishes from TheBrain keeps its row and the
+  nodes pointing at it get `node_flags.flag_type = 'deleted'`; nothing
+  is deleted from `cro_index` or OB1 (Keith, 2026-11-07).
+- The embedding model reads only 2,048 tokens and drops the rest
+  silently (tested 2026-11-07), so long text is cut into chunks of
+  about 1,000-1,500 characters, one `chunks` row each (Epic 1 Feature
+  02). The chunk size is confirmed against real Notes later.
 
 ## Non-negotiables
 
@@ -513,12 +528,19 @@ boundaries below.
   ordinary Thought with 30+ links (Epic 1 test 4's positive case).
   Rolodex's child count is "100+" in the docs but about 94 by the
   user's recollection (2026-11-05) — unverified either way.
+- OpenRouter (an outside LLM) would send text outside the trusted home
+  environment. The hard constraint above stays as written. Whether and
+  how it is allowed (a local gate, `standard` tier only, default deny)
+  needs its own decision; see `docs/Notes and Findings.md`, 2026-11-07.
+- `/graph` showed no cross-brain jumps in Growth (120 Thoughts); the
+  other 7 brains are unchecked, and cross-brain links are expected in
+  Note text.
 
 ## Next checkpoint
 
-Epic 0's installs (`docs/phase-0-plan.md`; Feature 03's OB1
-trials first), then Epic 1's actual bootstrap code (approved
-2026-11-05), both laptop-only work. Epics 2–6
+Epic 1's User Stories (Feature 01 written; Features 02-08 next), then
+Epic 1's actual bootstrap code (approved 2026-11-05), both laptop-only
+work. Epic 0 waits only on Feature 09 Stories 03 and 04 (travel). Epics 2–6
 (`docs/phase-roadmap.md`) are broad-stroke only and don't need
 approval yet — each needs its own detailed planning pass first.
 
@@ -542,6 +564,14 @@ leave the home environment, or a requested action crosses an approval
 boundary.
 
 ## Last updated
+
+2026-11-07 by Claude Sonnet 5.5 (working-context-2-shape, after Epic 1
+Feature 01 and the `cro_index` schema review): Epic 1 Features moved
+into folders, Feature 01 stories written, V005 applied, the embedding
+limit and `/graph` shape recorded, and the 2026-11-07 ideas entry added
+to Notes and Findings. Replaced "Where we are", "Next" and "Next
+checkpoint"; added two Active decisions and two Open questions. Reasons
+are in `DECISIONS.md`.
 
 2026-11-06 by Claude Sonnet 5.5 (after Epic 0 Feature 09 Story 01):
 Story 01 is Done (curl, browser and Wi-Fi-off results recorded). Epic 0
