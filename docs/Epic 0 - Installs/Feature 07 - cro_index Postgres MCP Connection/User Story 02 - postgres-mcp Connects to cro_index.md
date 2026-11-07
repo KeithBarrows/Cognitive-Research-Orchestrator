@@ -1,6 +1,6 @@
 # User Story 02 — postgres-mcp Connects to cro_index
 
-**Status:** Not started
+**Status:** Done
 
 **Story:** As the CRO developer, I want `postgres-mcp` running against `cro_index`, so I can try the broader candidate.
 
@@ -18,3 +18,7 @@ filter still lets it list the schema, insert and run a vector query;
 if not, pick a different filter. Both candidates run at the same time
 against the same database; that is safe because this is disposable
 Docker.
+Verified 2026-11-06: with --tool-filter codemode, pg_execute_code
+listed the 11 tables plus flyway_schema_history, counted rows, and
+inserted, queried and deleted rows. The codemode filter is enough for
+schema, insert, vector query and delete.

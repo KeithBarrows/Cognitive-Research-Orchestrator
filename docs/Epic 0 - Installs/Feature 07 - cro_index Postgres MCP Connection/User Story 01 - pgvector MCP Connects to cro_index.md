@@ -1,6 +1,6 @@
 # User Story 01 — pgvector MCP Connects to cro_index
 
-**Status:** Not started
+**Status:** Done
 
 **Story:** As the CRO developer, I want `mcp-server-pgvector` running against `cro_index`, so I can try the pgvector-specific candidate.
 
@@ -19,3 +19,6 @@ launcher also pins `mcp<2` (`--with "mcp<2"`): 0.1.0 declares
 `mcp>=1.12.0` with no upper bound, and on `mcp` 2.x it crashes at
 startup (`mcp.server.fastmcp` was renamed). Found at the 2026-11-06
 smoke test.
+Verified 2026-11-06: through pgvector-cro, list_vector_tables found
+chunks.embedding (768 dimensions) and describe_vector_table read
+chunks. It connects to cro_index.
