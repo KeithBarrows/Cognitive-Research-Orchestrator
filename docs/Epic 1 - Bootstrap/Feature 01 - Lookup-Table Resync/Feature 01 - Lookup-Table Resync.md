@@ -28,11 +28,11 @@ content — every `thebrain_nodes.category_type_id` FK needs a real
 
 ## Acceptance test
 
-`brains` has one row per real TheBrain brain (confirmed live: 8
-brains, including "Growth," "Filing Cabinet," "Blue Skies Unlimited").
-`thebrain_types` has one row per real Type in each brain (confirmed
-live: 8 real Types in Growth alone). Both have accurate
-`last_synced_at` timestamps after the sync.
+`brains` has one row per brain in TheBrain's live `/brains` list.
+`thebrain_types` has one row per Type in each brain's live Types list.
+Both have accurate `last_synced_at` timestamps after the sync. (On
+2026-11-06 this was 8 brains and 8 Types in Growth; the count can
+change and is not part of the test.)
 
 ## Not yet designed
 

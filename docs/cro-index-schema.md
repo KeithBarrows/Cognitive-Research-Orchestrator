@@ -180,7 +180,7 @@ polymorphic `type`/`id` pairing as `node_links`, and the same
 |---|---|---|
 | `node_type` | text | `'thebrain'` \| `'ob1'` \| `'plane'` |
 | `node_id` | uuid | id in the matching node table |
-| `flag_type` | text | `'orphan'` (zero rows in `node_links` and `edges`, either side) \| `'stale'` (older than its Type's `staleness_threshold_days`; never set if the Type's threshold is blank or the node has no Type) \| `'hub'` (30+ total links/edges on a non-Type node — Type Thoughts, `kind=2`, are never flagged regardless of size, confirmed live against "Rolodex": 100+ children, and "Timeline" — both are Types, not regular Thoughts; confirmed live against two regular, non-Type Thoughts — "Quiver Software Development" at 24 links and "Technologist & ASPInsider" at 15 — that the 30 threshold doesn't over-flag ordinary well-connected content) \| `'catchall_hub'` (deferred — see below) \| `'misplaced_private'` (TheBrain nodes only — `access_type = 1` on a node whose `source_brain_id` isn't the one `brains` row with `is_private_home = true`; confirmed live on "Val Docs" and its 5 children, all `access_type=1`, all in Growth rather than Filing Cabinet) |
+| `flag_type` | text | `'orphan'` (zero rows in `node_links` and `edges`, either side) \| `'stale'` (older than its Type's `staleness_threshold_days`; never set if the Type's threshold is blank or the node has no Type) \| `'hub'` (30+ total links/edges on a non-Type node — Type Thoughts, `kind=2`, are never flagged regardless of size, confirmed live against "Rolodex": 100+ children, and "Timeline" — both are Types, not regular Thoughts; confirmed live against two regular, non-Type Thoughts — "Quiver Software Development" at 24 links and "Technologist & ASPInsider" at 15 — that the 30 threshold doesn't over-flag ordinary well-connected content) \| `'catchall_hub'` (deferred — see below) \| `'misplaced_private'` (TheBrain nodes only — `access_type = 1` on a node whose `source_brain_id` isn't the one `brains` row with `is_private_home = true`; confirmed live on "Val Docs" and its 5 children, all `access_type=1`, all in Growth rather than Filing Cabinet) \| `'deleted'` (added 2026-11-07 — a brain or Type that vanished from TheBrain; its row is kept and the nodes pointing at it are flagged, nothing is deleted; `detail` names what vanished and when) |
 | `detail` | text, nullable | why — e.g. `"42 links"`, `"stale 210d vs Type's 180d threshold"` |
 | `reviewed_by_user` | boolean, default `false` | same pattern as `node_links.confirmed_by_user` — Epic 4 review tracking |
 | `detected_at` | timestamptz | |
@@ -464,7 +464,7 @@ erDiagram
     node_flags {
         text node_type "app-enforced, not a real FK"
         uuid node_id
-        text flag_type "orphan, stale, hub, catchall_hub, misplaced_private"
+        text flag_type "orphan, stale, hub, catchall_hub, misplaced_private, deleted"
         text detail "nullable"
         boolean reviewed_by_user
         timestamptz detected_at
