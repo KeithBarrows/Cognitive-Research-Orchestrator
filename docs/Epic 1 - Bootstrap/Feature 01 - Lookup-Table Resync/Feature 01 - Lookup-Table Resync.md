@@ -28,11 +28,12 @@ content — every `thebrain_nodes.category_type_id` FK needs a real
 
 ## Acceptance test
 
-`brains` has one row per brain in TheBrain's live `/brains` list.
-`thebrain_types` has one row per Type in each brain's live Types list.
-Both have accurate `last_synced_at` timestamps after the sync. (On
-2026-11-06 this was 8 brains and 8 Types in Growth; the count can
-change and is not part of the test.)
+Every brain in TheBrain's live `/brains` list has a row in `brains`, and
+every Type in each brain's live Types list has a row in
+`thebrain_types`. Live rows have a `last_synced_at` from this run. Any
+other rows are ones that vanished from TheBrain; each is kept and
+flagged `deleted`. (On 2026-11-06 this was 8 brains and 8 Types in
+Growth; the count can change and is not part of the test.)
 
 ## Not yet designed
 

@@ -77,6 +77,18 @@ test 1 and Feature 08. Running the bootstrap a second time against unchanged sou
 duplicate `cro_index` rows and no duplicate OB1 thoughts (upsert-by-
 `source_id`, not blind insert).
 
+## Which Thoughts become nodes (decided 2026-11-09)
+
+Every Thought gets a `thebrain_nodes` row, whatever its kind: ordinary
+Thoughts (kind 1), Type Thoughts (kind 2) and Tag Thoughts (kind 4).
+Types and Tags are Thoughts in TheBrain, and ordinary Thoughts link to
+them, so every edge has a row at both ends and the dangling-edge check
+can pass. A Type Thought also keeps its `thebrain_types` row. Knowing
+the kind is needed (for example, Type Thoughts are never flagged as
+hubs), and `thebrain_nodes` has no `kind` column today. A small
+migration (V006) would add one; it is shown to Keith before it is
+applied.
+
 ## Chunking rule (added 2026-11-07)
 
 The embedding model reads at most 2,048 tokens and silently drops the
